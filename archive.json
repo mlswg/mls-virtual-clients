@@ -1,0 +1,193 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2024-04-04T00:12:39.585905+00:00",
+  "repo": "kkohbrok/mls-virtual-clients",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOKsv6Xc5hRMmL",
+      "title": "add applications of virtual clients",
+      "url": "https://github.com/kkohbrok/mls-virtual-clients/pull/1",
+      "state": "MERGED",
+      "author": "kkohbrok",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2023-12-06T07:40:46Z",
+      "updatedAt": "2023-12-12T14:13:09Z",
+      "baseRepository": "kkohbrok/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "11af220277192252290c2eb3f828a9e4cb61b0bf",
+      "headRepository": "kkohbrok/mls-virtual-clients",
+      "headRefName": "konrad/applications",
+      "headRefOid": "5fb8bb2afdb884d82a264ac48a98bac23b3ba606",
+      "closedAt": "2023-12-12T14:13:08Z",
+      "mergedAt": "2023-12-12T14:13:08Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "1502c8f07c489bfebb851ea5a9ddc2e5a69e776c"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc5pV8J3",
+          "commit": {
+            "abbreviatedOid": "388c956"
+          },
+          "author": "mulmarta",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2023-12-06T11:51:07Z",
+          "updatedAt": "2023-12-06T11:51:08Z",
+          "comments": [
+            {
+              "originalPosition": 69,
+              "body": "```suggestion\r\nIf the virtual client is used to hide the emulator clients, the delivery service and\r\n```",
+              "createdAt": "2023-12-06T11:51:07Z",
+              "updatedAt": "2023-12-06T11:51:08Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc5pYmoK",
+          "commit": {
+            "abbreviatedOid": "3a9a3d1"
+          },
+          "author": "mulmarta",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2023-12-06T16:27:42Z",
+          "updatedAt": "2023-12-06T16:27:42Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc5pm7Tj",
+          "commit": {
+            "abbreviatedOid": "d8b7949"
+          },
+          "author": "mulmarta",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2023-12-08T08:43:05Z",
+          "updatedAt": "2023-12-08T11:01:54Z",
+          "comments": [
+            {
+              "originalPosition": 89,
+              "body": "```suggestion\r\nprovider of a user) to be able to propose the removal of an individual\r\n```",
+              "createdAt": "2023-12-08T08:43:05Z",
+              "updatedAt": "2023-12-08T11:01:54Z"
+            },
+            {
+              "originalPosition": 127,
+              "body": "A third option is for another client to \"leave\" the secrets encrypted to all clients authorized to externally commit themselves into the group. For example, they can be encrypted to a \"user account backup (public) key\".",
+              "createdAt": "2023-12-08T11:01:49Z",
+              "updatedAt": "2023-12-08T11:01:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc5p1XQl",
+          "commit": {
+            "abbreviatedOid": "d8b7949"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2023-12-11T16:25:39Z",
+          "updatedAt": "2023-12-11T16:25:39Z",
+          "comments": [
+            {
+              "originalPosition": 127,
+              "body": "Good point, thanks! I tried to generalize the first point a bit and explain the two options. What do you think?",
+              "createdAt": "2023-12-11T16:25:39Z",
+              "updatedAt": "2023-12-11T16:25:39Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDOKsv6Xc5hzD_n",
+      "title": "Editorial changes and Jo\u00ebls content",
+      "url": "https://github.com/kkohbrok/mls-virtual-clients/pull/2",
+      "state": "MERGED",
+      "author": "kkohbrok",
+      "authorAssociation": "OWNER",
+      "assignees": [
+        "kkohbrok"
+      ],
+      "labels": [],
+      "body": "",
+      "createdAt": "2023-12-12T14:13:25Z",
+      "updatedAt": "2023-12-14T10:24:13Z",
+      "baseRepository": "kkohbrok/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "1502c8f07c489bfebb851ea5a9ddc2e5a69e776c",
+      "headRepository": "kkohbrok/mls-virtual-clients",
+      "headRefName": "konrad/editorial_pass",
+      "headRefOid": "bfb4d77d035966e19ede80fd60cf34c9049aea3f",
+      "closedAt": "2023-12-14T10:24:13Z",
+      "mergedAt": "2023-12-14T10:24:13Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "4bfb7009c47c0bd1e63aac32d709f22f91229417"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
