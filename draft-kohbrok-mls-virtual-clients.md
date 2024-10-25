@@ -349,7 +349,9 @@ struct {
 } KeyPackageReport
 ~~~
 
-TODO: We want this to be sent as content_type in a Public or PrivateMessage.
+TODO: We want this to be sent as content_type in a Public or PrivateMessage. If
+we can't extend the `content_type` safely, we'll have to introduce a WireFormat
+that largely copies the semantics of Public- or PrivateMessage.
 
 ## Adding emulator clients
 
