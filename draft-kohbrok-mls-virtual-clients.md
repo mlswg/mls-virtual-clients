@@ -233,27 +233,123 @@ actions via application messages. This is sufficient for operations that are
 affect individual groups, because the DS of that group will enforce message
 ordering.
 
+## Delivery Service
+
+Client emulation requires that any message sent by an emulator client on behalf
+of a virtual client be delivered not just to the rest of the supergroup to which
+the the message is sent, but also to all other clients in the emulator group.
+
 ## Generating Virtual Client Secrets
 
 An emulator client V in a group G may sample four types of MLS-related secrets
 on behalf of a virtual client V which must be reproducable by the other clients
 in G: init_key KEM keys in KeyPackage structs, encryption_key KEM keys in
 LeafNode structs, path_secrets for an UpdatePath structs and signature key
-pairs. In each case, to do this V (and all other clients in G) do this by
-constructing an appropriate label for the new secret and exporting from G with
-the label.
+pairs. 
 
-## DS/AS Details
+Each such secret is derived from the `epoch_base_secret` exported from the
+`epoch_secret` of the emulator group.
 
-Virtual client emulation should be largely agnostic to specific details of the
-AS and DS of the application. However, a few conditions must be met.
+~~~
+epoch_base_secret = 
+  DeriveExtensionSecret(epoch_secret, "Virtual Clients Epoch Base Secret")
+~~~
 
-- Access control: All emulator clients must be able to act as the virtual
-  client, including, for example, queue access and KeyPackage upload
-- Queue compatibility: The queue system must allow all emulator clients to
-  retrieve messages for the virtual clients. (Although workarounds like one
-  emulator client retrieving messages and then sending them to the emulation
-  group are possible.)
+Emulator client MUST store the `epoch_base_secret` until no key material derived
+from it is actively used anymore. This is required for the addition of new
+clients to the emulator group as described in Section
+{{adding-emulator-clients}}.
+
+For each epoch in an emulator group, emulator clients also derive an `epoch_id`.
+
+~~~
+epoch_id = 
+  DeriveSecret(epoch_base_secret, "Epoch ID")
+~~~
+
+When using a secret for a virtual client, e.g. for use in a KeyPackage or
+LeafNode update, the `epoch_id` indicates the epoch of group G from which other
+emulator clients must derive the secrets necessary to reproduce the relevant
+private key material. As the `epoch_id` is pseudorandom and can only be derived
+by emulator clients it doesn't leak the actual epoch of the emulator group.
+
+The individual secrets for the generation of key material are derived as follows
+
+~~~
+signature_key_secret =
+  DeriveSecret(epoch_base_secret, "Signature Key Secret")
+
+encryption_key_secret =
+  DeriveSecret(epoch_base_secret, "Encryption Key Secret")
+
+init_key_secret =
+  DeriveSecret(epoch_base_secret, "Init Key Secret")
+
+path_generation_secret =
+  DeriveSecret(epoch_base_secret, "Path Generation Secret")
+~~~
+
+From these secrets, the deriving client can generate the corresponding keypair
+by using the secret as the randomness required in the key generation process.
+
+TODO: Make sure that these secrets actually contain enough randomness for the
+ciphersuite in the context of which they are used.
+
+If a LeafNode or KeyPackage contains an extension that is associated with
+secrets or secret key material, the randomness for the generation of that secret
+or key material must be derived as follows.
+
+~~~
+extension_secret = 
+  ExpandWithLabel(epoch_base_secret, "Extension Secret", extension_type, KDF.Nh)
+~~~
+
+## Creating LeafNodes and UpdatePaths
+
+When creating a LeafNode, either for an Update or a KeyPackage, the creating
+emulator client MUST derive the necessary secrets from the current epoch of the
+emulator group as described in Section {{generating-virtual-client-secrets}}.
+
+Similarly, if an emulator client generates an Update, it MUST use
+`path_generation_secret` as the `path_secret` for the first `parent_node`
+instead of generating it randomly.
+
+To signal to other emulator clients which epoch to use to derive the necessary
+secrets to recreate the key material, the emulator client includes an
+EpochIdExtension in the LeafNode.
+
+~~~ tls
+struct {
+  opaque id<V>
+} EpochId
+
+struct {
+  EpochId id
+} EpochIdExtension
+~~~
+
+When other emulator clients receive an Update (i.e. either an Update proposal or
+a Commit with an UpdatePath) in group that the virtual client is a member in it
+uses the `epoch_id` to determine the epoch of the emulator group from which to
+derive the secrets necessary to re-create the key material of the LeafNode and a
+potential UpdatePath.
+
+## Creating and uploading KeyPackages
+
+When creating a KeyPackage, the creating emulator client derives the
+`init_secret` as described in Section {{generating-virtual-client-secrets}}.
+
+After uploading one or more KeyPackages for a virtual client, the uploading
+emulator client MUST send a KeyPackageUploadReport message. 
+
+~~~ tls
+struct {
+  EpochId id;
+  KeyPackageRef key_package_refs<V>;
+} KeyPackageReport
+~~~
+
+TODO: We want this to be sent as content_type in a Public or PrivateMessage.
 
 ## Adding emulator clients
 
@@ -262,17 +358,34 @@ private key material and the group states of all higher-level groups. While the
 latter might be able to be provisioned by the higher-level DS, the former has to
 be provided by another emulator client.
 
-The other emulator client can provide the secret key material used to derive all
-key material relevant to the virtual client (higher-level group secrets,
-KeyPackage secrets, etc.)
+If the new emulator client is added via Welcome, the adder has to include an
+EmulatorInitExtension in the Welcome's GroupInfo.
 
-TODO: This means that all such key material must be derived in a well-separated
-and forward-secure way. (See TODO above to specify further details on how to
-derive key material for the virtual client.)
+~~~ tls
+struct {
+  EpochId id;
+  opaque epoch_base_secret<V>;
+  KeyPackageRef key_package_refs<V>;
+} EpochInfo
 
-Since the new emulator client can only emulate the virtual client if it has
-access to those secrets, it cannot join the emulation group via external commit,
-except if said secrets are provided asynchronously.
+struct {
+  EpochInfo epoch_infos<V>
+} EmulatorInitExtension
+~~~
+
+Each EpochInfo in an EmulatorInitExtension contains the `epoch_base_secret` of
+the epoch indicated by the `epoch_id`, as well as the KeyPackageRefs of the
+KeyPackages generated and uploaded using secrets derived from that epoch.
+
+If the new client joins via ExternalCommit it has to obtain the `epoch_infos` in
+some other way, for example through an EmulatorInitExtension in a GroupInfo or
+OOB.
+
+Note that a GroupInfo with an EmulatorInitExtension contains secret key material
+and can thus not be treated as regular GroupInfos, which, for example,might be
+uploaded to a server to facilitate external joining without another group member
+online at the time.
+
 
 ## Sending application messages
 
@@ -284,8 +397,13 @@ This poses a problem in the context of virtual client emulation, because the use
 of such key material cannot easily be coordinated between emulating clients.
 However, reusing a key/nonce pair for different application messages leaks
 information about the plaintexts. Moreover, any client receving the two would
-not be able to decrypt the second message as the requisit key would already
-be deleted.
+not be able to decrypt the second message as the requisit key would already be
+deleted.
+
+As a consequence, groups that support virtual clients MUST allow the use of
+challenge-based application messages as described in
+{{challenge-based-application-message-encryption}}.
+
 
 ## Challenge-based application message encryption
 
@@ -547,6 +665,41 @@ also update their virtual client state.
 
 Bob (or other members in the higher level group) will only see the update in the
 higher-level group, which they can simply process with their (virtual) clients.
+
+# Transparency
+
+Membership of the emulator group is generally hidden from clients that are in a
+group with a virtual client. While this can be desirable in some settings, other
+settings will require transparency w.r.t. emulator group membership.
+
+In such cases, emulator clients MUST include a TransparencyExtension in all
+LeafNodes of the virtual client.
+
+~~~ tls
+struct {
+  Epoch last_update;
+  SignaturePublicKey signature_key;
+  Credential credential;
+} EmulatorClientInfo
+
+struct {
+  EmulatorClientInfo emulator_clients<V>;
+} TransparencyExtension
+~~~
+
+- `last_update`: The epoch in which the emulator client last updated its
+  LeafNode, either via Commit or via an Update proposal
+- `signature_key`: The signature public key of the emulator client
+- `credential`: The credential in the emulator client's LeafNode
+
+The TransparencyExtension MUST contain EmulatorClientInfos for each client in
+the emulator group.
+
+Whenever the clients of the emulator group agree on a commit, the committer MUST
+update the LeafNode in each group that the virtual client is a member in, either
+via Commit or via an Update proposal. The new LeafNode MUST contain an updated
+TransparencyExtension, including any changes to the emulator group's membership,
+as well as an updated `last_update` for each updated LeafNode.
 
 # Security considerations
 
