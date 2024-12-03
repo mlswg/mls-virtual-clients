@@ -245,13 +245,13 @@ An emulator client V in a group G may sample four types of MLS-related secrets
 on behalf of a virtual client V which must be reproducable by the other clients
 in G: init_key KEM keys in KeyPackage structs, encryption_key KEM keys in
 LeafNode structs, path_secrets for an UpdatePath structs and signature key
-pairs. 
+pairs.
 
 Each such secret is derived from the `epoch_base_secret` exported from the
 `epoch_secret` of the emulator group.
 
 ~~~
-epoch_base_secret = 
+epoch_base_secret =
   DeriveExtensionSecret(epoch_secret, "Virtual Clients Epoch Base Secret")
 ~~~
 
@@ -263,7 +263,7 @@ clients to the emulator group as described in Section
 For each epoch in an emulator group, emulator clients also derive an `epoch_id`.
 
 ~~~
-epoch_id = 
+epoch_id =
   DeriveSecret(epoch_base_secret, "Epoch ID")
 ~~~
 
@@ -300,7 +300,7 @@ secrets or secret key material, the randomness for the generation of that secret
 or key material must be derived as follows.
 
 ~~~
-extension_secret = 
+extension_secret =
   ExpandWithLabel(epoch_base_secret, "Extension Secret", extension_type, KDF.Nh)
 ~~~
 
@@ -340,7 +340,7 @@ When creating a KeyPackage, the creating emulator client derives the
 `init_secret` as described in Section {{generating-virtual-client-secrets}}.
 
 After uploading one or more KeyPackages for a virtual client, the uploading
-emulator client MUST send a KeyPackageUploadReport message. 
+emulator client MUST send a KeyPackageUploadReport message.
 
 ~~~ tls
 struct {
