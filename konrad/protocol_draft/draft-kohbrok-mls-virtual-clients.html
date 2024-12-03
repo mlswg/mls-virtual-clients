@@ -1153,10 +1153,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
                 <p id="section-toc.1-1.3.2.1.1" class="keepWithNext"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-virtual-clients-for-perform" class="internal xref">Virtual clients for performance</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
-                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-hidden-subgroups" class="internal xref">Hidden subgroups</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
-                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-transparent-subgroups" class="internal xref">Transparent subgroups</a></p>
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-metadata-hiding" class="internal xref">Metadata hiding</a></p>
 </li>
             </ul>
 </li>
@@ -1350,10 +1347,10 @@ increases performance for all members of that group.<a href="#section-3.1-2" cla
 operation in the emulation group to all virtual clients emulated in that group.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="hidden-subgroups">
+<div id="metadata-hiding">
 <section id="section-3.2">
-        <h3 id="name-hidden-subgroups">
-<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-hidden-subgroups" class="section-name selfRef">Hidden subgroups</a>
+        <h3 id="name-metadata-hiding">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-metadata-hiding" class="section-name selfRef">Metadata hiding</a>
         </h3>
 <p id="section-3.2-1">Virtual clients can be used to hide the emulator clients from other members of
 higher-level groups. For example, removing group members of the emulator group
@@ -1377,20 +1374,8 @@ other higher-level group members also lose the ability to enforce policies to
 evict stale clients. For example, an emulator client could become stale (i.e.
 inactive), while another keeps sending updates. From the point of view of the
 higher-level group, the virtual client would remain active.<a href="#section-3.2-4" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="transparent-subgroups">
-<section id="section-3.3">
-        <h3 id="name-transparent-subgroups">
-<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-transparent-subgroups" class="section-name selfRef">Transparent subgroups</a>
-        </h3>
-<p id="section-3.3-1">TODO: The following text assumes that we have some mechanism of adding one or
-more additional signatures to MLS messages.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
-<p id="section-3.3-2">While applications can choose to use virtual clients to hide the corresponding
-emulator clients, they don't have to. When using the virtual client to send
-messages, the sending emulator client can provide an addition signature using
-either its leaf credential in the emulation group, or another AS-provided
-credential that allows higher-level group members to authenticate the message.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<p id="section-3.2-5">For cases where membership hiding is undesirable, Section <a href="#transparency" class="auto internal xref">Section 6</a>
+describes a way to surface details about subgroup membership to the supergroup.<a href="#section-3.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
