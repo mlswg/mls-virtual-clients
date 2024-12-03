@@ -103,7 +103,7 @@ At the same time, the virtual client emulation process (see
 {{client-emulation}}) allows emulator clients to carry the benefit of a single
 operation in the emulation group to all virtual clients emulated in that group.
 
-## Hidden subgroups
+## Metadata hiding
 
 Virtual clients can be used to hide the emulator clients from other members of
 higher-level groups. For example, removing group members of the emulator group
@@ -131,16 +131,8 @@ evict stale clients. For example, an emulator client could become stale (i.e.
 inactive), while another keeps sending updates. From the point of view of the
 higher-level group, the virtual client would remain active.
 
-## Transparent subgroups
-
-TODO: The following text assumes that we have some mechanism of adding one or
-more additional signatures to MLS messages.
-
-While applications can choose to use virtual clients to hide the corresponding
-emulator clients, they don't have to. When using the virtual client to send
-messages, the sending emulator client can provide an addition signature using
-either its leaf credential in the emulation group, or another AS-provided
-credential that allows higher-level group members to authenticate the message.
+For cases where membership hiding is undesirable, Section {{transparency}}
+describes a way to surface details about subgroup membership to the supergroup.
 
 # Limitations
 
