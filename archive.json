@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-12-03T00:17:53.395027+00:00",
+  "timestamp": "2024-12-05T00:16:58.966617+00:00",
   "repo": "kkohbrok/mls-virtual-clients",
   "labels": [
     {
@@ -203,13 +203,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2024-10-25T08:28:30Z",
-      "updatedAt": "2024-10-25T08:28:30Z",
+      "updatedAt": "2024-12-03T08:17:37Z",
       "baseRepository": "kkohbrok/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "d1079ba4aff8681455ded9f8fb917eebca939e55",
       "headRepository": "kkohbrok/mls-virtual-clients",
       "headRefName": "konrad/protocol_draft",
-      "headRefOid": "c8b63702e29e2dede98640b9bc9604bdca1f518e",
+      "headRefOid": "655a4a32ae7e0b374198090b5bfa19f1a84359b1",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
