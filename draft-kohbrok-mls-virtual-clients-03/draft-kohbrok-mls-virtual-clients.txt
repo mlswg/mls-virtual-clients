@@ -58,33 +58,31 @@ Table of Contents
    2.  Terminology
    3.  Applications
      3.1.  Virtual clients for performance
-     3.2.  Metadata hiding
+     3.2.  Hidden subgroups
+     3.3.  Transparent subgroups
    4.  Limitations
      4.1.  External remove proposals
      4.2.  External joins
    5.  Client emulation
-     5.1.  Delivery Service
-     5.2.  Generating Virtual Client Secrets
-     5.3.  Creating LeafNodes and UpdatePaths
-     5.4.  Creating and uploading KeyPackages
-     5.5.  Adding emulator clients
-     5.6.  Sending application messages
-     5.7.  Challenge-based application message encryption
-       5.7.1.  Challenge generation
-       5.7.2.  Message Framing
-       5.7.3.  Message Authentication
-       5.7.4.  Content Encryption
-       5.7.5.  Sender Data Encryption
-       5.7.6.  Forward Secure KDF
-     5.8.  Rotation of authentication key material
-     5.9.  Example protocol flow
-   6.  Transparency
-   7.  Security considerations
-   8.  Privacy considerations
-   9.  Performance considerations
-     9.1.  Smaller Trees
-     9.2.  Fewer blanks
-   10. Emulation costs
+     5.1.  Generating Virtual Client Secrets
+     5.2.  DS/AS Details
+     5.3.  Adding emulator clients
+     5.4.  Sending application messages
+     5.5.  Challenge-based application message encryption
+       5.5.1.  Challenge generation
+       5.5.2.  Message Framing
+       5.5.3.  Message Authentication
+       5.5.4.  Content Encryption
+       5.5.5.  Sender Data Encryption
+       5.5.6.  Forward Secure KDF
+     5.6.  Rotation of authentication key material
+     5.7.  Example protocol flow
+   6.  Security considerations
+   7.  Privacy considerations
+   8.  Performance considerations
+     8.1.  Smaller Trees
+     8.2.  Fewer blanks
+   9.  Emulation costs
    Authors' Addresses
 
 1.  Introduction
@@ -174,7 +172,7 @@ Table of Contents
    operation in the emulation group to all virtual clients emulated in
    that group.
 
-3.2.  Metadata hiding
+3.2.  Hidden subgroups
 
    Virtual clients can be used to hide the emulator clients from other
    members of higher-level groups.  For example, removing group members
@@ -205,9 +203,17 @@ Table of Contents
    keeps sending updates.  From the point of view of the higher-level
    group, the virtual client would remain active.
 
-   For cases where membership hiding is undesirable, Section Section 6
-   describes a way to surface details about subgroup membership to the
-   supergroup.
+3.3.  Transparent subgroups
+
+   TODO: The following text assumes that we have some mechanism of
+   adding one or more additional signatures to MLS messages.
+
+   While applications can choose to use virtual clients to hide the
+   corresponding emulator clients, they don't have to.  When using the
+   virtual client to send messages, the sending emulator client can
+   provide an addition signature using either its leaf credential in the
+   emulation group, or another AS-provided credential that allows
+   higher-level group members to authenticate the message.
 
 4.  Limitations
 
@@ -313,122 +319,33 @@ Table of Contents
    operations that are affect individual groups, because the DS of that
    group will enforce message ordering.
 
-5.1.  Delivery Service
-
-   Client emulation requires that any message sent by an emulator client
-   on behalf of a virtual client be delivered not just to the rest of
-   the supergroup to which the the message is sent, but also to all
-   other clients in the emulator group.
-
-5.2.  Generating Virtual Client Secrets
+5.1.  Generating Virtual Client Secrets
 
    An emulator client V in a group G may sample four types of MLS-
    related secrets on behalf of a virtual client V which must be
    reproducable by the other clients in G: init_key KEM keys in
    KeyPackage structs, encryption_key KEM keys in LeafNode structs,
-   path_secrets for an UpdatePath structs and signature key pairs.
+   path_secrets for an UpdatePath structs and signature key pairs.  In
+   each case, to do this V (and all other clients in G) do this by
+   constructing an appropriate label for the new secret and exporting
+   from G with the label.
 
-   Each such secret is derived from the epoch_base_secret exported from
-   the epoch_secret of the emulator group.
+5.2.  DS/AS Details
 
-epoch_base_secret =
-  DeriveExtensionSecret(epoch_secret, "Virtual Clients Epoch Base Secret")
+   Virtual client emulation should be largely agnostic to specific
+   details of the AS and DS of the application.  However, a few
+   conditions must be met.
 
-   Emulator client MUST store the epoch_base_secret until no key
-   material derived from it is actively used anymore.  This is required
-   for the addition of new clients to the emulator group as described in
-   Section Section 5.5.
+   *  Access control: All emulator clients must be able to act as the
+      virtual client, including, for example, queue access and
+      KeyPackage upload
 
-   For each epoch in an emulator group, emulator clients also derive an
-   epoch_id.
+   *  Queue compatibility: The queue system must allow all emulator
+      clients to retrieve messages for the virtual clients.  (Although
+      workarounds like one emulator client retrieving messages and then
+      sending them to the emulation group are possible.)
 
-   epoch_id =
-     DeriveSecret(epoch_base_secret, "Epoch ID")
-
-   When using a secret for a virtual client, e.g. for use in a
-   KeyPackage or LeafNode update, the epoch_id indicates the epoch of
-   group G from which other emulator clients must derive the secrets
-   necessary to reproduce the relevant private key material.  As the
-   epoch_id is pseudorandom and can only be derived by emulator clients
-   it doesn't leak the actual epoch of the emulator group.
-
-   The individual secrets for the generation of key material are derived
-   as follows
-
-   signature_key_secret =
-     DeriveSecret(epoch_base_secret, "Signature Key Secret")
-
-   encryption_key_secret =
-     DeriveSecret(epoch_base_secret, "Encryption Key Secret")
-
-   init_key_secret =
-     DeriveSecret(epoch_base_secret, "Init Key Secret")
-
-   path_generation_secret =
-     DeriveSecret(epoch_base_secret, "Path Generation Secret")
-
-   From these secrets, the deriving client can generate the
-   corresponding keypair by using the secret as the randomness required
-   in the key generation process.
-
-   TODO: Make sure that these secrets actually contain enough randomness
-   for the ciphersuite in the context of which they are used.
-
-   If a LeafNode or KeyPackage contains an extension that is associated
-   with secrets or secret key material, the randomness for the
-   generation of that secret or key material must be derived as follows.
-
-extension_secret =
-  ExpandWithLabel(epoch_base_secret, "Extension Secret", extension_type, KDF.Nh)
-
-5.3.  Creating LeafNodes and UpdatePaths
-
-   When creating a LeafNode, either for an Update or a KeyPackage, the
-   creating emulator client MUST derive the necessary secrets from the
-   current epoch of the emulator group as described in
-   Section Section 5.2.
-
-   Similarly, if an emulator client generates an Update, it MUST use
-   path_generation_secret as the path_secret for the first parent_node
-   instead of generating it randomly.
-
-   To signal to other emulator clients which epoch to use to derive the
-   necessary secrets to recreate the key material, the emulator client
-   includes an EpochIdExtension in the LeafNode.
-
-   struct {
-     opaque id<V>
-   } EpochId
-
-   struct {
-     EpochId id
-   } EpochIdExtension
-
-   When other emulator clients receive an Update (i.e. either an Update
-   proposal or a Commit with an UpdatePath) in group that the virtual
-   client is a member in it uses the epoch_id to determine the epoch of
-   the emulator group from which to derive the secrets necessary to re-
-   create the key material of the LeafNode and a potential UpdatePath.
-
-5.4.  Creating and uploading KeyPackages
-
-   When creating a KeyPackage, the creating emulator client derives the
-   init_secret as described in Section Section 5.2.
-
-   After uploading one or more KeyPackages for a virtual client, the
-   uploading emulator client MUST send a KeyPackageUploadReport message.
-
-   struct {
-     EpochId id;
-     KeyPackageRef key_package_refs<V>;
-   } KeyPackageReport
-
-   TODO: We want this to be sent as content_type in a Public or
-   PrivateMessage.  If we can't extend the content_type safely, we'll
-   have to introduce a WireFormat that largely copies the semantics of
-   Public- or PrivateMessage.
-
-5.5.  Adding emulator clients
+5.3.  Adding emulator clients
 
    If a client is added to the emulation group, it has to be provisioned
    with the private key material and the group states of all higher-
@@ -436,34 +353,21 @@ extension_secret =
    the higher-level DS, the former has to be provided by another
    emulator client.
 
-   If the new emulator client is added via Welcome, the adder has to
-   include an EmulatorInitExtension in the Welcome's GroupInfo.
+   The other emulator client can provide the secret key material used to
+   derive all key material relevant to the virtual client (higher-level
+   group secrets, KeyPackage secrets, etc.)
 
-   struct {
-     EpochId id;
-     opaque epoch_base_secret<V>;
-     KeyPackageRef key_package_refs<V>;
-   } EpochInfo
+   TODO: This means that all such key material must be derived in a
+   well-separated and forward-secure way.  (See TODO above to specify
+   further details on how to derive key material for the virtual
+   client.)
 
-   struct {
-     EpochInfo epoch_infos<V>
-   } EmulatorInitExtension
+   Since the new emulator client can only emulate the virtual client if
+   it has access to those secrets, it cannot join the emulation group
+   via external commit, except if said secrets are provided
+   asynchronously.
 
-   Each EpochInfo in an EmulatorInitExtension contains the
-   epoch_base_secret of the epoch indicated by the epoch_id, as well as
-   the KeyPackageRefs of the KeyPackages generated and uploaded using
-   secrets derived from that epoch.
-
-   If the new client joins via ExternalCommit it has to obtain the
-   epoch_infos in some other way, for example through an
-   EmulatorInitExtension in a GroupInfo or OOB.
-
-   Note that a GroupInfo with an EmulatorInitExtension contains secret
-   key material and can thus not be treated as regular GroupInfos,
-   which, for example,might be uploaded to a server to facilitate
-   external joining without another group member online at the time.
-
-5.6.  Sending application messages
+5.4.  Sending application messages
 
    MLS applications messages are encrypted using key material derived
    from the secret tree, where a unique key/nonce pair is derived for
@@ -478,11 +382,7 @@ extension_secret =
    to decrypt the second message as the requisit key would already be
    deleted.
 
-   As a consequence, groups that support virtual clients MUST allow the
-   use of challenge-based application messages as described in
-   Section 5.7.
-
-5.7.  Challenge-based application message encryption
+5.5.  Challenge-based application message encryption
 
    This problem can be solved by introducing a new type of application
    message where the encryption keys are derived using a challenge-based
@@ -491,9 +391,9 @@ extension_secret =
    Using a forward-secret exporter secret (provided by the safe
    extension API), each member creates a new secret tree.  Whenever a
    group member wants to send a message, it creates a fresh random
-   challenge (see Section 5.7.1) for that message.  Each challenge is
+   challenge (see Section 5.5.1) for that message.  Each challenge is
    mapped to its own secret using a forward-secure KDF implimented using
-   a new secret tree (see Section 5.7.6).  The secret is used to derive
+   a new secret tree (see Section 5.5.6).  The secret is used to derive
    the key/nonce used to encrypt a message.  The sender includes the
    challenge in the AAD of the application message so that receivers can
    also derive the decryption key.  Finally, to ensure forward secrecy
@@ -501,7 +401,7 @@ extension_secret =
    apply the same deletion schedule as for the standard secret tree in
    normal MLS.
 
-5.7.1.  Challenge generation
+5.5.1.  Challenge generation
 
    To send an application message the sender must first sample a
    challenge.  It is crucial for application message confidentiality
@@ -551,7 +451,7 @@ extension_secret =
 
    challenge = FS-KDF.Expand(challenge-seed, ChallengeContext, KDF.Nh)
 
-5.7.2.  Message Framing
+5.5.2.  Message Framing
 
    The following enum and structs define the wire format for challenge-
    based application messages.
@@ -567,7 +467,7 @@ extension_secret =
        CBAMPrivateMessage private_message;
    } CBAMMLSMessage;
 
-5.7.3.  Message Authentication
+5.5.3.  Message Authentication
 
    The following structs are used to authenticate data in a challenge-
    based application message.
@@ -613,13 +513,13 @@ extension_secret =
        opaque cbam_encrypted_cbam_private_message_content<V>;
    } CBAMPrivateMessage;
 
-5.7.4.  Content Encryption
+5.5.4.  Content Encryption
 
    Content to be encrypted is encoded with a CBAMPrivateMessageContent
    and the Additional Authenticated data is encoded with a
    CBAMPrivateContentAAD.  The key and nonce used for encryption are
    derived from the encryption_secret and the challenge C using the
-   challenge-based secret tree as described in Section 5.7.6.
+   challenge-based secret tree as described in Section 5.5.6.
 
    struct {
      opaque application_data<V>;
@@ -637,7 +537,7 @@ extension_secret =
 
    aead_nonce = aead_nonce[C]
 
-5.7.5.  Sender Data Encryption
+5.5.5.  Sender Data Encryption
 
    The encrypted_cbam_sender_data is obtained by encrypting the
    CBAMSenderData using keys derived from the cbam_sender_data_secret.
@@ -655,7 +555,7 @@ sender_data_key = ExpandWithLabel(cbam_sender_data_secret, "key",
 sender_data_nonce = ExpandWithLabel(cbam_sender_data_secret, "nonce",
                       ciphertext_sample, AEAD.Nn)
 
-5.7.6.  Forward Secure KDF
+5.5.6.  Forward Secure KDF
 
    A consequence of the secret tree structure in MLS is that deriving
    the key/nonce for a given application message requires knowing the
@@ -702,7 +602,7 @@ KDF.Nh)
    The same deletion schedule applies to the CBST (including the
    cbst_encryption_secret) as for the secret tree in MLS.
 
-5.8.  Rotation of authentication key material
+5.6.  Rotation of authentication key material
 
    If the design of the AS specifies the use of cross-group
    authentication key material, emulator clients must coordinate the
@@ -710,7 +610,7 @@ KDF.Nh)
    multiple emulator clients rotating a key at the same time.  Details
    depend on the design of the AS.
 
-5.9.  Example protocol flow
+5.7.  Example protocol flow
 
    Virtual clients can, for example, be used by users with multiple
    devices.  Here, each device acts as an emulator client that emulates
@@ -740,44 +640,7 @@ KDF.Nh)
    update in the higher-level group, which they can simply process with
    their (virtual) clients.
 
-6.  Transparency
-
-   Membership of the emulator group is generally hidden from clients
-   that are in a group with a virtual client.  While this can be
-   desirable in some settings, other settings will require transparency
-   w.r.t. emulator group membership.
-
-   In such cases, emulator clients MUST include a TransparencyExtension
-   in all LeafNodes of the virtual client.
-
-   struct {
-     Epoch last_update;
-     SignaturePublicKey signature_key;
-     Credential credential;
-   } EmulatorClientInfo
-
-   struct {
-     EmulatorClientInfo emulator_clients<V>;
-   } TransparencyExtension
-
-   *  last_update: The epoch in which the emulator client last updated
-      its LeafNode, either via Commit or via an Update proposal
-
-   *  signature_key: The signature public key of the emulator client
-
-   *  credential: The credential in the emulator client's LeafNode
-
-   The TransparencyExtension MUST contain EmulatorClientInfos for each
-   client in the emulator group.
-
-   Whenever the clients of the emulator group agree on a commit, the
-   committer MUST update the LeafNode in each group that the virtual
-   client is a member in, either via Commit or via an Update proposal.
-   The new LeafNode MUST contain an updated TransparencyExtension,
-   including any changes to the emulator group's membership, as well as
-   an updated last_update for each updated LeafNode.
-
-7.  Security considerations
+6.  Security considerations
 
    TODO: Detail security considerations once the protocol has evolved a
    little more.  Starting points:
@@ -789,7 +652,7 @@ KDF.Nh)
    group, i.e. re-using somewhat old randomness of the emulation group
    won’t provide real PCS in higher-level groups.
 
-8.  Privacy considerations
+7.  Privacy considerations
 
    TODO: Specify the metadata hiding properties of the protocol.  The
    details depend on how we solve some of the problems described
@@ -798,7 +661,7 @@ KDF.Nh)
    actually hides the identity of the members may depend on the details
    of the AS, as well as how we solve the application messages problem.
 
-9.  Performance considerations
+8.  Performance considerations
 
    There are several use cases, where a specific group of clients
    represents a higher-level entity such as a user, or a part of an
@@ -811,7 +674,7 @@ KDF.Nh)
    clients are replaced by virtual clients, the higher the potential
    performance benefits.
 
-9.1.  Smaller Trees
+8.1.  Smaller Trees
 
    As a general rule, groups where one or more sets of clients are
    replaced by virtual clients have fewer members, which leads to
@@ -822,7 +685,7 @@ KDF.Nh)
    suite, or if the application requires high update frequencies
    (deniability).
 
-9.2.  Fewer blanks
+8.2.  Fewer blanks
 
    Blanks are typically created in the process of client removals.  With
    virtual clients, the removal of an emulator client will not cause the
@@ -833,7 +696,7 @@ KDF.Nh)
    corresponding virtual clients, resulting in fewer overall blanks and
    better performance for all group members.
 
-10.  Emulation costs
+9.  Emulation costs
 
    From a performance standpoint, using virtual clients only makes sense
    if the performance benefits from smaller trees and fewer blanks
