@@ -235,12 +235,13 @@ the the message is sent, but also to all other clients in the emulator group.
 
 An emulator client V in a group G may sample four types of MLS-related secrets
 on behalf of a virtual client V which must be reproducable by the other clients
-in G: init_key KEM keys in KeyPackage structs, encryption_key KEM keys in
+in G: init_key KEM keys in KeyPackages, encryption_key KEM keys in
 LeafNode structs, path_secrets for an UpdatePath structs and signature key
 pairs.
 
-Each such secret is derived from the `epoch_base_secret` exported from the
-`epoch_secret` of the emulator group.
+Each such secret is derived from the `epoch_base_secret`, which is exported from
+the emulator group using the SafeExportSecret function defined in
+{{!I-D.ietf-mls-extensions}}.
 
 ~~~
 epoch_base_secret =
@@ -260,7 +261,7 @@ epoch_id =
 ~~~
 
 When using a secret for a virtual client, e.g. for use in a KeyPackage or
-LeafNode update, the `epoch_id` indicates the epoch of group G from which other
+LeafNode update, the `epoch_id` signals the epoch of group G from which other
 emulator clients must derive the secrets necessary to reproduce the relevant
 private key material. As the `epoch_id` is pseudorandom and can only be derived
 by emulator clients it doesn't leak the actual epoch of the emulator group.
@@ -269,16 +270,16 @@ The individual secrets for the generation of key material are derived as follows
 
 ~~~
 signature_key_secret =
-  DeriveSecret(epoch_base_secret, "Signature Key Secret")
+  DeriveSecret(epoch_base_secret, "Signature Key")
 
 encryption_key_secret =
-  DeriveSecret(epoch_base_secret, "Encryption Key Secret")
+  DeriveSecret(epoch_base_secret, "Encryption Key")
 
 init_key_secret =
-  DeriveSecret(epoch_base_secret, "Init Key Secret")
+  DeriveSecret(epoch_base_secret, "Init Key")
 
 path_generation_secret =
-  DeriveSecret(epoch_base_secret, "Path Generation Secret")
+  DeriveSecret(epoch_base_secret, "Path Generation")
 ~~~
 
 From these secrets, the deriving client can generate the corresponding keypair
@@ -287,24 +288,28 @@ by using the secret as the randomness required in the key generation process.
 TODO: Make sure that these secrets actually contain enough randomness for the
 ciphersuite in the context of which they are used.
 
-If a LeafNode or KeyPackage contains an extension that is associated with
-secrets or secret key material, the randomness for the generation of that secret
-or key material must be derived as follows.
+If a LeafNode or KeyPackage contains an extension or component that is
+associated with secrets or secret key material, the randomness for the
+generation of that secret or key material must be derived as follows.
 
 ~~~
 extension_secret =
-  ExpandWithLabel(epoch_base_secret, "Extension Secret", extension_type, KDF.Nh)
+  ExpandWithLabel(epoch_base_secret, "Extension", extension_type, KDF.Nh)
+
+component_secret =
+  ExpandWithLabel(epoch_base_secret, "Component", ComponentID, KDF.Nh)
 ~~~
 
 ## Creating LeafNodes and UpdatePaths
 
-When creating a LeafNode, either for an Update or a KeyPackage, the creating
-emulator client MUST derive the necessary secrets from the current epoch of the
-emulator group as described in Section {{generating-virtual-client-secrets}}.
+When creating a LeafNode, either for a Commit with path, an Update proposal or a
+KeyPackage, the creating emulator client MUST derive the necessary secrets from
+the current epoch of the emulator group as described in Section
+{{generating-virtual-client-secrets}}.
 
-Similarly, if an emulator client generates an Update, it MUST use
-`path_generation_secret` as the `path_secret` for the first `parent_node`
-instead of generating it randomly.
+Similarly, if an emulator client generates an Commit with an update path, it
+MUST use `path_generation_secret` as the `path_secret` for the first
+`parent_node` instead of generating it randomly.
 
 To signal to other emulator clients which epoch to use to derive the necessary
 secrets to recreate the key material, the emulator client includes an
@@ -326,31 +331,12 @@ uses the `epoch_id` to determine the epoch of the emulator group from which to
 derive the secrets necessary to re-create the key material of the LeafNode and a
 potential UpdatePath.
 
-## Creating and uploading KeyPackages
-
-When creating a KeyPackage, the creating emulator client derives the
-`init_secret` as described in Section {{generating-virtual-client-secrets}}.
-
-After uploading one or more KeyPackages for a virtual client, the uploading
-emulator client MUST send a KeyPackageUploadReport message.
-
-~~~ tls
-struct {
-  EpochId id;
-  KeyPackageRef key_package_refs<V>;
-} KeyPackageReport
-~~~
-
-TODO: We want this to be sent as content_type in a Public or PrivateMessage. If
-we can't extend the `content_type` safely, we'll have to introduce a WireFormat
-that largely copies the semantics of Public- or PrivateMessage.
-
 ## Adding emulator clients
 
 If a client is added to the emulation group, it has to be provisioned with the
 private key material and the group states of all higher-level groups. While the
-latter might be able to be provisioned by the higher-level DS, the former has to
-be provided by another emulator client.
+latter might be provisioned by the higher-level DS, the former has to be
+provided by another emulator client.
 
 If the new emulator client is added via Welcome, the adder has to include an
 EmulatorInitExtension in the Welcome's GroupInfo.
@@ -376,9 +362,79 @@ some other way, for example through an EmulatorInitExtension in a GroupInfo or
 OOB.
 
 Note that a GroupInfo with an EmulatorInitExtension contains secret key material
-and can thus not be treated as regular GroupInfos, which, for example,might be
+and can thus not be treated as regular GroupInfos, which, for example, might be
 uploaded to a server to facilitate external joining without another group member
 online at the time.
+
+## Virtual client actions
+
+There are two occasions where emulator clients need to communicate directly to
+operate the virtual client. In both cases, the acting emulator client sends a
+Commit to the emulation group before taking an action with the virtual client.
+
+The commit serves two purposes: First, the agreement on message ordering
+facilitated by the prevents concurrent conflicting actions by two or more
+emulator clients. Second, the acting emulator client can attach additional
+information to the commit using the SafeAAD mechanism described in Section 4.9
+of {{!I-D.ietf-mls-extensions}}.
+
+~~~ tls
+enum {
+  reserved(0),
+  key_package_upload(1),
+  external_join(2),
+  255,
+} ActionType;
+
+struct {
+  ActionType action_type;
+  select (VirtualClientAction.action_type) {
+    case key_package_upload:
+      KeyPackageUpload key_package_upload;
+    case external_join:
+      ExternalJoin external_join;
+  };
+} VirtualClientAction;
+~~~
+
+### Creating and uploading KeyPackages
+
+When creating a KeyPackage, the creating emulator client derives the
+`init_secret` as described in {{generating-virtual-client-secrets}}.
+
+Before uploading one or more KeyPackages for a virtual client, the uploading
+emulator client MUST create a KeyPackageUpload message and send it to the
+emulator group as described in {{virtual-client-actions}}.
+
+~~~ tls
+struct {
+  EpochId id;
+  KeyPackageRef key_package_refs<V>;
+} KeyPackageUpload
+~~~
+
+After successfully sending the message, the sender MUST then upload the
+corresponding KeyPackages.
+
+The `key_package_refs` allow emulator clients to identify which KeyPackage to
+use and how to derive it when the virtual client receives a Welcome message.
+
+### Externally joining groups with the virtual client
+
+Before an emulator client uses an external commit to join a group with the
+virtual client, it MUST send an ExternalJoin message to the emulation group as
+described in {{virtual-client-actions}}.
+
+~~~ tls
+struct {
+  opaque group_id<V>;
+} ExternalJoin
+~~~
+
+The sender MUST then use an external join to join the group with GroupID
+`group_id`. When creating the commit to join the group externally, it MUST
+generate the LeafNode and path as described in
+{{creating-leafnodes-and-updatepaths}}.
 
 
 ## Sending application messages
