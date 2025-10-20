@@ -327,7 +327,8 @@ potential UpdatePath.
 
 There are two ways of adding new clients to the emulation group. Either new
 clients get sent the secret key material of all groups that the virtual client
-is currently in, or it externally joins into all of the virtual client's groups.
+is currently in, or it joins into all of the virtual client's groups, either via
+a regular or an external commit.
 
 TODO: Specify protocol
 
