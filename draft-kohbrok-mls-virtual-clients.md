@@ -52,24 +52,18 @@ MLS groups.
 
 # Terminology
 
-- Client: Any MLS client including emulator clients, virtual clients and real
-  clients.
-- Real Client: An MLS client whose secret key material is held by a single
-  agent.
 - Virtual Client: A client for which the secret key material is held by one or
-  more other clients, each of which can act on behalf of the virtual client.
+  more emulator clients, each of which can act on behalf of the virtual client.
 - Emulator Client: A client that collaborates with other emulator clients in
-  emulating a virtual client. Emulator clients can be real or virtual clients.
-- Heirarchical group: A generalization of an MLS group in which members can be
-  either virtual or real clients. Heirarchical group members may also act as
-  emulator clients to collaboratively emulate a virtual client representing the
-  heirarchical group in one or more other heirarchical groups.
-- Group representative: A group representative of (heirarchical group) G is a
-  virtual client emulated by the clients in G. The group representative of group
-  G in another group S is the representative of G that is a member S.
-- Subgroup: A heirarchical group with a representative in one or more other
-  groups.
-- Supergroup: A heirarchical group with one or more virtual members.
+  emulating a virtual client.
+- Emulation group: Group used by emulator clients to coordinate emulation of a
+  virtual client.
+- Higher-level group: A group that is not an emulation group and that may
+  contain one or more virtual clients.
+- Simple multi-client: A simple alternative to the concept of virtual clients,
+  where entities that are represented by more than one client (e.g. a user with
+  multiple devices) are implemented by including all of the entities' clients in
+  all groups the entity is participating in.
 
 TODO: Terminology is up for debate. We’ve sometimes called this “user trees”,
 but since there are other use cases, we should choose a more neutral name. For
@@ -79,8 +73,7 @@ now, it’s virtual client emulation.
 
 Virtual clients generally allow multiple emulator clients to share membership in
 an MLS group, where the virtual client is represented as a single leaf. This is
-in contrast to the case where each individual emulator client is a regular
-member of the group, each with its own leaf.
+in contrast to the simple multi-client scenario as defined above.
 
 Depending on the application, the use of virtual clients can have different
 effects. However, in all cases, virtual client emulation introduces a small
@@ -131,9 +124,6 @@ evict stale clients. For example, an emulator client could become stale (i.e.
 inactive), while another keeps sending updates. From the point of view of the
 higher-level group, the virtual client would remain active.
 
-For cases where membership hiding is undesirable, Section {{transparency}}
-describes a way to surface details about subgroup membership to the supergroup.
-
 # Limitations
 
 The use of virtual clients comes with a few limitations when compared to MLS,
@@ -151,7 +141,7 @@ This is not possible when using virtual clients. Here, the non-virtual client
 would be the emulator client of a virtual client in a higher-level group. While
 the server could propose the removal of the client from the emulation group,
 this would not effectively remove the client's access to the higher-level groups
-in which the virtual client is a member.
+through the virtual client.
 
 For such a removal to take place, another emulator client would have to be
 online to update the key material of the virtual client (in addition to the
@@ -164,10 +154,9 @@ addition of a new one using one of the KeyPackages.
 
 ## External joins
 
-When there are no subgroups and all (emulator) clients are members of each
-higher-level group, new (emulator) clients would be able to join via external
-commit without influencing the operation of any other emulator client and
-without requiring another emulator client to be online.
+In a simple multi-client scenario, new (emulator) clients are able to join via
+external commit without influencing the operation of any other emulator client
+and without requiring another emulator client to be online.
 
 When using virtual clients and a client wishes to externally join the emulator
 group, it will not have immediate access to the secrets of the virtual clients
@@ -176,7 +165,8 @@ associated with that group.
 This can be remedied via one of the following options:
 
 - Another emulator client could provide it with the necessary secrets
-- The new emulator client could have the virtual client rejoin all higher-level groups
+- The new emulator client could have the virtual client rejoin all higher-level
+  groups
 
 While the first option has the benefit of not requiring an external commit in
 any higher-level groups (thus reducing overhead), it either requires another
@@ -192,38 +182,8 @@ higher-level groups.
 
 # Client emulation
 
-A set C of emulator clients that want to emulate one or more virtual clients
-must first form an MLS heirarchical group G with membership C. The emulator
-clients use G to coordinate their shared virtual clients. Just like real
-clients, a virtual client V can create, join or participate in any group S, even
-acting as an emulator client itself for some other virtual client. If V joins a
-group S then this makes G a subgroup of supergroup G where V is called G's
-representative in V. G may have 0 or more representatives which can each be a
-member of 0 or more supergroups. But G can have at most 1 representative in a
-given supergroup. Emulating clients in G MUST ensure that G and all of its
-supergroups have distinct group IDs.
-
-An emulator client E in G creates a new virtual client V of G by assigning the V
-a fresh virtual client ID (unique among all virtual clients of G) and a
-signature key pair. The new creation of V, its ID and key pair are communicated
-to rest of G via a commit in G sent by E. As an invariant, emulator client's in
-G maintain a copy of the complete local MLS state of V. This includes all MLS
-related secrets currently held by V. Using this state, each emulator clients can
-independently process MLS messages sent to V to update their copy of V's state.
-Emulator client's in G can also act on behalf of V (subject to application
-policy) by taking a new action. Possible actions include anything an MLS client
-can perform such as generating and publishing a new key packages and sending
-commits, proposals, welcome messages or application messages. To help other
-members of G update their copies of V's state according to the action, E
-anounces the action using a commit to G. Any secrets created by E as part of
-implementing the action are generated deterministically by exporting seeds from
-G. This allows other emulator clients in G to reproduce the same secrets and
-update their own copies of the V's state maintaining the invariant.
-
-OPEN QUESTION: It's also conceivable that emulator clients announce their
-actions via application messages. This is sufficient for operations that are
-affect individual groups, because the DS of that group will enforce message
-ordering.
+To ensure that all emulator clients can act through the virtual client, they
+have to coordinate some of its actions.
 
 ## Delivery Service
 
@@ -233,40 +193,81 @@ the the message is sent, but also to all other clients in the emulator group.
 
 ## Generating Virtual Client Secrets
 
-An emulator client V in a group G may sample four types of MLS-related secrets
-on behalf of a virtual client V which must be reproducable by the other clients
-in G: init_key KEM keys in KeyPackages, encryption_key KEM keys in
-LeafNode structs, path_secrets for an UpdatePath structs and signature key
-pairs.
-
-Each such secret is derived from the `epoch_base_secret`, which is exported from
-the emulator group using the SafeExportSecret function defined in
-{{!I-D.ietf-mls-extensions}}.
+Generally, secrets for virtual client operations are derived from the emulation
+group. To that end, emulator clients derive an `epoch_base_secret` with every
+new epoch of that group.
 
 ~~~
-epoch_base_secret =
-  DeriveExtensionSecret(epoch_secret, "Virtual Clients Epoch Base Secret")
+emulator_epoch_secret = SafeExportSecret(XXX)
 ~~~
 
-Emulator client MUST store the `epoch_base_secret` until no key material derived
-from it is actively used anymore. This is required for the addition of new
-clients to the emulator group as described in Section
-{{adding-emulator-clients}}.
+TODO: Replace XXX with the component ID.
 
-For each epoch in an emulator group, emulator clients also derive an `epoch_id`.
+The `emulator_epoch_secret` is in turn used to derive two further secrets, after
+which it is deleted.
 
 ~~~
 epoch_id =
-  DeriveSecret(epoch_base_secret, "Epoch ID")
+  DeriveSecret(emulator_epoch_secret, "Epoch ID")
+epoch_base_secret =
+  DeriveSecret(emulator_epoch_secret, "Base Secret")
+epoch_encryption_key =
+  DeriveSecret(emulator_epoch_secret, "Encryption Key")
 ~~~
 
-When using a secret for a virtual client, e.g. for use in a KeyPackage or
-LeafNode update, the `epoch_id` signals the epoch of group G from which other
-emulator clients must derive the secrets necessary to reproduce the relevant
-private key material. As the `epoch_id` is pseudorandom and can only be derived
-by emulator clients it doesn't leak the actual epoch of the emulator group.
+The `epoch_base_secret` is then used to key an instance of the PPRF defined in
+{{!I-D.ietf-mls-extensions}} using a tree with `2^32` leaves.
 
-The individual secrets for the generation of key material are derived as follows
+Secrets are derived from the PPRF as follows:
+
+~~~
+VirtualClientSecret(Input) = tree_node_[LeafNode(Input)]_secret
+~~~
+
+Emulator client MUST store both the (punctured) `epoch_base_secret` and the
+`epoch_id` until no key material derived from it is actively used anymore. This
+is required for the addition of new clients to the emulator group as described
+in Section {{adding-emulator-clients}}.
+
+When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
+LeafNode update, the deriving client samples a random octet string `random` and
+hashes it with its leaf index in the emulation group using the hash function of
+the emulation group's ciphersuite.
+
+~~~
+struct {
+  u32 leaf_index;
+  opaque random<V>;
+} HashInput
+
+pprf_input = Hash(HashInput)
+~~~
+
+TODO: We could also hash in the specific operation to further separate domains.
+
+The `pprf_input` is then used to derive an `operation_secret`.
+
+~~~
+operation_secret = VirtualClientSecret(pprf_input)
+~~~
+
+Given an `epoch_id`, `random` and the `leaf_index` of the emulator client
+performing the virtual client operation, other emulator clients can derive the
+`operation_secret` and use it to perform the same operation.
+
+Depending on the operation, the acting emulator client will have to derive one
+or more secrets from the `operation_secret`.
+
+There are four types of MLS-related secrets that can be derived from an
+`operation_secret`.
+
+- `signature_key_secret`: Used to derive the signature key in a virtual client's
+  leaf
+- `init_key_secret`: Used to derive the `init_key` HPKE key in a KeyPackage
+- `encryption_key_secret`: Used to derive the `encryption_key` HPKE key in the
+  LeafNode of a virtual client
+- `path_generation_secret`: Used to generate `path_secret`s for the UpdatePath
+  of a virtual client
 
 ~~~
 signature_key_secret =
@@ -285,21 +286,6 @@ path_generation_secret =
 From these secrets, the deriving client can generate the corresponding keypair
 by using the secret as the randomness required in the key generation process.
 
-TODO: Make sure that these secrets actually contain enough randomness for the
-ciphersuite in the context of which they are used.
-
-If a LeafNode or KeyPackage contains an extension or component that is
-associated with secrets or secret key material, the randomness for the
-generation of that secret or key material must be derived as follows.
-
-~~~
-extension_secret =
-  ExpandWithLabel(epoch_base_secret, "Extension", extension_type, KDF.Nh)
-
-component_secret =
-  ExpandWithLabel(epoch_base_secret, "Component", ComponentID, KDF.Nh)
-~~~
-
 ## Creating LeafNodes and UpdatePaths
 
 When creating a LeafNode, either for a Commit with path, an Update proposal or a
@@ -313,17 +299,23 @@ MUST use `path_generation_secret` as the `path_secret` for the first
 
 To signal to other emulator clients which epoch to use to derive the necessary
 secrets to recreate the key material, the emulator client includes an
-EpochIdExtension in the LeafNode.
+DerivationInfoExtension in the LeafNode.
 
 ~~~ tls
 struct {
-  opaque id<V>
-} EpochId
+  opaque epoch_id<V>;
+  opaque ciphertext<V>;
+} DerivationInfoExtension
 
 struct {
-  EpochId id
-} EpochIdExtension
+  uint32 leaf_index;
+  opaque random<V>;
+} EpochInfoTBE
 ~~~
+
+The `ciphertext` is the serialized EpochInfoTBE encrypted under the epoch's
+`epoch_encryption_key` with the `epoch_id` as AAD using the AEAD scheme of the
+emulation group's ciphersuite.
 
 When other emulator clients receive an Update (i.e. either an Update proposal or
 a Commit with an UpdatePath) in group that the virtual client is a member in it
@@ -333,38 +325,11 @@ potential UpdatePath.
 
 ## Adding emulator clients
 
-If a client is added to the emulation group, it has to be provisioned with the
-private key material and the group states of all higher-level groups. While the
-latter might be provisioned by the higher-level DS, the former has to be
-provided by another emulator client.
+There are two ways of adding new clients to the emulation group. Either new
+clients get sent the secret key material of all groups that the virtual client
+is currently in, or it externally joins into all of the virtual client's groups.
 
-If the new emulator client is added via Welcome, the adder has to include an
-EmulatorInitExtension in the Welcome's GroupInfo.
-
-~~~ tls
-struct {
-  EpochId id;
-  opaque epoch_base_secret<V>;
-  KeyPackageRef key_package_refs<V>;
-} EpochInfo
-
-struct {
-  EpochInfo epoch_infos<V>
-} EmulatorInitExtension
-~~~
-
-Each EpochInfo in an EmulatorInitExtension contains the `epoch_base_secret` of
-the epoch indicated by the `epoch_id`, as well as the KeyPackageRefs of the
-KeyPackages generated and uploaded using secrets derived from that epoch.
-
-If the new client joins via ExternalCommit it has to obtain the `epoch_infos` in
-some other way, for example through an EmulatorInitExtension in a GroupInfo or
-OOB.
-
-Note that a GroupInfo with an EmulatorInitExtension contains secret key material
-and can thus not be treated as regular GroupInfos, which, for example, might be
-uploaded to a server to facilitate external joining without another group member
-online at the time.
+TODO: Specify protocol
 
 ## Virtual client actions
 
@@ -373,7 +338,7 @@ operate the virtual client. In both cases, the acting emulator client sends a
 Commit to the emulation group before taking an action with the virtual client.
 
 The commit serves two purposes: First, the agreement on message ordering
-facilitated by the prevents concurrent conflicting actions by two or more
+facilitated by the DS prevents concurrent conflicting actions by two or more
 emulator clients. Second, the acting emulator client can attach additional
 information to the commit using the SafeAAD mechanism described in Section 4.9
 of {{!I-D.ietf-mls-extensions}}.
@@ -406,10 +371,20 @@ Before uploading one or more KeyPackages for a virtual client, the uploading
 emulator client MUST create a KeyPackageUpload message and send it to the
 emulator group as described in {{virtual-client-actions}}.
 
+The recipients can use the `leaf_index` of the sender, as well as the `random`
+and `epoch_id` to derive the `init_key` for each KeyPackageRef. If the
+recipients receive a Welcome, they can then check which `init_key` to use based
+on the KeyPackageRef.
+
 ~~~ tls
 struct {
-  EpochId id;
-  KeyPackageRef key_package_refs<V>;
+  KeyPackageRef key_package_ref<V>;
+  opaque random<V>;
+} KeyPackageInfo
+
+struct {
+  opaque epoch_id<V>;
+  KeyPackageInfo key_package_info<V>;
 } KeyPackageUpload
 ~~~
 
@@ -439,317 +414,9 @@ generate the LeafNode and path as described in
 
 ## Sending application messages
 
-MLS applications messages are encrypted using key material derived from the
-secret tree, where a unique key/nonce pair is derived for each message and
-irrevocably deleted after the message was encrypted or decrypted.
-
-This poses a problem in the context of virtual client emulation, because the use
-of such key material cannot easily be coordinated between emulating clients.
-However, reusing a key/nonce pair for different application messages leaks
-information about the plaintexts. Moreover, any client receving the two would
-not be able to decrypt the second message as the requisit key would already be
-deleted.
-
-As a consequence, groups that support virtual clients MUST allow the use of
-challenge-based application messages as described in
-{{challenge-based-application-message-encryption}}.
-
-
-## Challenge-based application message encryption
-
-This problem can be solved by introducing a new type of application message
-where the encryption keys are derived using a challenge-based approach.
-
-Using a forward-secret exporter secret (provided by the safe extension API),
-each member creates a new secret tree. Whenever a group member wants to send a
-message, it creates a fresh random challenge (see {{challenge-generation}}) for
-that message. Each challenge is mapped to its own secret using a forward-secure
-KDF implimented using a new secret tree (see {{forward-secure-kdf}}). The secret
-is used to derive the key/nonce used to encrypt a message. The sender includes
-the challenge in the AAD of the application message so that receivers can also
-derive the decryption key. Finally, to ensure forward secrecy of the
-challenge-based application message both sender and recipients apply the same
-deletion schedule as for the standard secret tree in normal MLS.
-
-### Challenge generation
-
-To send an application message the sender must first sample a challenge. It is
-crucial for application message confidentiality that challenges have high
-entropy and are never used more than once. The following method for sampling
-challenges ensures this by introducing sufficient entropy and guaranting that
-two challenges can only ever be the same if they are sampled by the same sender,
-in the same epoch, for the same message generation using the same entropy.
-
-For each epoch in which a client wants to send challenge-based application
-messages it maintains a local uint32 message generation counter for the epoch.
-The counter is initilized to 0 and incremented after each challenge is sampled.
-If the counter wraps around to 0 then all subsequent attempts by the client to
-send in the epoch MUST result in a failure.
-
-~~~~
-uint32 generation;
-~~~~
-
-To sample a challenge the sender first samples AEAD.Nk uniform random octets
-called the challenge-seed. Next the they populate a ChallengeContext including
-their leaf index in the group in which the message is sent, the current
-generation counter and the confirmation tag of the current epoch (which in turn
-contains the hashed group context).
-
-Additionally, the sender also includes their leaf index and the confirmation tag
-of each hierarchical group between the sending (virtual) client and the real
-client that actually samples the entropy.
-
-The application may supply further context in the applicaiton_context field.
-Finally, the challenge is derived from the challenge-seed and ChallengeContext
-using the FS-KDF and the generation counter is incremented.
-
-~~~~
-struct {
-  optional<GroupChallengeContext> subgroup_context;
-  uint32 leaf_index;
-  MAC confirmation_tag;
-} GroupChallengeContext
-
-struct {
-  GroupChallengeContext group_challenge_context;
-  uint32 generation;
-  opaque application_context<V>;
-} ChallengeContext
-
-challenge = FS-KDF.Expand(challenge-seed, ChallengeContext, KDF.Nh)
-~~~~
-
-### Message Framing
-
-The following enum and structs define the wire format for challenge-based
-application messages.
-
-~~~~
-struct {
-  opaque challenge<V>;
-  uint32 sender_index;
-} CBAMSender;
-
-struct {
-    ProtocolVersion version = mls10;
-    WireFormat wire_format;
-    CBAMPrivateMessage private_message;
-} CBAMMLSMessage;
-~~~~
-
-### Message Authentication
-
-The following structs are used to authenticate data in a challenge-based
-application message.
-
-~~~~
-
-// See the "MLS Wire Formats" IANA registry for values
-uint16 WireFormat;
-
-struct {
-  opaque group_id<V>;
-  uint64 epoch;
-  CBAMSender sender;
-  opaque authenticated_data<V>;
-  opaque application_data<V>;
-} CBAMFramedContent
-
-struct {
-  ProtocolVersion version = mls10;
-  WireFormat wire_format;
-  CBAMFramedContent content;
-  GroupContext context;
-} CBAMFramedContentTBS;
-
-struct {
-  /* SignWithLabel(., "CBAMFramedContentTBS", CBAMFramedContentTBS) */
-  opaque signature<V>;
-} CBAMFramedContentAuthData;
-
-struct {
-  WireFormat wire_format;
-  CBAMFramedContent content;
-  CBAMFramedContentAuthData auth_data;
-} CBAMAuthenticatedContent;
-
-~~~~
-
-Challenge-based application messages are encoded, authenticated and encrypted
-much like MLS private messages using the CBAMPrivateMessage struct.
-
-~~~~
-struct {
-    opaque group_id<V>;
-    uint64 epoch;
-    opaque authenticated_data<V>;
-    opaque encrypted_cbam_sender_data<V>;
-    opaque cbam_encrypted_cbam_private_message_content<V>;
-} CBAMPrivateMessage;
-~~~~
-
-### Content Encryption
-
-Content to be encrypted is encoded with a CBAMPrivateMessageContent and the
-Additional Authenticated data is encoded with a CBAMPrivateContentAAD. The key
-and nonce used for encryption are derived from the encryption_secret and the
-challenge C using the challenge-based secret tree as described in
-{{forward-secure-kdf}}.
-
-~~~~
-struct {
-  opaque application_data<V>;
-  CBAMFramedContentAuthData auth_data;
-  opaque padding[length_of_padding];
-} CBAMPrivateMessageContent;
-
-struct {
-  opaque group_id<V>;
-  uint64 epoch;
-  opaque cbam_authenticated_data<V>;
-} CBMAPrivateContentAAD;
-
-aead_key = aead_key[C]
-
-aead_nonce = aead_nonce[C]
-~~~~
-
-### Sender Data Encryption
-
-The encrypted_cbam_sender_data is obtained by encrypting the CBAMSenderData
-using keys derived from the cbam_sender_data_secret. This secret is exported
-using the safe API's forward-secure exporter function MLS-FS-Exporter using the
-label "CBAM Sender Data Secret" and an empty context. Other than that, the same
-method is used to encrypt sender data as for standard application messages.
-
-~~~~
-cbam_sender_data_secret = MLS-FS-Export("CBAM Sender Data Secret", "", KDF.Nk)
-
-ciphertext_sample = ciphertext[0..KDF.Nh-1]
-
-sender_data_key = ExpandWithLabel(cbam_sender_data_secret, "key",
-                      ciphertext_sample, AEAD.Nk)
-sender_data_nonce = ExpandWithLabel(cbam_sender_data_secret, "nonce",
-                      ciphertext_sample, AEAD.Nn)
-~~~~
-
-### Forward Secure KDF
-
-A consequence of the secret tree structure in MLS is that deriving the key/nonce
-for a given application message requires knowing the leaf node of the client.
-
-The symmetric ratchets in MLS require performing as many (KDF and storage)
-operations as application messages are being skipped. The challenge-based secret
-tree (CBST) described in this section avoids these issues. Like the secret tree
-in MLS, it consists of a binary tree of secrets. However, leaves are indexed by
-challenges instead of leaf nodes which means the tree now has depth KDF.Nh.
-
-Nodes in the CBST are identified by the string encoding the path from the root
-to the node. The root is identified by the empty string "". If a node is
-identified by string `N` then its left child is identified the string `N||0` and
-the right child by the string `N||1`. Each node is assigned a secret. The root
-is assigned the cbam_encryption_secret which is exported from the MLS session
-using the safe API's FS-Export function. All other nodes in the CBST are
-assigned a secrety by applying ExpandWithLabel to its parents secret with
-appropriate labels.
-
-~~~~
-cbst_encryption_secret = MLS-FS-Export("CBST", "", KDF.Nh)
-
-cbst_tree_node_[""]_secret = cbst_encryption_secret
-
-cbst_tree_node_[N]_secret
-        |
-        |
-        +--> ExpandWithLabel(., "CBST", "left", KDF.Nh)
-        |    = cbst_tree_node_[left(N)]_secret
-        |
-        +--> ExpandWithLabel(., "CBST", "right", KDF.Nh)
-             = cbst_tree_node_[right(N)]_secret
-~~~~
-
-The key and nonce for a KDF.Nh octet long challenge C are derived from the
-secret for leaf node identified by C.
-
-~~~~
-aead_key[C] = ExpandWithLabel(cbst_tree_node[C]_secret, "CBST", "key", KDF.Nh)
-
-nonce_key[C] = ExpandWithLabel(cbst_tree_node[C]_secret, "CBST", "nonce",
-KDF.Nh)
-~~~~
-
-The same deletion schedule applies to the CBST (including the
-cbst_encryption_secret) as for the secret tree in MLS.
-
-## Rotation of authentication key material
-
-If the design of the AS specifies the use of cross-group authentication key
-material, emulator clients must coordinate the rotation of said key material in
-the emulation group to avoid multiple emulator clients rotating a key at the
-same time. Details depend on the design of the AS.
-
-## Example protocol flow
-
-Virtual clients can, for example, be used by users with multiple devices. Here,
-each device acts as an emulator client that emulates the virtual client which
-represents Alice towards other users.
-
-A group with Alice and Bob would thus still only have two members, regardless of
-the number of clients Alice and Bob have.
-
-Each of Alice's devices would thus keep the state of one emulator client, as
-well as the virtual client jointly emulated by all of Alice's clients.
-
-If one of Alice's devices wanted to update its key material to achieve
-post-compromise security, it would first perform a commit in the emulation
-group, both to signal the action to other emulator clients and to update the key
-material from which the randomness for the virtual client is sampled. From the
-updated emulation group, the emulator client would then export the randomness to
-perform an update in each group in which Alice (through the virtual client) is a
-member.
-
-Alice's other clients would receive and process the commit in the emulation
-group. Using the information included about the virtual client operation, they
-also update their virtual client state.
-
-Bob (or other members in the higher level group) will only see the update in the
-higher-level group, which they can simply process with their (virtual) clients.
-
-# Transparency
-
-Membership of the emulator group is generally hidden from clients that are in a
-group with a virtual client. While this can be desirable in some settings, other
-settings will require transparency w.r.t. emulator group membership.
-
-In such cases, emulator clients MUST include a TransparencyExtension in all
-LeafNodes of the virtual client.
-
-~~~ tls
-struct {
-  Epoch last_update;
-  SignaturePublicKey signature_key;
-  Credential credential;
-} EmulatorClientInfo
-
-struct {
-  EmulatorClientInfo emulator_clients<V>;
-} TransparencyExtension
-~~~
-
-- `last_update`: The epoch in which the emulator client last updated its
-  LeafNode, either via Commit or via an Update proposal
-- `signature_key`: The signature public key of the emulator client
-- `credential`: The credential in the emulator client's LeafNode
-
-The TransparencyExtension MUST contain EmulatorClientInfos for each client in
-the emulator group.
-
-Whenever the clients of the emulator group agree on a commit, the committer MUST
-update the LeafNode in each group that the virtual client is a member in, either
-via Commit or via an Update proposal. The new LeafNode MUST contain an updated
-TransparencyExtension, including any changes to the emulator group's membership,
-as well as an updated `last_update` for each updated LeafNode.
+There are two issues when emulator clients send application messages through a
+virtual client: Nonce-reuse and key-reuse. Both issues ares solved as
+specified in Section 4.4 of {{!I-D.draft-mcmillion-mls-subgroups}}.
 
 # Security considerations
 
