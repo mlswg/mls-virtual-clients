@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-19T00:18:53.241277+00:00",
+  "timestamp": "2025-10-21T00:17:09.855196+00:00",
   "repo": "kkohbrok/mls-virtual-clients",
   "labels": [
     {
@@ -194,7 +194,7 @@
       "id": "PR_kwDOKsv6Xc5_3sg4",
       "title": "Add more protocol details",
       "url": "https://github.com/kkohbrok/mls-virtual-clients/pull/3",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "kkohbrok",
       "authorAssociation": "OWNER",
       "assignees": [
@@ -203,17 +203,19 @@
       "labels": [],
       "body": "",
       "createdAt": "2024-10-25T08:28:30Z",
-      "updatedAt": "2025-10-07T07:47:30Z",
+      "updatedAt": "2025-10-20T19:02:53Z",
       "baseRepository": "kkohbrok/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "d64739e0d829b3e906118defa86c1b4c6fa4d592",
       "headRepository": "kkohbrok/mls-virtual-clients",
       "headRefName": "konrad/protocol_draft",
-      "headRefOid": "e73f4dcb2e886d79b9c6c2736f5103721378cd69",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "dc7c7dea2eaf35ab54897358a8901cdf4ed55e68",
+      "closedAt": "2025-10-20T19:02:52Z",
+      "mergedAt": "2025-10-20T19:02:52Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "3f22ee9eefd439c2ad9813d7443d026db16444ad"
+      },
       "comments": [],
       "reviews": []
     }
