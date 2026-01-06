@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-04T00:21:14.277689+00:00",
+  "timestamp": "2026-01-06T00:19:25.244610+00:00",
   "repo": "kkohbrok/mls-virtual-clients",
   "labels": [
     {
@@ -49,7 +49,24 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 4,
+      "id": "I_kwDOKsv6Xc7haFVq",
+      "title": "Find a better name for the scheme",
+      "url": "https://github.com/kkohbrok/mls-virtual-clients/issues/4",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "So far we've called the scheme subgroups and virtual clients. The former clashes with RFC9420 (\"Subgroup branching\") and the latter is quite abstract and a bit too technical. Other options include \"Multi-client\" or \"Multi-device\", but that may be a bit generic, as there are other ways to use MLS with multiple clients/devices.",
+      "createdAt": "2026-01-05T14:31:54Z",
+      "updatedAt": "2026-01-05T14:31:54Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
   "pulls": [
     {
       "number": 1,
