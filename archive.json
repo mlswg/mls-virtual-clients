@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-08T00:19:45.129330+00:00",
+  "timestamp": "2026-01-11T01:41:54.028598+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -62,7 +62,33 @@
       "labels": [],
       "body": "So far we've called the scheme subgroups and virtual clients. The former clashes with RFC9420 (\"Subgroup branching\") and the latter is quite abstract and a bit too technical. Other options include \"Multi-client\" or \"Multi-device\", but that may be a bit generic, as there are other ways to use MLS with multiple clients/devices.",
       "createdAt": "2026-01-05T14:31:54Z",
-      "updatedAt": "2026-01-05T14:31:54Z",
+      "updatedAt": "2026-01-08T01:51:42Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I actually really like the name virtual clients!",
+          "createdAt": "2026-01-08T01:51:42Z",
+          "updatedAt": "2026-01-08T01:51:42Z"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "id": "I_kwDOKsv6Xc7iPt-7",
+      "title": "Adopt reuse guard approach",
+      "url": "https://github.com/mlswg/mls-virtual-clients/issues/5",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [
+        "kkohbrok"
+      ],
+      "labels": [],
+      "body": "Prior to adoption, we agreed that we wanted to switch to an approach where the reuse of nonces is prevented by the reuse guard. Adopting that approach also means that the number of emulating clients is limited.\n\nThe draft needs to be adapted to reflect that.",
+      "createdAt": "2026-01-09T07:14:39Z",
+      "updatedAt": "2026-01-09T07:14:39Z",
       "closedAt": null,
       "comments": []
     }
