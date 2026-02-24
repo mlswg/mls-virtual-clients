@@ -77,8 +77,8 @@ in contrast to the simple multi-client scenario as defined above.
 
 Depending on the application, the use of virtual clients can have different
 effects. However, in all cases, virtual client emulation introduces a small
-amount of overhead for the emulator clients and certain limitations (see
-{{limitations}}).
+amount of overhead for the emulator clients and certain limitations when it
+comes to emulation group management (see {{emulation-group-management}}).
 
 ## Virtual clients for performance
 
@@ -124,61 +124,75 @@ evict stale clients. For example, an emulator client could become stale (i.e.
 inactive), while another keeps sending updates. From the point of view of the
 higher-level group, the virtual client would remain active.
 
-# Limitations
+# Emulation group management
 
-The use of virtual clients comes with a few limitations when compared to MLS,
-where all emulator clients are themselves members of the higher-level groups.
+Emulation group is more elaborate than performing simple MLS operation within
+the emulation group.
 
-## External remove proposals
+When adding a new emulator client, there are several pieces of cryptographic
+state that need to be synchronized before the new emulator client can start
+using the virtual client. The emulator client can either get this state from
+another emulator client, or if all other emulator clients are offline, the
+emulator client can use a series of external joins to onboard itself.
 
-In some cases, it is desirable for an external sender (e.g. the messaging
-provider of a user) to be able to propose the removal of an individual
-(non-virtual) client from a group without requiring another client of the same
-user to be online. Doing so would allow another client to commit to said remove
-proposal and thus remove the client in question from the group.
+## Adding an emulator client
 
-This is not possible when using virtual clients. Here, the non-virtual client
-would be the emulator client of a virtual client in a higher-level group. While
-the server could propose the removal of the client from the emulation group,
-this would not effectively remove the client's access to the higher-level groups
-through the virtual client.
+When an emulator client adds a new client to the emulation group, the GroupInfo
+in that Welcome message needs to contain a NewEmulatorClientState component.
 
-For such a removal to take place, another emulator client would have to be
-online to update the key material of the virtual client (in addition to the
-removal in the emulation group).
+TODO: Define component properly. Things that need to be included:
 
-Another possibility would be for emulator clients to provision KeyPackages for
-which only a subset of emulator clients have access to. The external sender
-could then propose the removal of the virtual client, coupled with the immediate
-addition of a new one using one of the KeyPackages.
+- signing keys (we need to account for per-group and global signature key
+  setups, maybe even leave this to the application?)
+- init and encryption keys for active KeyPackages
+- epoch ids, (punctured) epoch base secrets and epoch encryption key (as defined
+  in {{generating-virtual-client-secrets}}) for active emulation group epochs
+- All MLS group secrets for active virtual client groups
+  - epoch secrets
+  - secret tree nodes (including those of potential secret trees of past epochs)
+  - encryption keys of ratchet tree nodes (including the leaf)
+  - encryption keys for sent, but uncommitted update proposals
 
-## External joins
+## Joining externally
 
-In a simple multi-client scenario, new (emulator) clients are able to join via
-external commit without influencing the operation of any other emulator client
-and without requiring another emulator client to be online.
+Without another online emulator client to bootstrap from, a new emulator can
+join the emulation group externally. A prerequisite for this external join is
+that the new client has the ability to learn which groups the virtual client is
+in and to externally join those groups.
 
-When using virtual clients and a client wishes to externally join the emulator
-group, it will not have immediate access to the secrets of the virtual clients
-associated with that group.
+If those prerequisites are met, the new client needs to follow these steps:
 
-This can be remedied via one of the following options:
+1. Request a fresh credential for the virtual client with a new signing key
+2. Perform an External Join to the emulation group. Send an application message
+   containing a `ResyncMessage` to the emulation group with the new key.
+3. Replace all active KeyPackages with new KeyPackages, generated from the new
+   emulation group epoch.
+4. Perform an External Join to all of the groups that the virtual client is a
+   member of, using LeafNodes generated from the new emulation group epoch (see
+   {{generating-virtual-client-secrets}}). Welcome messages which were
+   unprocessed by the offline devices are discarded, and these groups are
+   Externally Joined instead (potentially being queued for user approval first).
 
-- Another emulator client could provide it with the necessary secrets
-- The new emulator client could have the virtual client rejoin all higher-level
-  groups
+~~~ tls
+struct {
+  opaque signature_private_key<V>;
+} ResyncMessage;
+~~~
 
-While the first option has the benefit of not requiring an external commit in
-any higher-level groups (thus reducing overhead), it either requires another
-emulator client to be online to share the necessary secrets directly, or a way
-for the new emulator client to retrieve the necessary without the help of
-another client. The latter can be achieved, for example, by encrypting the
-relevant secrets such that the new client can retrieve and decrypt them.
+## Removing emulator clients
 
-The second option on the other hand additionally requires the new emulator
-client to re-upload all KeyPackages of the virtual client, thus further
-increasing the difficulty of coordinating actions between emulation group and
-higher-level groups.
+To effectively remove an emulator client, it needs to be removed from the
+emulation group _and_ a commit with an update path needs to be sent into every
+higher level group by another emulator client using the new emulation group's
+epoch to generate the necessary secrets (see
+{{generating-virtual-client-secrets}}). The latter step is required to ensure
+that the removed emulator client loses its access to any active virtual client
+secrets.
+
+A corollary of this slightly more elaborate removal procedure is that the
+removal of an emulator client requires another emulator client to be online and
+perform the necessary updates. This is in contrast to the simple multi-client
+setup, where an external sender can effectively remove individual clients.
 
 # Client emulation
 
