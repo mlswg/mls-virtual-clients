@@ -1173,13 +1173,16 @@ application, virtual clients can help hide metadata and improve performance.<a h
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-limitations" class="internal xref">Limitations</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-emulation-group-management" class="internal xref">Emulation group management</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
-                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-external-remove-proposals" class="internal xref">External remove proposals</a></p>
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-adding-an-emulator-client" class="internal xref">Adding an emulator client</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
-                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-external-joins" class="internal xref">External joins</a></p>
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-joining-externally" class="internal xref">Joining externally</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-removing-emulator-clients" class="internal xref">Removing emulator clients</a></p>
 </li>
             </ul>
 </li>
@@ -1328,8 +1331,8 @@ an MLS group, where the virtual client is represented as a single leaf. This is
 in contrast to the simple multi-client scenario as defined above.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <p id="section-3-2">Depending on the application, the use of virtual clients can have different
 effects. However, in all cases, virtual client emulation introduces a small
-amount of overhead for the emulator clients and certain limitations (see
-<a href="#limitations" class="auto internal xref">Section 4</a>).<a href="#section-3-2" class="pilcrow">¶</a></p>
+amount of overhead for the emulator clients and certain limitations when it
+comes to emulation group management (see <a href="#emulation-group-management" class="auto internal xref">Section 4</a>).<a href="#section-3-2" class="pilcrow">¶</a></p>
 <div id="virtual-clients-for-performance">
 <section id="section-3.1">
         <h3 id="name-virtual-clients-for-perform">
@@ -1379,68 +1382,113 @@ higher-level group, the virtual client would remain active.<a href="#section-3.2
 </div>
 </section>
 </div>
-<div id="limitations">
+<div id="emulation-group-management">
 <section id="section-4">
-      <h2 id="name-limitations">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-limitations" class="section-name selfRef">Limitations</a>
+      <h2 id="name-emulation-group-management">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-emulation-group-management" class="section-name selfRef">Emulation group management</a>
       </h2>
-<p id="section-4-1">The use of virtual clients comes with a few limitations when compared to MLS,
-where all emulator clients are themselves members of the higher-level groups.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<div id="external-remove-proposals">
+<p id="section-4-1">Emulation group is more elaborate than performing simple MLS operation within
+the emulation group.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">When adding a new emulator client, there are several pieces of cryptographic
+state that need to be synchronized before the new emulator client can start
+using the virtual client. The emulator client can either get this state from
+another emulator client, or if all other emulator clients are offline, the
+emulator client can use a series of external joins to onboard itself.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<div id="adding-an-emulator-client">
 <section id="section-4.1">
-        <h3 id="name-external-remove-proposals">
-<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-external-remove-proposals" class="section-name selfRef">External remove proposals</a>
+        <h3 id="name-adding-an-emulator-client">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-adding-an-emulator-client" class="section-name selfRef">Adding an emulator client</a>
         </h3>
-<p id="section-4.1-1">In some cases, it is desirable for an external sender (e.g. the messaging
-provider of a user) to be able to propose the removal of an individual
-(non-virtual) client from a group without requiring another client of the same
-user to be online. Doing so would allow another client to commit to said remove
-proposal and thus remove the client in question from the group.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.1-2">This is not possible when using virtual clients. Here, the non-virtual client
-would be the emulator client of a virtual client in a higher-level group. While
-the server could propose the removal of the client from the emulation group,
-this would not effectively remove the client's access to the higher-level groups
-through the virtual client.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
-<p id="section-4.1-3">For such a removal to take place, another emulator client would have to be
-online to update the key material of the virtual client (in addition to the
-removal in the emulation group).<a href="#section-4.1-3" class="pilcrow">¶</a></p>
-<p id="section-4.1-4">Another possibility would be for emulator clients to provision KeyPackages for
-which only a subset of emulator clients have access to. The external sender
-could then propose the removal of the virtual client, coupled with the immediate
-addition of a new one using one of the KeyPackages.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="external-joins">
-<section id="section-4.2">
-        <h3 id="name-external-joins">
-<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-external-joins" class="section-name selfRef">External joins</a>
-        </h3>
-<p id="section-4.2-1">In a simple multi-client scenario, new (emulator) clients are able to join via
-external commit without influencing the operation of any other emulator client
-and without requiring another emulator client to be online.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
-<p id="section-4.2-2">When using virtual clients and a client wishes to externally join the emulator
-group, it will not have immediate access to the secrets of the virtual clients
-associated with that group.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
-<p id="section-4.2-3">This can be remedied via one of the following options:<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.1-1">When an emulator client adds a new client to the emulation group, the GroupInfo
+in that Welcome message needs to contain a NewEmulatorClientState component.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">TODO: Define component properly. Things that need to be included:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4.2-4.1">
-            <p id="section-4.2-4.1.1">Another emulator client could provide it with the necessary secrets<a href="#section-4.2-4.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-4.1-3.1">
+            <p id="section-4.1-3.1.1">signing keys (we need to account for per-group and global signature key
+setups, maybe even leave this to the application?)<a href="#section-4.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.2-4.2">
-            <p id="section-4.2-4.2.1">The new emulator client could have the virtual client rejoin all higher-level
-groups<a href="#section-4.2-4.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.1-3.2">
+            <p id="section-4.1-3.2.1">init and encryption keys for active KeyPackages<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-3.3">
+            <p id="section-4.1-3.3.1">epoch ids, (punctured) epoch base secrets and epoch encryption key (as defined
+in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>) for active emulation group epochs<a href="#section-4.1-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-3.4">
+            <p id="section-4.1-3.4.1">All MLS group secrets for active virtual client groups<a href="#section-4.1-3.4.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.1-3.4.2.1">
+                <p id="section-4.1-3.4.2.1.1">epoch secrets<a href="#section-4.1-3.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-4.1-3.4.2.2">
+                <p id="section-4.1-3.4.2.2.1">secret tree nodes (including those of potential secret trees of past epochs)<a href="#section-4.1-3.4.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-4.1-3.4.2.3">
+                <p id="section-4.1-3.4.2.3.1">encryption keys of ratchet tree nodes (including the leaf)<a href="#section-4.1-3.4.2.3.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-4.1-3.4.2.4">
+                <p id="section-4.1-3.4.2.4.1">encryption keys for sent, but uncommitted update proposals<a href="#section-4.1-3.4.2.4.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
 </li>
         </ul>
-<p id="section-4.2-5">While the first option has the benefit of not requiring an external commit in
-any higher-level groups (thus reducing overhead), it either requires another
-emulator client to be online to share the necessary secrets directly, or a way
-for the new emulator client to retrieve the necessary without the help of
-another client. The latter can be achieved, for example, by encrypting the
-relevant secrets such that the new client can retrieve and decrypt them.<a href="#section-4.2-5" class="pilcrow">¶</a></p>
-<p id="section-4.2-6">The second option on the other hand additionally requires the new emulator
-client to re-upload all KeyPackages of the virtual client, thus further
-increasing the difficulty of coordinating actions between emulation group and
-higher-level groups.<a href="#section-4.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="joining-externally">
+<section id="section-4.2">
+        <h3 id="name-joining-externally">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-joining-externally" class="section-name selfRef">Joining externally</a>
+        </h3>
+<p id="section-4.2-1">Without another online emulator client to bootstrap from, a new emulator can
+join the emulation group externally. A prerequisite for this external join is
+that the new client has the ability to learn which groups the virtual client is
+in and to externally join those groups.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">If those prerequisites are met, the new client needs to follow these steps:<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.2-3">
+<li id="section-4.2-3.1">
+            <p id="section-4.2-3.1.1">Request a fresh credential for the virtual client with a new signing key<a href="#section-4.2-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.2-3.2">
+            <p id="section-4.2-3.2.1">Perform an External Join to the emulation group. Send an application message
+containing a <code>ResyncMessage</code> to the emulation group with the new key.<a href="#section-4.2-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.2-3.3">
+            <p id="section-4.2-3.3.1">Replace all active KeyPackages with new KeyPackages, generated from the new
+emulation group epoch.<a href="#section-4.2-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.2-3.4">
+            <p id="section-4.2-3.4.1">Perform an External Join to all of the groups that the virtual client is a
+member of, using LeafNodes generated from the new emulation group epoch (see
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>). Welcome messages which were
+unprocessed by the offline devices are discarded, and these groups are
+Externally Joined instead (potentially being queued for user approval first).<a href="#section-4.2-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<div class="lang-tls sourcecode" id="section-4.2-4">
+<pre>
+struct {
+  opaque signature_private_key&lt;V&gt;;
+} ResyncMessage;
+</pre><a href="#section-4.2-4" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="removing-emulator-clients">
+<section id="section-4.3">
+        <h3 id="name-removing-emulator-clients">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-removing-emulator-clients" class="section-name selfRef">Removing emulator clients</a>
+        </h3>
+<p id="section-4.3-1">To effectively remove an emulator client, it needs to be removed from the
+emulation group <em>and</em> a commit with an update path needs to be sent into every
+higher level group by another emulator client using the new emulation group's
+epoch to generate the necessary secrets (see
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>). The latter step is required to ensure
+that the removed emulator client loses its access to any active virtual client
+secrets.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">A corollary of this slightly more elaborate removal procedure is that the
+removal of an emulator client requires another emulator client to be online and
+perform the necessary updates. This is in contrast to the simple multi-client
+setup, where an external sender can effectively remove individual clients.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
