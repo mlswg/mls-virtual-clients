@@ -1,7 +1,7 @@
 ---
 title: MLS Virtual Clients
 abbrev: MVC
-docname: draft-kohbrok-mls-virtual-clients-latest
+docname: draft-ietf-mls-virtual-clients-latest
 category: info
 
 ipr: trust200902
@@ -13,15 +13,26 @@ pi: [toc, sortrefs, symrefs]
 
 author:
  -  ins: J. Alwen
+    name: Joël Alwen
+    organization: "AWS"
     email: alwenjo@amazon.com
  -  ins: K. Kohbrok
     name: Konrad Kohbrok
     organization: Phoenix R&D
     email: konrad.kohbrok@datashrine.de
+ -  ins: B. McMillion
+    fullname: Brendan McMillion
+    email: brendanmcmillion@gmail.com
+ -  ins: "M. Mularczyk"
+    name: "Marta Mularczyk"
+    organization: "AWS"
+    email: mulmarta@amazon.ch
  -  ins: R. Robert
     name: Raphael Robert
     organization: Phoenix R&D
     email: ietf@raphaelrobert.com
+
+...
 
 --- abstract
 
