@@ -3,15 +3,20 @@
 
 
 Network Working Group                                           J. Alwen
-Internet-Draft                                                          
+Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 23 April 2026                                         R. Robert
+Expires: 3 September 2026                                    Phoenix R&D
+                                                            B. McMillion
+                                                                        
+                                                            M. Mularczyk
+                                                                     AWS
+                                                               R. Robert
                                                              Phoenix R&D
-                                                         20 October 2025
+                                                            2 March 2026
 
 
                           MLS Virtual Clients
-                draft-kohbrok-mls-virtual-clients-latest
+                 draft-ietf-mls-virtual-clients-latest
 
 Abstract
 
@@ -36,11 +41,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 23 April 2026.
+   This Internet-Draft will expire on 3 September 2026.
 
 Copyright Notice
 
-   Copyright (c) 2025 IETF Trust and the persons identified as the
+   Copyright (c) 2026 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -560,13 +565,23 @@ Table of Contents
 
 Authors' Addresses
 
-   J. Alwen
+   Joël Alwen
+   AWS
    Email: alwenjo@amazon.com
 
 
    Konrad Kohbrok
    Phoenix R&D
    Email: konrad.kohbrok@datashrine.de
+
+
+   Brendan McMillion
+   Email: brendanmcmillion@gmail.com
+
+
+   Marta Mularczyk
+   AWS
+   Email: mulmarta@amazon.ch
 
 
    Raphael Robert
