@@ -85,7 +85,10 @@ Table of Contents
      8.1.  Smaller Trees
      8.2.  Fewer blanks
    9.  Emulation costs
-   10. Normative References
+   10. IANA considerations
+     10.1.  DerivationInfoComponent
+     10.2.  VirtualClientAction
+   11. Normative References
    Authors' Addresses
 
 1.  Introduction
@@ -375,12 +378,12 @@ Table of Contents
 
    To signal to other emulator clients which epoch to use to derive the
    necessary secrets to recreate the key material, the emulator client
-   includes an DerivationInfoExtension in the LeafNode.
+   includes a DerivationInfoComponent in the LeafNode.
 
    struct {
      opaque epoch_id<V>;
      opaque ciphertext<V>;
-   } DerivationInfoExtension
+   } DerivationInfoComponent
 
    struct {
      uint32 leaf_index;
@@ -650,7 +653,38 @@ reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
    outweigh the performance overhead incurred by emulating the virtual
    client in the first place.
 
-10.  Normative References
+10.  IANA considerations
+
+   This document requests the addition of a new value under the heading
+   "Messaging Layer Security" in the "MLS Component Types" regsitry.
+
+10.1.  DerivationInfoComponent
+
+   A component meant to communicate information on how to derive secrets
+   for a given commit.
+
+   *  Value: TBD
+
+   *  Name: DerivationInfoComponent
+
+   *  Where: LN
+
+   *  Recommended: True
+
+10.2.  VirtualClientAction
+
+   A component meant to communicate which virtual client action is taken
+   in conjunction with the given commit in the emulation group.
+
+   *  Value: TBD
+
+   *  Name: VirtualClientAction
+
+   *  Where: Ad
+
+   *  Recommended: True
+
+11.  Normative References
 
    [I-D.ietf-mls-extensions]
               Robert, R., "The Messaging Layer Security (MLS)

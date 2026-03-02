@@ -1244,10 +1244,21 @@ application, virtual clients can help hide metadata and improve performance.<a h
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-emulation-costs" class="internal xref">Emulation costs</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
-            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-iana-considerations" class="internal xref">IANA considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-derivationinfocomponent" class="internal xref">DerivationInfoComponent</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-virtualclientaction" class="internal xref">VirtualClientAction</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
-            <p id="section-toc.1-1.11.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1568,14 +1579,14 @@ the current epoch of the emulator group as described in Section
 MUST use <code>path_generation_secret</code> as the <code>path_secret</code> for the first
 <code>parent_node</code> instead of generating it randomly.<a href="#section-5.3-2" class="pilcrow">¶</a></p>
 <p id="section-5.3-3">To signal to other emulator clients which epoch to use to derive the necessary
-secrets to recreate the key material, the emulator client includes an
-DerivationInfoExtension in the LeafNode.<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+secrets to recreate the key material, the emulator client includes a
+DerivationInfoComponent in the LeafNode.<a href="#section-5.3-3" class="pilcrow">¶</a></p>
 <div class="lang-tls sourcecode" id="section-5.3-4">
 <pre>
 struct {
   opaque epoch_id&lt;V&gt;;
   opaque ciphertext&lt;V&gt;;
-} DerivationInfoExtension
+} DerivationInfoComponent
 
 struct {
   uint32 leaf_index;
@@ -1616,8 +1627,7 @@ Commit to the emulation group before taking an action with the virtual client.<a
 <p id="section-5.5-2">The commit serves two purposes: First, the agreement on message ordering
 facilitated by the DS prevents concurrent conflicting actions by two or more
 emulator clients. Second, the acting emulator client can attach additional
-information to the commit using the SafeAAD mechanism described in Section 4.9
-of <span>[<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>.<a href="#section-5.5-2" class="pilcrow">¶</a></p>
+information to the commit using the SafeAAD mechanism described in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-08#section-4.9" class="relref">Section 4.9</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>.<a href="#section-5.5-2" class="pilcrow">¶</a></p>
 <div class="lang-tls sourcecode" id="section-5.5-3">
 <pre>
 enum {
@@ -1899,10 +1909,65 @@ performance overhead incurred by emulating the virtual client in the first
 place.<a href="#section-9-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sec-normative-references">
+<div id="iana-considerations">
 <section id="section-10">
+      <h2 id="name-iana-considerations">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA considerations</a>
+      </h2>
+<p id="section-10-1">This document requests the addition of a new value under the heading "Messaging
+Layer Security" in the "MLS Component Types" regsitry.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<div id="derivationinfocomponent">
+<section id="section-10.1">
+        <h3 id="name-derivationinfocomponent">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-derivationinfocomponent" class="section-name selfRef">DerivationInfoComponent</a>
+        </h3>
+<p id="section-10.1-1">A component meant to communicate information on how to derive secrets for a
+given commit.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-10.1-2.1">
+            <p id="section-10.1-2.1.1">Value: TBD<a href="#section-10.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.1-2.2">
+            <p id="section-10.1-2.2.1">Name: DerivationInfoComponent<a href="#section-10.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.1-2.3">
+            <p id="section-10.1-2.3.1">Where: LN<a href="#section-10.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.1-2.4">
+            <p id="section-10.1-2.4.1">Recommended: True<a href="#section-10.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="virtualclientaction">
+<section id="section-10.2">
+        <h3 id="name-virtualclientaction">
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-virtualclientaction" class="section-name selfRef">VirtualClientAction</a>
+        </h3>
+<p id="section-10.2-1">A component meant to communicate which virtual client action is taken in
+conjunction with the given commit in the emulation group.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-10.2-2.1">
+            <p id="section-10.2-2.1.1">Value: TBD<a href="#section-10.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.2-2.2">
+            <p id="section-10.2-2.2.1">Name: VirtualClientAction<a href="#section-10.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.2-2.3">
+            <p id="section-10.2-2.3.1">Where: Ad<a href="#section-10.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.2-2.4">
+            <p id="section-10.2-2.4.1">Recommended: True<a href="#section-10.2-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-normative-references">
+<section id="section-11">
       <h2 id="name-normative-references">
-<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
       </h2>
 <dl class="references">
 <dt id="I-D.ietf-mls-extensions">[I-D.ietf-mls-extensions]</dt>
