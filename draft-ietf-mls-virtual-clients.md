@@ -318,14 +318,14 @@ MUST use `path_generation_secret` as the `path_secret` for the first
 `parent_node` instead of generating it randomly.
 
 To signal to other emulator clients which epoch to use to derive the necessary
-secrets to recreate the key material, the emulator client includes an
-DerivationInfoExtension in the LeafNode.
+secrets to recreate the key material, the emulator client includes a
+DerivationInfoComponent in the LeafNode.
 
 ~~~ tls
 struct {
   opaque epoch_id<V>;
   opaque ciphertext<V>;
-} DerivationInfoExtension
+} DerivationInfoComponent
 
 struct {
   uint32 leaf_index;
@@ -361,8 +361,8 @@ Commit to the emulation group before taking an action with the virtual client.
 The commit serves two purposes: First, the agreement on message ordering
 facilitated by the DS prevents concurrent conflicting actions by two or more
 emulator clients. Second, the acting emulator client can attach additional
-information to the commit using the SafeAAD mechanism described in Section 4.9
-of {{!I-D.ietf-mls-extensions}}.
+information to the commit using the SafeAAD mechanism described in {{Section 4.9
+of !I-D.ietf-mls-extensions}}.
 
 ~~~ tls
 enum {
@@ -587,3 +587,28 @@ From a performance standpoint, using virtual clients only makes sense if the
 performance benefits from smaller trees and fewer blanks outweigh the
 performance overhead incurred by emulating the virtual client in the first
 place.
+
+# IANA considerations
+
+This document requests the addition of a new value under the heading "Messaging
+Layer Security" in the "MLS Component Types" regsitry.
+
+## DerivationInfoComponent
+
+A component meant to communicate information on how to derive secrets for a
+given commit.
+
+- Value: TBD
+- Name: DerivationInfoComponent
+- Where: LN
+- Recommended: True
+
+## VirtualClientAction
+
+A component meant to communicate which virtual client action is taken in
+conjunction with the given commit in the emulation group.
+
+- Value: TBD
+- Name: VirtualClientAction
+- Where: Ad
+- Recommended: True
