@@ -1,7 +1,7 @@
 ---
 title: MLS Virtual Clients
 abbrev: MVC
-docname: draft-kohbrok-mls-virtual-clients-latest
+docname: draft-ietf-mls-virtual-clients-latest
 category: info
 
 ipr: trust200902
@@ -13,15 +13,33 @@ pi: [toc, sortrefs, symrefs]
 
 author:
  -  ins: J. Alwen
+    name: Joël Alwen
+    organization: "AWS"
     email: alwenjo@amazon.com
  -  ins: K. Kohbrok
     name: Konrad Kohbrok
     organization: Phoenix R&D
     email: konrad.kohbrok@datashrine.de
+ -  ins: B. McMillion
+    fullname: Brendan McMillion
+    email: brendanmcmillion@gmail.com
+ -  ins: "M. Mularczyk"
+    name: "Marta Mularczyk"
+    organization: "AWS"
+    email: mulmarta@amazon.ch
  -  ins: R. Robert
     name: Raphael Robert
     organization: Phoenix R&D
     email: ietf@raphaelrobert.com
+
+normative:
+  NIST:
+    target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-38G.pdf
+    title: "Recommendation for Block Cipher Modes of Operation: Methods for Format-Preserving Encryption"
+    author:
+      - name: Morris Dworkin
+
+...
 
 --- abstract
 
@@ -217,7 +235,7 @@ emulator_epoch_secret = SafeExportSecret(XXX)
 
 TODO: Replace XXX with the component ID.
 
-The `emulator_epoch_secret` is in turn used to derive two further secrets, after
+The `emulator_epoch_secret` is in turn used to derive four further secrets, after
 which it is deleted.
 
 ~~~
@@ -227,6 +245,8 @@ epoch_base_secret =
   DeriveSecret(emulator_epoch_secret, "Base Secret")
 epoch_encryption_key =
   DeriveSecret(emulator_epoch_secret, "Encryption Key")
+generation_id_secret =
+  DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
 ~~~
 
 The `epoch_base_secret` is then used to key an instance of the PPRF defined in
@@ -312,14 +332,14 @@ MUST use `path_generation_secret` as the `path_secret` for the first
 `parent_node` instead of generating it randomly.
 
 To signal to other emulator clients which epoch to use to derive the necessary
-secrets to recreate the key material, the emulator client includes an
-DerivationInfoExtension in the LeafNode.
+secrets to recreate the key material, the emulator client includes a
+DerivationInfoComponent in the LeafNode.
 
 ~~~ tls
 struct {
   opaque epoch_id<V>;
   opaque ciphertext<V>;
-} DerivationInfoExtension
+} DerivationInfoComponent
 
 struct {
   uint32 leaf_index;
@@ -355,8 +375,8 @@ Commit to the emulation group before taking an action with the virtual client.
 The commit serves two purposes: First, the agreement on message ordering
 facilitated by the DS prevents concurrent conflicting actions by two or more
 emulator clients. Second, the acting emulator client can attach additional
-information to the commit using the SafeAAD mechanism described in Section 4.9
-of {{!I-D.ietf-mls-extensions}}.
+information to the commit using the SafeAAD mechanism described in {{Section 4.9
+of !I-D.ietf-mls-extensions}}.
 
 ~~~ tls
 enum {
@@ -426,12 +446,104 @@ The sender MUST then use an external join to join the group with GroupID
 generate the LeafNode and path as described in
 {{creating-leafnodes-and-updatepaths}}.
 
+## Sending PrivateMessages
 
-## Sending application messages
+Given that MLS generates the encryption keys and nonces for PrivateMessages
+sequentially, but multiple emulator clients may send messages through the
+virtual client simultaneously, this can create a situation where encryption keys
+and nonces are reused inappropriately. Critically, if two emulator clients
+encrypt a message with both the same key and nonce simultaneously, this could
+compromise the message's confidentiality and integrity. Emulator clients MUST
+prevent this by computing the `reuse_guard`, as described below instead of
+sampling it randomly.
 
-There are two issues when emulator clients send application messages through a
-virtual client: Nonce-reuse and key-reuse. Both issues ares solved as
-specified in Section 4.4 of {{!I-D.draft-mcmillion-mls-subgroups}}.
+## Small-Space PRP
+
+A small-space pseudorandom permutation (PRP) is a cryptographic algorithm that
+works similar to a block cipher, while also being able to adhere to format
+constraints. In particular, it is able to perform a psuedorandom permutation
+over an arbitrary input and output space.
+
+This document uses the FF1 mode from {{NIST}} with the input-output space of
+32-bit integers, instantiated with AES-128.
+
+~~~
+output = SmallSpacePRP.Encrypt(key, input)
+input = SmallSpacePRP.Decrypt(key, output)
+~~~
+
+## Reuse Guard
+
+MLS clients typically generate the bytes for the `reuse_guard` randomly. When
+sending a message with a virtual client, however, emulator clients choose a
+random value `x` such that `x` modulo the number of leaves in the emulation
+group is equal to its `leaf_index`. They then calculate:
+
+~~~
+prp_key = ExpandWithLabel(leaf_node_secret, "reuse guard", key_schedule_nonce, 16)
+reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
+~~~
+
+ExpandWithLabel is computed with the emulation group's ciphersuite's algorithms.
+`leaf_node_secret` is the secret corresponding to the virtual client's LeafNode
+in the higher level group and `key_schedule_nonce` is the nonce provided by the
+key schedule for encrypting this message.
+
+`prp_key` is computed in a way that it is unique to the key-nonce pair and
+computable by all emulator clients (but nobody else). `reuse_guard` is computed
+in a way that it appears random to outside observers (in particular, it does not
+leak which emulator client sent the message), but two emulator clients will
+never generate the same value.
+
+## Delivery Service
+
+The method discussed above for computing `reuse_guard` prevents emulator clients
+from ever reusing the same key-nonce pair, as this would compromise the message.
+However, it does not prevent different emulator clients from attempting to
+encrypt messages with the same key but different nonces. While this doesn't
+create any security issues, it is a functionality issue due to the MLS deletion
+schedule. Other higher level group members (or indeed emulator clients) will
+delete the encryption key after using it to decrypt the first message they
+receive and will be unable to decrypt subsequent messages.
+
+The best solution depends on whether the Delivery Service is strongly or
+eventually consistent {{!RFC9750}}. Emulator clients communicating with a
+strongly-consistent DS SHOULD prevent this issue by coordinating the use of
+individual ratchet generations for encryption through the DS. Emulator clients
+MAY send a generation ID to the DS whenever they fan out a private message. The
+generation ID is derived as follow.
+
+~~~ tls
+enum {
+  reserved(0),
+  application(1),
+  handshake(2),
+  (255)
+} RatchetType
+
+struct {
+  uint32 generation;
+  RatchetType ratchet_type;
+} PrivateMessageContext
+
+generation_id = ExpandWithLabel(generation_id_secret, "generation id",
+                      PrivateMessageContext, Kdf.Nh)
+~~~
+
+- `generation` is the generation of the ratchet used for encryption
+- `ratchet_type` is the type of ratchet used to encrypt the PrivateMessage
+- ExpandWithLabel as defined in {{!RFC9420}}
+- `generation_id_secret` is derived as specified in
+  {{generating-virtual-client-secrets}}
+- `Kdf.Nh` is from the emulation group's ciphersuite
+
+Attaching the generation ID to the PrivateMessage allows the DS to detect
+collisions between generations per epoch and per ratchet type.
+
+Alternatively, devices communicating with an eventually-consistent DS may need
+to simply retain messages and encryption keys for a short period of time after
+sending, in case it becomes necessary to decrypt another device's message and
+re-encrypt and re-send their original message with another encryption key.
 
 # Security considerations
 
@@ -489,3 +601,28 @@ From a performance standpoint, using virtual clients only makes sense if the
 performance benefits from smaller trees and fewer blanks outweigh the
 performance overhead incurred by emulating the virtual client in the first
 place.
+
+# IANA considerations
+
+This document requests the addition of a new value under the heading "Messaging
+Layer Security" in the "MLS Component Types" regsitry.
+
+## DerivationInfoComponent
+
+A component meant to communicate information on how to derive secrets for a
+given commit.
+
+- Value: TBD
+- Name: DerivationInfoComponent
+- Where: LN
+- Recommended: True
+
+## VirtualClientAction
+
+A component meant to communicate which virtual client action is taken in
+conjunction with the given commit in the emulation group.
+
+- Value: TBD
+- Name: VirtualClientAction
+- Where: Ad
+- Recommended: True
