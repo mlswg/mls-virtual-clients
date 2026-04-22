@@ -207,15 +207,15 @@ in and to externally join those groups.
 If those prerequisites are met, the new client needs to follow these steps:
 
 1. Request a fresh credential for the virtual client with a new signing key
-2. Perform an External Join to the emulation group. Send an application message
+2. Perform an external join to the emulation group. Send an application message
    containing a `ResyncMessage` to the emulation group with the new key.
 3. Replace all active KeyPackages with new KeyPackages, generated from the new
    emulation group epoch.
-4. Perform an External Join to all of the groups that the virtual client is a
+4. Perform an external join to all of the groups that the virtual client is a
    member of, using LeafNodes generated from the new emulation group epoch (see
    {{generating-virtual-client-secrets}}). Welcome messages which were
    unprocessed by the offline devices are discarded, and these groups are
-   Externally Joined instead (potentially being queued for user approval first).
+   joined externally instead (potentially being queued for user approval first).
 
 ~~~ tls
 struct {
@@ -226,7 +226,7 @@ struct {
 ## Removing emulator clients
 
 To effectively remove an emulator client, it needs to be removed from the
-emulation group _and_ a commit with an update path needs to be sent into every
+emulation group _and_ a Commit with an update path needs to be sent into every
 higher level group by another emulator client using the new emulation group's
 epoch to generate the necessary secrets (see
 {{generating-virtual-client-secrets}}). The latter step is required to ensure
@@ -360,7 +360,7 @@ KeyPackage, the creating emulator client MUST derive the necessary secrets from
 the current epoch of the emulation group as described in Section
 {{generating-virtual-client-secrets}}.
 
-Similarly, if an emulator client generates an Commit with an update path, it
+Similarly, if an emulator client generates a Commit with an update path, it
 MUST use `path_generation_secret` as the `path_secret` for the first
 `parent_node` instead of generating it randomly.
 
@@ -384,11 +384,11 @@ The `ciphertext` is the serialized DerivationInfoTBE encrypted under the epoch's
 `epoch_encryption_key` with the `epoch_id` as AAD using the AEAD scheme of the
 emulation group's ciphersuite.
 
-When other emulator clients receive an Update (i.e. either an Update proposal or
-a Commit with an UpdatePath) in group that the virtual client is a member in it
-uses the `epoch_id` to determine the epoch of the emulation group from which to
-derive the secrets necessary to re-create the key material of the LeafNode and a
-potential UpdatePath.
+When other emulator clients receive a LeafNode update (i.e. either an Update
+proposal or a Commit with an UpdatePath) in a higher-level group that the
+virtual client is a member of, they use the `epoch_id` to determine the epoch
+of the emulation group from which to derive the secrets necessary to re-create
+the key material of the LeafNode and potential UpdatePath.
 
 ## Virtual client actions
 
@@ -396,11 +396,11 @@ There are two occasions where emulator clients need to communicate directly to
 operate the virtual client. In both cases, the acting emulator client sends a
 Commit to the emulation group before taking an action with the virtual client.
 
-The commit serves two purposes: First, the agreement on message ordering
+The Commit serves two purposes: First, the agreement on message ordering
 facilitated by the DS prevents concurrent conflicting actions by two or more
 emulator clients. Second, the acting emulator client can attach additional
-information to the commit using the SafeAAD mechanism described in {{Section 4.9
-of !I-D.ietf-mls-extensions}}.
+information to the Commit using the SafeAAD mechanism described in
+{{Section 4.9 of !I-D.ietf-mls-extensions}}.
 
 ~~~ tls
 enum {
@@ -465,8 +465,8 @@ struct {
 } ExternalJoin
 ~~~
 
-The sender MUST then use an external join to join the group with GroupID
-`group_id`. When creating the commit to join the group externally, it MUST
+The sender MUST then use an external join to join the group with group ID
+`group_id`. When creating the Commit to join the group externally, it MUST
 generate the LeafNode and path as described in
 {{creating-leafnodes-and-updatepaths}}.
 
