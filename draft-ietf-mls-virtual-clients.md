@@ -319,7 +319,7 @@ performing the virtual client operation, other emulator clients can derive the
 Depending on the operation, the acting emulator client will have to derive one
 or more secrets from the `operation_secret`.
 
-There are four types of MLS-related secrets that can be derived from an
+There are five types of MLS-related secrets that can be derived from an
 `operation_secret`.
 
 - `signature_key_secret`: Used to derive the signature key in a virtual client's
@@ -329,6 +329,8 @@ There are four types of MLS-related secrets that can be derived from an
   LeafNode of a virtual client
 - `path_generation_secret`: Used to generate `path_secret`s for the UpdatePath
   of a virtual client
+- `reuse_guard_secret`: Used to derive the PRP key for `reuse_guard` values when
+  the virtual client sends a PrivateMessage (see {{reuse-guard}})
 
 ~~~
 signature_key_secret =
@@ -342,10 +344,14 @@ init_key_secret =
 
 path_generation_secret =
   DeriveSecret(operation_secret, "Path Generation")
+
+reuse_guard_secret =
+  DeriveSecret(operation_secret, "Reuse Guard")
 ~~~
 
-From these secrets, the deriving client can generate the corresponding keypair
-by using the secret as the randomness required in the key generation process.
+The first four secrets are used as the randomness required in the corresponding
+key generation process. `reuse_guard_secret` is used as described in
+{{reuse-guard}}.
 
 ## Creating LeafNodes and UpdatePaths
 
@@ -418,7 +424,7 @@ struct {
 ### Creating and uploading KeyPackages
 
 When creating a KeyPackage, the creating emulator client derives the
-`init_secret` as described in {{generating-virtual-client-secrets}}.
+`init_key_secret` as described in {{generating-virtual-client-secrets}}.
 
 Before uploading one or more KeyPackages for a virtual client, the uploading
 emulator client MUST create a KeyPackageUpload message and send it to the
@@ -498,14 +504,17 @@ random value `x` such that `x` modulo the number of leaves in the emulation
 group is equal to its `leaf_index`. They then calculate:
 
 ~~~
-prp_key = ExpandWithLabel(leaf_node_secret, "reuse guard", key_schedule_nonce, 16)
+prp_key = ExpandWithLabel(reuse_guard_secret, "reuse guard",
+                          key_schedule_nonce, 16)
 reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
 ~~~
 
 ExpandWithLabel is computed with the emulation group's ciphersuite's algorithms.
-`leaf_node_secret` is the secret corresponding to the virtual client's LeafNode
-in the higher level group and `key_schedule_nonce` is the nonce provided by the
-key schedule for encrypting this message.
+`reuse_guard_secret` is derived as described in
+{{generating-virtual-client-secrets}} from the `operation_secret` of the
+operation that produced the virtual client's currently active LeafNode in the
+higher-level group. `key_schedule_nonce` is the nonce provided by the key
+schedule for encrypting this message.
 
 `prp_key` is computed in a way that it is unique to the key-nonce pair and
 computable by all emulator clients (but nobody else). `reuse_guard` is computed
