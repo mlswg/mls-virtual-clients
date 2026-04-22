@@ -332,16 +332,16 @@ There are four types of MLS-related secrets that can be derived from an
 
 ~~~
 signature_key_secret =
-  DeriveSecret(epoch_base_secret, "Signature Key")
+  DeriveSecret(operation_secret, "Signature Key")
 
 encryption_key_secret =
-  DeriveSecret(epoch_base_secret, "Encryption Key")
+  DeriveSecret(operation_secret, "Encryption Key")
 
 init_key_secret =
-  DeriveSecret(epoch_base_secret, "Init Key")
+  DeriveSecret(operation_secret, "Init Key")
 
 path_generation_secret =
-  DeriveSecret(epoch_base_secret, "Path Generation")
+  DeriveSecret(operation_secret, "Path Generation")
 ~~~
 
 From these secrets, the deriving client can generate the corresponding keypair
