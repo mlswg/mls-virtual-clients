@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-03T01:55:17.487774+00:00",
+  "timestamp": "2026-04-23T02:24:23.097355+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -371,6 +371,32 @@
       "mergeCommit": {
         "oid": "53040e45bf56a98c4dbc961e9858361b18d0cf44"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 10,
+      "id": "PR_kwDOKsv6Xc7UqMwd",
+      "title": "Consistency pass",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/10",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "- Fix grammatical errors\r\n- Keep terminology consistent\r\n- Restructure the draft slightly\r\n- Fix an earlier error when incorporating content from the MLS Subgroups draft by deriving an extra secret for the reuse guard",
+      "createdAt": "2026-04-22T14:35:33Z",
+      "updatedAt": "2026-04-22T14:35:33Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "53040e45bf56a98c4dbc961e9858361b18d0cf44",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/consistency_pass",
+      "headRefOid": "af0cb2c738363ed4e762d6fc235d691fe366c3ee",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
