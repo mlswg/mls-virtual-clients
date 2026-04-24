@@ -219,9 +219,30 @@ have to coordinate some of its actions.
 
 ## Delivery Service
 
-Client emulation requires that any message sent by an emulator client on behalf
-of a virtual client be delivered not just to the rest of the supergroup to which
-the the message is sent, but also to all other clients in the emulator group.
+Because every emulator client maintains its own copy of the virtual client's
+MLS state, the Delivery Service (DS) MUST deliver every message that affects
+that state to every emulator client. Concretely, for each higher-level group
+in which the virtual client is a member:
+
+- Messages sent by an emulator client on behalf of the virtual client MUST be
+  delivered to the rest of the higher-level group AND to all other emulator
+  clients in the emulation group.
+- Messages sent by other members of the higher-level group and addressed to
+  the group (Commits, Proposals, and application messages) MUST be delivered
+  to every emulator client in the emulation group, not only to the emulator
+  that first retrieves them.
+- Welcome messages that add the virtual client to a new higher-level group
+  (i.e., Welcomes encrypted to a KeyPackage of the virtual client) MUST be
+  delivered to every emulator client in the emulation group.
+
+Messages internal to the emulation group are delivered according to the usual
+MLS DS requirements for that group.
+
+If any of these messages fail to reach an emulator client, that emulator's
+view of the virtual client diverges from the others, which will cause
+subsequent virtual-client operations (in particular, Commits generated from
+emulation-group-derived secrets) to be rejected by the higher-level group or
+by peer emulators.
 
 ## Generating Virtual Client Secrets
 
