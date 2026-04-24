@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 24 October 2026                                     Phoenix R&D
+Expires: 26 October 2026                                     Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                           22 April 2026
+                                                           24 April 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 24 October 2026.
+   This Internet-Draft will expire on 26 October 2026.
 
 Copyright Notice
 
@@ -278,18 +278,18 @@ Table of Contents
    1.  Request a fresh credential for the virtual client with a new
        signing key
 
-   2.  Perform an External Join to the emulation group.  Send an
+   2.  Perform an external join to the emulation group.  Send an
        application message containing a ResyncMessage to the emulation
        group with the new key.
 
    3.  Replace all active KeyPackages with new KeyPackages, generated
        from the new emulation group epoch.
 
-   4.  Perform an External Join to all of the groups that the virtual
+   4.  Perform an external join to all of the groups that the virtual
        client is a member of, using LeafNodes generated from the new
        emulation group epoch (see Section 5.2).  Welcome messages which
        were unprocessed by the offline devices are discarded, and these
-       groups are Externally Joined instead (potentially being queued
+       groups are joined externally instead (potentially being queued
        for user approval first).
 
    struct {
@@ -299,7 +299,7 @@ Table of Contents
 4.3.  Removing emulator clients
 
    To effectively remove an emulator client, it needs to be removed from
-   the emulation group _and_ a commit with an update path needs to be
+   the emulation group _and_ a Commit with an update path needs to be
    sent into every higher level group by another emulator client using
    the new emulation group's epoch to generate the necessary secrets
    (see Section 5.2).  The latter step is required to ensure that the
@@ -430,7 +430,7 @@ Table of Contents
    the necessary secrets from the current epoch of the emulation group
    as described in Section Section 5.2.
 
-   Similarly, if an emulator client generates an Commit with an update
+   Similarly, if an emulator client generates a Commit with an update
    path, it MUST use path_generation_secret as the path_secret for the
    first parent_node instead of generating it randomly.
 
@@ -452,11 +452,12 @@ Table of Contents
    the epoch's epoch_encryption_key with the epoch_id as AAD using the
    AEAD scheme of the emulation group's ciphersuite.
 
-   When other emulator clients receive an Update (i.e. either an Update
-   proposal or a Commit with an UpdatePath) in group that the virtual
-   client is a member in it uses the epoch_id to determine the epoch of
-   the emulation group from which to derive the secrets necessary to re-
-   create the key material of the LeafNode and a potential UpdatePath.
+   When other emulator clients receive a LeafNode update (i.e. either an
+   Update proposal or a Commit with an UpdatePath) in a higher-level
+   group that the virtual client is a member of, they use the epoch_id
+   to determine the epoch of the emulation group from which to derive
+   the secrets necessary to re-create the key material of the LeafNode
+   and potential UpdatePath.
 
 5.4.  Virtual client actions
 
@@ -465,10 +466,10 @@ Table of Contents
    emulator client sends a Commit to the emulation group before taking
    an action with the virtual client.
 
-   The commit serves two purposes: First, the agreement on message
+   The Commit serves two purposes: First, the agreement on message
    ordering facilitated by the DS prevents concurrent conflicting
    actions by two or more emulator clients.  Second, the acting emulator
-   client can attach additional information to the commit using the
+   client can attach additional information to the Commit using the
    SafeAAD mechanism described in Section 4.9 of
    [I-D.ietf-mls-extensions].
 
@@ -531,7 +532,7 @@ Table of Contents
    } ExternalJoin
 
    The sender MUST then use an external join to join the group with
-   GroupID group_id.  When creating the commit to join the group
+   group ID group_id.  When creating the Commit to join the group
    externally, it MUST generate the LeafNode and path as described in
    Section 5.3.
 
