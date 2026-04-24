@@ -199,18 +199,32 @@ struct {
 
 ## Removing emulator clients
 
-To effectively remove an emulator client, it needs to be removed from the
-emulation group _and_ a commit with an update path needs to be sent into every
-higher level group by another emulator client using the new emulation group's
-epoch to generate the necessary secrets (see
-{{generating-virtual-client-secrets}}). The latter step is required to ensure
-that the removed emulator client loses its access to any active virtual client
-secrets.
+To effectively remove an emulator client, the emulator client committing the
+proposal that removes the target client MUST take the following steps in order:
 
-A corollary of this slightly more elaborate removal procedure is that the
-removal of an emulator client requires another emulator client to be online and
-perform the necessary updates. This is in contrast to the simple multi-client
-setup, where an external sender can effectively remove individual clients.
+1. Effect the deletion of outstanding KeyPackage of the virtual client from the
+   DS. The set of outstanding KeyPackages can be determined from the
+   `KeyPackageUpload` messages previously sent to the emulation group (see
+   {{creating-and-uploading-keypackages}}).
+2. Commit a Remove proposal for the emulation client to be removed in the
+   emulation group, advancing it to a new epoch from which new virtual client
+   secrets will be derived (see {{generating-virtual-client-secrets}}).
+
+Using the new emulation-group epoch, any combination of remaining emulator
+clients MUST do the following additonal steps (in any order):
+
+- Effect an update of the key material in every higher-level group in which the
+  virtual client is a member. This MAY be done by creating a commit with an
+  update path or sending an update proposal.
+- Upload a fresh set of KeyPackages derived from the new emulation-group epoch
+  to replace those deleted in step 1.
+
+A corollary of this removal procedure is that in most scenarios another emulator
+client is required to be online and perform the necessary updates. The DS must
+also support deletion of previously uploaded KeyPackages. This is in contrast to
+the simple multi-client setup, where an external sender can effectively remove
+individual clients and there are no additional functional requirements for the
+DS.
 
 # Client emulation
 
