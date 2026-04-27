@@ -199,6 +199,10 @@ struct {
 
 ## Removing emulator clients
 
+Since all emulator clients hold all key material of the virtual client, removing
+the emulator client entails its removal from the emulation group, as well as
+rotating or revoking any other virtual-client specific key material.
+
 To effectively remove an emulator client, the emulator client committing the
 proposal that removes the target client MUST take the following steps in order:
 
@@ -210,12 +214,21 @@ proposal that removes the target client MUST take the following steps in order:
    emulation group, advancing it to a new epoch from which new virtual client
    secrets will be derived (see {{generating-virtual-client-secrets}}).
 
+Next, the application MUST provide new credentials and authentication key
+material for the virtual client that can be used to replace existing credentials
+and authentication key material in the next steps. The application MAY use the
+`signature_key_secret` derived from any of the `operation_secret`s during the
+next steps to derive group-specific key material. The application SHOULD take
+steps to revoke any valid long lived credentials associated with the virtual
+client that the removed emulator client had access to.
+
 Using the new emulation-group epoch, any combination of remaining emulator
-clients MUST do the following additonal steps (in any order):
+clients MUST do the following steps (in any order):
 
 - Effect an update of the key material in every higher-level group in which the
-  virtual client is a member. This MAY be done by creating a commit with an
-  update path or sending an update proposal.
+  virtual client is a member, using the new credential and authentication key
+  material provided by the application. This MAY be done by creating a commit
+  with an update path or sending an update proposal.
 - Upload a fresh set of KeyPackages derived from the new emulation-group epoch
   to replace those deleted in step 1.
 
