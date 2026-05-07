@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-04-30T02:39:44.650808+00:00",
+  "timestamp": "2026-05-07T02:36:26.913095+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -89,6 +89,22 @@
       "body": "Prior to adoption, we agreed that we wanted to switch to an approach where the reuse of nonces is prevented by the reuse guard. Adopting that approach also means that the number of emulating clients is limited.\n\nThe draft needs to be adapted to reflect that.",
       "createdAt": "2026-01-09T07:14:39Z",
       "updatedAt": "2026-01-09T07:14:39Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 15,
+      "id": "I_kwDOKsv6Xc8AAAABBaiCsg",
+      "title": "Truncate PPRF input and nodes to 32 bytes for larger hash functions?",
+      "url": "https://github.com/mlswg/mls-virtual-clients/issues/15",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The PPRF is already quite large with 32 bytes per node. Ciphersuites with larger hash function outputs unnecessarily make it even larger.",
+      "createdAt": "2026-05-06T08:29:31Z",
+      "updatedAt": "2026-05-06T08:29:31Z",
       "closedAt": null,
       "comments": []
     }
