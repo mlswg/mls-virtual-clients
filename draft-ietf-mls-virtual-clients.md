@@ -561,6 +561,16 @@ in a way that it appears random to outside observers (in particular, it does not
 leak which emulator client sent the message), but two emulator clients will
 never generate the same value.
 
+Recipient emulator clients can use the `reuse_guard` to recover the sender's
+leaf index in the emulation group. Since they share `reuse_guard_secret` and
+have access to `key_schedule_nonce` for the message, they can re-derive
+`prp_key` and invert the PRP to obtain `x = SmallSpacePRP.Decrypt(prp_key,
+reuse_guard)`. The encrypting emulator client's leaf index in the emulation
+group at epoch `e` is then `leaf_index_e = x mod N_e`, where `e` and `N_e` are
+determined as described above. This allows recipients to attribute application
+messages to specific emulator clients without revealing the sender to outside
+observers.
+
 ### Coordinating ratchet generations with the DS
 
 The method discussed above for computing `reuse_guard` prevents emulator clients
