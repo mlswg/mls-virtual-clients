@@ -223,6 +223,11 @@ Variant A for groups where metadata hiding matters and Variant B elsewhere.
   size and the group's ciphersuite, this may exceed the application's
   performance constraints. Variant B's overhead is constant per group.
 
+### State transfer protocol
+
+Applications MAY use the following structs to transfer group data to the newly
+added emulator client.
+
 ~~~ tls
 opaque HPKEPrivateKey<V>;
 
