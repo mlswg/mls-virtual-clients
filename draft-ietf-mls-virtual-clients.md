@@ -194,9 +194,7 @@ variants that the provisioning emulator client MAY use on a per-group basis:
   includes, for each higher-level group, the key-schedule outputs of the current
   epoch together with the HPKE private keys on the virtual client's direct path.
   The joining emulator obtains the RatchetTree and the GroupContext from an
-  application-defined source. It then decrypts any in-flight traffic, applies
-  any intervening commit, and then sends its own Commit with an update path to
-  move that group to a fresh epoch.
+  application-defined source.
 - **Variant B (external commit).** The provisioning emulator client only
   identifies which higher-level groups the virtual client is in. The joining
   emulator client acquires each group's current GroupInfo (from the DS or some
