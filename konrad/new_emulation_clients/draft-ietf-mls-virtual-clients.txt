@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 26 October 2026                                     Phoenix R&D
+Expires: 12 November 2026                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                           24 April 2026
+                                                             11 May 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 26 October 2026.
+   This Internet-Draft will expire on 12 November 2026.
 
 Copyright Notice
 
@@ -70,6 +70,7 @@ Table of Contents
    4.  Emulation group management
      4.1.  Adding an emulator client
        4.1.1.  Trade-offs
+       4.1.2.  State transfer protocol
      4.2.  Joining externally
      4.3.  Removing emulator clients
    5.  Client emulation
@@ -256,9 +257,7 @@ Table of Contents
       schedule outputs of the current epoch together with the HPKE
       private keys on the virtual client's direct path.  The joining
       emulator obtains the RatchetTree and the GroupContext from an
-      application-defined source.  It then decrypts any in-flight
-      traffic, applies any intervening commit, and then sends its own
-      Commit with an update path to move that group to a fresh epoch.
+      application-defined source.
 
    *  *Variant B (external commit).* The provisioning emulator client
       only identifies which higher-level groups the virtual client is
@@ -291,6 +290,11 @@ Table of Contents
       group.  Depending on group size and the group's ciphersuite, this
       may exceed the application's performance constraints.  Variant B's
       overhead is constant per group.
+
+4.1.2.  State transfer protocol
+
+   Applications MAY use the following structs to transfer group data to
+   the newly added emulator client.
 
    opaque HPKEPrivateKey<V>;
 
