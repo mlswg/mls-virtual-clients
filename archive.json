@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-10T02:40:29.867712+00:00",
+  "timestamp": "2026-05-12T02:42:13.259580+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -402,7 +402,7 @@
       "labels": [],
       "body": "- Fix grammatical errors\r\n- Keep terminology consistent\r\n- Restructure the draft slightly\r\n- Fix an earlier error when incorporating content from the MLS Subgroups draft by deriving an extra secret for the reuse guard",
       "createdAt": "2026-04-22T14:35:33Z",
-      "updatedAt": "2026-04-24T10:35:39Z",
+      "updatedAt": "2026-05-10T23:27:42Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "53040e45bf56a98c4dbc961e9858361b18d0cf44",
@@ -414,7 +414,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc7961P3",
+          "commit": {
+            "abbreviatedOid": "9ee7113"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-05-10T23:27:42Z",
+          "updatedAt": "2026-05-10T23:27:42Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 11,
@@ -428,19 +442,66 @@
       "labels": [],
       "body": "(This PR is based #10.)",
       "createdAt": "2026-04-24T10:31:33Z",
-      "updatedAt": "2026-04-24T10:35:39Z",
+      "updatedAt": "2026-05-11T07:54:57Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "konrad/consistency_pass",
       "baseRefOid": "9ee711334bfd2abc0a5904a080d7438196edfa9e",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/new_emulation_clients",
-      "headRefOid": "aaf3140c59e9636f898e6d551b35436ebec94334",
+      "headRefOid": "5af9be5b6b1111216056dc59ffdcd55ab387495d",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc798Zlm",
+          "commit": {
+            "abbreviatedOid": "aaf3140"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-05-11T02:46:09Z",
+          "updatedAt": "2026-05-11T02:52:43Z",
+          "comments": [
+            {
+              "originalPosition": 33,
+              "body": "Why does the joining emulator client have to send its own commit? Would be preferable for it not to",
+              "createdAt": "2026-05-11T02:46:09Z",
+              "updatedAt": "2026-05-11T02:52:43Z"
+            },
+            {
+              "originalPosition": 60,
+              "body": "I think there's supposed to be a new header here separating trade-offs from the protocol definitions",
+              "createdAt": "2026-05-11T02:47:45Z",
+              "updatedAt": "2026-05-11T02:52:43Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc7-A5TJ",
+          "commit": {
+            "abbreviatedOid": "aaf3140"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-05-11T07:54:43Z",
+          "updatedAt": "2026-05-11T07:54:57Z",
+          "comments": [
+            {
+              "originalPosition": 33,
+              "body": "Good point. I initially thought it would be easier for the adder to provide the new client only with the group state necessary to create a commit (upon which it could derive the remaining secrets in the new epoch). But it turns out the new client needs pretty much all possible secrets to do that. So you're right, it's not necessary to do a commit at that point.",
+              "createdAt": "2026-05-11T07:54:43Z",
+              "updatedAt": "2026-05-11T07:54:57Z"
+            }
+          ]
+        }
+      ]
     },
     {
       "number": 12,
@@ -532,7 +593,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-05-08T07:23:39Z",
-      "updatedAt": "2026-05-08T07:23:39Z",
+      "updatedAt": "2026-05-11T03:17:30Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "konrad/pin_epoch",
       "baseRefOid": "316cc94319bfcc72106a54121bf08d9d8d4bc2db",
@@ -544,7 +605,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc798u-E",
+          "commit": {
+            "abbreviatedOid": "4c3f31f"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-05-11T03:17:30Z",
+          "updatedAt": "2026-05-11T03:17:30Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
