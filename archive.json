@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-12T02:42:13.259580+00:00",
+  "timestamp": "2026-05-14T02:49:54.451383+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -442,7 +442,7 @@
       "labels": [],
       "body": "(This PR is based #10.)",
       "createdAt": "2026-04-24T10:31:33Z",
-      "updatedAt": "2026-05-11T07:54:57Z",
+      "updatedAt": "2026-05-13T06:57:34Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "konrad/consistency_pass",
       "baseRefOid": "9ee711334bfd2abc0a5904a080d7438196edfa9e",
@@ -498,6 +498,26 @@
               "body": "Good point. I initially thought it would be easier for the adder to provide the new client only with the group state necessary to create a commit (upon which it could derive the remaining secrets in the new epoch). But it turns out the new client needs pretty much all possible secrets to do that. So you're right, it's not necessary to do a commit at that point.",
               "createdAt": "2026-05-11T07:54:43Z",
               "updatedAt": "2026-05-11T07:54:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc7_Dc6_",
+          "commit": {
+            "abbreviatedOid": "aaf3140"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-05-13T06:57:33Z",
+          "updatedAt": "2026-05-13T06:57:34Z",
+          "comments": [
+            {
+              "originalPosition": 33,
+              "body": "If the new client doesn't update, we may run into trouble regarding the `reuse_guard` computation.\r\n\r\nBoth the number of emulator clients in a group and their leaf index go into the compuation of the `reuse_guard`. If we allow those two to change while the higher-level epoch stays the same, we run the risk of nonce collisions.\r\n\r\nConsider the following scenario:\r\n\r\n- There are two emulator clients (1 and 2) emulating a virtual client in group X\r\n- Emulator client 2 sends a message in group X at ratchet generation 0 (which emulator client 1 never receives)\r\n- Emulator client 1 removes emulator client 2\r\n- Emulator client 1 adds emulator client 3 and transfers all of its group state\r\n- Emulator client 3 now occupies the same leaf index as previously emulator client 2\r\n- Emulator client 3 now sends a message into group X at ratchet generation 0\r\n\r\nAt the time emulator client 2 and emulator client 3 send their messages, they use the same `prp_key`, the emulator group is the same size and they occupy the same leaf index in the emulator group. The security of the message thus rests entirely on how random `x` really is.\r\n\r\nAll in all, I think it's safer if we mandate that the new client doesn't send any messages in groups until the virtual client has been updated in that group.\r\n\r\nSince the reuse_guard computation is essentially bound to a certain configuration of the emulator group, maybe it makes sense to derive it once per emulation group epoch and then use it across all higher-level groups that use secrets derived from that epoch. That would make bookkeeping easier for implementations.",
+              "createdAt": "2026-05-13T06:57:33Z",
+              "updatedAt": "2026-05-13T07:15:27Z"
             }
           ]
         }
