@@ -141,32 +141,6 @@ performance benefits from smaller trees and fewer blanks outweigh the
 performance overhead incurred by emulating the virtual client in the first
 place.
 
-### Smaller trees
-
-As a general rule, groups where one or more sets of clients are replaced by
-virtual clients have fewer members, which leads to cheaper MLS operations where
-the cost depends on the group size, e.g., commits with a path, the download size
-of the group state for new members, etc. This increase in performance can offset
-performance penalties, for example, when using a PQ-secure cipher suite, or if
-the application requires high update frequencies.
-
-### Fewer blanks
-
-Blanks are typically created in the process of client removals. With virtual
-clients, the removal of an emulator client will not cause the leaf of the
-virtual client (or indeed any node in the virtual client's direct path) to be
-blanked, except if it is the last remaining emulator client. As a result,
-fluctuation in emulator clients does not necessarily lead to blanks in the group
-of the corresponding virtual clients, resulting in fewer overall blanks and
-better performance for all group members.
-
-### Emulation costs
-
-From a performance standpoint, using virtual clients only makes sense if the
-performance benefits from smaller trees and fewer blanks outweigh the
-performance overhead incurred by emulating the virtual client in the first
-place.
-
 ## Metadata hiding
 
 Virtual clients can be used to hide the emulator clients from other members of
@@ -461,6 +435,15 @@ virtual-client LeafNode (e.g., by committing a Commit with an update path
 or by an Update proposal followed by a Commit) to a more recent
 emulation-group epoch in which the new emulator client is a member.
 
+A newly added emulator client MUST NOT send a PrivateMessage in a
+higher-level group under a virtual-client LeafNode whose
+`DerivationInfoComponent.epoch_id` predates the emulation-group epoch in
+which it was added. Before the new emulator client can send messages in
+such a higher-level group, an emulator client MUST rotate the
+virtual-client LeafNode (e.g., by committing a Commit with an update path
+or by an Update proposal followed by a Commit) to a more recent
+emulation-group epoch in which the new emulator client is a member.
+
 ## Joining externally
 
 Without another online emulator client to bootstrap from, a new emulator can
@@ -686,8 +669,6 @@ Whatever the choice, the `signing_key_material` field of
 NewEmulatorClientState (see {{adding-an-emulator-client}}) carries the
 state a new emulator client needs; its contents are application-defined.
 
-`reuse_guard_secret` is used as described in {{reuse-guard}}.
-
 ## Creating LeafNodes and UpdatePaths
 
 When creating a LeafNode, either for a Commit with path, an Update proposal or a
@@ -873,6 +854,16 @@ computable by all emulator clients (but nobody else). `reuse_guard` is computed
 in a way that it appears random to outside observers (in particular, it does not
 leak which emulator client sent the message), but two emulator clients will
 never generate the same value.
+
+Recipient emulator clients can use the `reuse_guard` to recover the sender's
+leaf index in the emulation group. Since they share `reuse_guard_secret` and
+have access to `key_schedule_nonce` for the message, they can re-derive
+`prp_key` and invert the PRP to obtain `x = SmallSpacePRP.Decrypt(prp_key,
+reuse_guard)`. The encrypting emulator client's leaf index in the emulation
+group at epoch `e` is then `leaf_index_e = x mod N_e`, where `e` and `N_e` are
+determined as described above. This allows recipients to attribute application
+messages to specific emulator clients without revealing the sender to outside
+observers.
 
 ### Coordinating ratchet generations with the DS
 
