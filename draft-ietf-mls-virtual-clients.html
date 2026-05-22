@@ -1869,28 +1869,42 @@ generation_id_secret =
   DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
 </pre><a href="#section-5.2-5" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-6">The <code>epoch_base_secret</code> is then used to key an instance of the PPRF defined in
-<span>[<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span> using a tree with <code>2^32</code> leaves.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
-<p id="section-5.2-7">Secrets are derived from the PPRF as follows:<a href="#section-5.2-7" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-8">
+<p id="section-5.2-6">The <code>epoch_base_secret</code> keys a Virtual Client Secret Tree, a tree of secrets
+with the same structure as the Secret Tree defined in Section 9 of
+<span>[<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, with the following differences:<a href="#section-5.2-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.2-7.1">
+            <p id="section-5.2-7.1.1">A Virtual Client Secret Tree always has <code>2^256</code> leaves, so that the
+output of the emulation group's ciphersuite hash function can be used
+directly as a leaf index.<a href="#section-5.2-7.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.2-7.2">
+            <p id="section-5.2-7.2.1">The root of the tree is the <code>epoch_base_secret</code> rather than a secret
+derived from the <code>encryption_secret</code> of an MLS group epoch.<a href="#section-5.2-7.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.2-8">TODO: Re-evaluate the tree size. A smaller tree (e.g., <code>2^128</code> leaves with the
+leaf index derived by truncating <code>pprf_input</code>) is probably sufficient.<a href="#section-5.2-8" class="pilcrow">¶</a></p>
+<p id="section-5.2-9">Secrets are derived from the Virtual Client Secret Tree as follows:<a href="#section-5.2-9" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-10">
 <pre>
-VirtualClientSecret(Input) = tree_node_[LeafNode(Input)]_secret
-</pre><a href="#section-5.2-8" class="pilcrow">¶</a>
+VirtualClientSecret(Input) = tree_node_[LeafIndex(Input)]_secret
+</pre><a href="#section-5.2-10" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-9">Emulator clients MUST store the <code>epoch_id</code>, <code>epoch_encryption_key</code>,
+<p id="section-5.2-11">Emulator clients MUST store the <code>epoch_id</code>, <code>epoch_encryption_key</code>,
 <code>generation_id_secret</code>, and punctured <code>epoch_base_secret</code> until no key material
 derived from the epoch is actively used anymore. This is required for the
 addition of new clients to the emulation group as described in
-<a href="#adding-an-emulator-client" class="auto internal xref">Section 4.1</a>.<a href="#section-5.2-9" class="pilcrow">¶</a></p>
-<p id="section-5.2-10">When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
+<a href="#adding-an-emulator-client" class="auto internal xref">Section 4.1</a>.<a href="#section-5.2-11" class="pilcrow">¶</a></p>
+<p id="section-5.2-12">When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
 LeafNode update, the deriving client chooses a <code>VirtualClientOperationType</code>,
 samples a random octet string <code>random</code>, and hashes it with its leaf index in the
 emulation group using the hash function of the emulation group's ciphersuite.
 The <code>operation_type</code> is <code>key_package</code> when creating a KeyPackage and <code>leaf_node</code>
 when creating a LeafNode for an Update proposal, a Commit with an update path,
 or an external commit. Applications MAY use the operation type <code>application</code> to
-derive application-specific key material.<a href="#section-5.2-10" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-11">
+derive application-specific key material.<a href="#section-5.2-12" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-13">
 <pre>
 struct {
   uint32 leaf_index;
@@ -1899,52 +1913,52 @@ struct {
 } HashInput
 
 pprf_input = Hash(HashInput)
-</pre><a href="#section-5.2-11" class="pilcrow">¶</a>
-</div>
-<p id="section-5.2-12">The <code>pprf_input</code> is then used to derive an <code>operation_secret</code>.<a href="#section-5.2-12" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-13">
-<pre>
-operation_secret = VirtualClientSecret(pprf_input)
 </pre><a href="#section-5.2-13" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-14">After deriving <code>operation_secret</code>, the emulator client MUST puncture
+<p id="section-5.2-14">The <code>pprf_input</code> is then used to derive an <code>operation_secret</code>.<a href="#section-5.2-14" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-15">
+<pre>
+operation_secret = VirtualClientSecret(pprf_input)
+</pre><a href="#section-5.2-15" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2-16">After deriving <code>operation_secret</code>, the emulator client MUST puncture
 <code>pprf_input</code> from the PPRF state for the corresponding <code>epoch_base_secret</code>.
 The emulator client MUST retain <code>operation_secret</code> as a
 RetainedOperationSecret until all key material derived from it is no longer
-active, and MUST delete <code>operation_secret</code> after that point.<a href="#section-5.2-14" class="pilcrow">¶</a></p>
-<p id="section-5.2-15">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>random</code>, and the <code>leaf_index</code> of the
+active, and MUST delete <code>operation_secret</code> after that point.<a href="#section-5.2-16" class="pilcrow">¶</a></p>
+<p id="section-5.2-17">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>random</code>, and the <code>leaf_index</code> of the
 emulator client performing the virtual client operation, other emulator
 clients can derive the <code>operation_secret</code>, puncture the same <code>pprf_input</code>, and
 use the <code>operation_secret</code> to perform the same operation. If the PPRF input has
 already been punctured, for example because the emulator client joined after
 the operation took place, the emulator client uses the corresponding
-RetainedOperationSecret transferred in NewEmulatorClientState.<a href="#section-5.2-15" class="pilcrow">¶</a></p>
-<p id="section-5.2-16">Depending on the operation, the acting emulator client will have to derive one
-or more secrets from the <code>operation_secret</code>.<a href="#section-5.2-16" class="pilcrow">¶</a></p>
-<p id="section-5.2-17">There are five types of MLS-related secrets that can be derived from an
-<code>operation_secret</code>.<a href="#section-5.2-17" class="pilcrow">¶</a></p>
+RetainedOperationSecret transferred in NewEmulatorClientState.<a href="#section-5.2-17" class="pilcrow">¶</a></p>
+<p id="section-5.2-18">Depending on the operation, the acting emulator client will have to derive one
+or more secrets from the <code>operation_secret</code>.<a href="#section-5.2-18" class="pilcrow">¶</a></p>
+<p id="section-5.2-19">There are five types of MLS-related secrets that can be derived from an
+<code>operation_secret</code>.<a href="#section-5.2-19" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-5.2-18.1">
-            <p id="section-5.2-18.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
-leaf<a href="#section-5.2-18.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-5.2-20.1">
+            <p id="section-5.2-20.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
+leaf<a href="#section-5.2-20.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-18.2">
-            <p id="section-5.2-18.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-5.2-18.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-20.2">
+            <p id="section-5.2-20.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-5.2-20.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-18.3">
-            <p id="section-5.2-18.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
-LeafNode of a virtual client<a href="#section-5.2-18.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-20.3">
+            <p id="section-5.2-20.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
+LeafNode of a virtual client<a href="#section-5.2-20.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-18.4">
-            <p id="section-5.2-18.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
-of a virtual client<a href="#section-5.2-18.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-20.4">
+            <p id="section-5.2-20.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
+of a virtual client<a href="#section-5.2-20.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-18.5">
-            <p id="section-5.2-18.5.1"><code>reuse_guard_secret</code>: Used to derive the PRP key for <code>reuse_guard</code> values when
-the virtual client sends a PrivateMessage (see <a href="#reuse-guard" class="auto internal xref">Section 5.5.2</a>)<a href="#section-5.2-18.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-20.5">
+            <p id="section-5.2-20.5.1"><code>reuse_guard_secret</code>: Used to derive the PRP key for <code>reuse_guard</code> values when
+the virtual client sends a PrivateMessage (see <a href="#reuse-guard" class="auto internal xref">Section 5.5.2</a>)<a href="#section-5.2-20.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<div class="alignLeft art-text artwork" id="section-5.2-19">
+<div class="alignLeft art-text artwork" id="section-5.2-21">
 <pre>
 signature_key_secret =
   DeriveSecret(operation_secret, "Signature Key")
@@ -1960,19 +1974,19 @@ path_generation_secret =
 
 reuse_guard_secret =
   DeriveSecret(operation_secret, "Reuse Guard")
-</pre><a href="#section-5.2-19" class="pilcrow">¶</a>
+</pre><a href="#section-5.2-21" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-20">The first four secrets are used as the randomness required in the corresponding
+<p id="section-5.2-22">The first four secrets are used as the randomness required in the corresponding
 key generation process. <code>reuse_guard_secret</code> is used as described in
-<a href="#reuse-guard" class="auto internal xref">Section 5.5.2</a>.<a href="#section-5.2-20" class="pilcrow">¶</a></p>
-<p id="section-5.2-21">The source of the virtual client's signature key is application-defined. An
+<a href="#reuse-guard" class="auto internal xref">Section 5.5.2</a>.<a href="#section-5.2-22" class="pilcrow">¶</a></p>
+<p id="section-5.2-23">The source of the virtual client's signature key is application-defined. An
 application MAY use <code>signature_key_secret</code> to derive a fresh signing key per
 operation, or MAY provide signing-key material through other means, for
 example a per-group or global signing key issued by the Authentication
 Service, or a signing key derived from an emulation-group epoch secret.
 Whatever the choice, the <code>signing_key_material</code> field of
 NewEmulatorClientState (see <a href="#adding-an-emulator-client" class="auto internal xref">Section 4.1</a>) carries the
-state a new emulator client needs; its contents are application-defined.<a href="#section-5.2-21" class="pilcrow">¶</a></p>
+state a new emulator client needs; its contents are application-defined.<a href="#section-5.2-23" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-leafnodes-and-updatepaths">
