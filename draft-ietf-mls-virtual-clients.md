@@ -87,6 +87,10 @@ TODO: Terminology is up for debate. We’ve sometimes called this “user trees�
 but since there are other use cases, we should choose a more neutral name. For
 now, it’s virtual client emulation.
 
+# Requirements Language
+
+{::boilerplate bcp14-tagged-bcp14}
+
 # Applications
 
 Virtual clients generally allow multiple emulator clients to share membership in
@@ -383,57 +387,45 @@ struct {
   Each entry carries the `group_id` and a `state_type` identifying which
   variant applies.
 
-  For `state_transfer` entries, the provisioning emulator client transfers the
-  current epoch's key-schedule outputs and the retained per-epoch state:
-    - `init_secret` chains the joining emulator client's subsequent Commit
-      into the next epoch (`init_secret[n-1]` combines with the new
-      `commit_secret` to produce `joiner_secret[n]`).
-    - `sender_data_secret` lets the joining emulator client decrypt sender
-      data on incoming PrivateMessages.
-    - `exporter_secret` lets the joining emulator client produce
-      application-level exports from this epoch.
-    - `external_secret` lets other parties perform further external
-      commits from this epoch.
-    - `confirmation_key` lets the joining emulator client verify the
-      `confirmation_tag` on any incoming Commit.
-    - `membership_key` lets the joining emulator client produce a valid
-      `membership_tag` on its own Commit sent as PublicMessage.
-    - `resumption_psk` lets the joining emulator client participate as an
-      origin for resumption PSKs in this epoch, if the application uses them.
-    - `epoch_authenticator` authenticates the current group state.
-    - `secret_tree` is the current state of the group's Secret Tree, from
-      which the joining emulator client derives per-member handshake- and
-      application-ratchet keys needed to decrypt in-flight
-      PrivateMessages.
-    - `safe_exporter_tree` is the current punctured state of the Safe
-      Exporter API's Exporter Tree if the higher-level group uses that API.
-      If the group does not use the Safe Exporter API, `nodes` is
-      zero-length. When used for a Safe Exporter Tree, `PPRFState` paths are
-      16-bit paths indexed by `ComponentID`.
-    - `direct_path_private_keys` is the list of HPKE private keys for each
-      non-blank node in the virtual client's filtered direct path. The first
-      entry is the private key for the parent of the virtual client's leaf,
-      if that node is non-blank. Subsequent entries correspond to the next
-      non-blank nodes on the direct path toward the root, in order. The
-      virtual client's leaf private key itself is derivable from the
-      corresponding retained `leaf_node` operation secret identified by the
-      DerivationInfoComponent on the current LeafNode and is therefore not
-      transferred explicitly.
+For `state_transfer` entries, the provisioning emulator client transfers the
+current epoch's key-schedule outputs and the retained per-epoch state:
 
-  For `external_commit` entries, no additional per-group fields are
-  included. The joining emulator client external-commits into the group —
-  fetching the current GroupInfo from the DS or another application-defined
-  source — and includes a Remove proposal for the virtual client's prior leaf
-  to evict the old membership.
+- `init_secret` chains the joining emulator client's subsequent Commit
+  into the next epoch (`init_secret[n-1]` combines with the new
+  `commit_secret` to produce `joiner_secret[n]`).
+- `sender_data_secret` lets the joining emulator client decrypt sender
+  data on incoming PrivateMessages.
+- `exporter_secret` lets the joining emulator client produce
+  application-level exports from this epoch.
+- `external_secret` lets other parties perform further external
+  commits from this epoch.
+- `confirmation_key` lets the joining emulator client verify the
+  `confirmation_tag` on any incoming Commit.
+- `membership_key` lets the joining emulator client produce a valid
+  `membership_tag` on its own Commit sent as PublicMessage.
+- `resumption_psk` lets the joining emulator client participate as an
+  origin for resumption PSKs in this epoch, if the application uses them.
+- `epoch_authenticator` authenticates the current group state.
+- `secret_tree` is the current state of the group's Secret Tree, from
+  which the joining emulator client derives per-member handshake- and
+  application-ratchet keys needed to decrypt in-flight PrivateMessages.
+- `safe_exporter_tree` is the current punctured state of the Safe Exporter API's
+  Exporter Tree if the higher-level group uses that API. If the group does not
+  use the Safe Exporter API, `nodes` is zero-length. When used for a Safe
+  Exporter Tree, `PPRFState` paths are 16-bit paths indexed by `ComponentID`.
+- `direct_path_private_keys` is the list of HPKE private keys for each non-blank
+  node in the virtual client's filtered direct path. The first entry is the
+  private key for the parent of the virtual client's leaf, if that node is
+  non-blank. Subsequent entries correspond to the next non-blank nodes on the
+  direct path toward the root, in order. The virtual client's leaf private key
+  itself is derivable from the corresponding retained `leaf_node` operation
+  secret identified by the DerivationInfoComponent on the current LeafNode and is
+  therefore not transferred explicitly.
 
-A newly added emulator client MUST NOT send a PrivateMessage in a
-higher-level group under a virtual-client LeafNode whose
-`DerivationInfoComponent.epoch_id` predates the emulation-group epoch in
-which it was added. Before the new emulator client can send messages in
-such a higher-level group, an emulator client MUST rotate the
-virtual-client LeafNode (e.g., by committing a Commit with an update path
-or by an Update proposal followed by a Commit) to a more recent
-emulation-group epoch in which the new emulator client is a member.
+For `external_commit` entries, no additional per-group fields are included. The
+joining emulator client external-commits into the group — fetching the current
+GroupInfo from the DS or another application-defined source — and includes a
+Remove proposal for the virtual client's prior leaf to evict the old membership.
 
 A newly added emulator client MUST NOT send a PrivateMessage in a
 higher-level group under a virtual-client LeafNode whose
@@ -577,16 +569,17 @@ VirtualClientSecret(Input) = tree_node_[LeafIndex(Input)]_secret
 ~~~
 
 Emulator clients MUST retain the (punctured) `epoch_base_secret`, the
-`epoch_id`, the `generation_id_secret`, and the number of leaves the
-emulation group had at the corresponding epoch until no key material or
-generation IDs associated with that epoch are actively used anymore. For
-each retained epoch in which an emulator client was a member, it MUST also
-retain its own leaf index at that epoch. The `epoch_base_secret` and
-`epoch_id` are used for the addition of new clients to the emulation group
-({{adding-an-emulator-client}}); the `generation_id_secret` is used for
-computing generation IDs
-({{coordinating-ratchet-generations-with-the-ds}}); and the leaf count and leaf
-index are used for computing the `reuse_guard` ({{reuse-guard}}).
+`epoch_id`, the `epoch_encryption_key`, the `generation_id_secret`, and the
+number of leaves the emulation group had at the corresponding epoch until no key
+material or generation IDs associated with that epoch are actively used anymore.
+For each retained epoch in which an emulator client was a member, it MUST also
+retain its own leaf index at that epoch. The `epoch_base_secret`, `epoch_id`,
+and `epoch_encryption_key` are used for deriving and processing virtual-client
+key material, including DerivationInfoComponents and state transferred to new
+clients ({{adding-an-emulator-client}}); the `generation_id_secret` is used for
+computing generation IDs ({{coordinating-ratchet-generations-with-the-ds}});
+and the leaf count and leaf index are used for computing the `reuse_guard`
+({{reuse-guard}}).
 
 When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
 LeafNode update, the deriving client chooses a `VirtualClientOperationType`,
@@ -731,7 +724,7 @@ enum {
   reserved(0),
   key_package_upload(1),
   external_join(2),
-  255,
+  (255)
 } ActionType;
 
 struct {
@@ -761,7 +754,7 @@ KeyPackageRef. If the recipients receive a Welcome, they can then check which
 
 ~~~ tls
 struct {
-  KeyPackageRef key_package_ref<V>;
+  KeyPackageRef key_package_ref;
   opaque random<V>;
 } KeyPackageInfo
 
@@ -923,7 +916,7 @@ to simply retain messages and encryption keys for a short period of time after
 sending, in case it becomes necessary to decrypt another device's message and
 re-encrypt and re-send their original message with another encryption key.
 
-# Security considerations
+# Security Considerations
 
 TODO: Detail security considerations once the protocol has evolved a little
 more. Starting points:
@@ -934,7 +927,7 @@ in multiple higher-level groups. At that point, clients only really recover when
 they update the emulation group, i.e. re-using somewhat old randomness of the
 emulation group won’t provide real PCS in higher-level groups.
 
-# Privacy considerations
+# Privacy Considerations
 
 TODO: Specify the metadata hiding properties of the protocol. The details depend
 on how we solve some of the problems described throughout this document.
@@ -943,10 +936,20 @@ underlying emulation group. If it actually hides the identity of the members may
 depend on the details of the AS, as well as how we solve the application
 messages problem.
 
-# IANA considerations
+# IANA Considerations
 
-This document requests the addition of a new value under the heading "Messaging
+This document requests the addition of new values under the heading "Messaging
 Layer Security" in the "MLS Component Types" registry.
+
+## NewEmulatorClientState
+
+A component that carries the state a newly added emulator client needs to act as
+the virtual client.
+
+- Value: TBD
+- Name: NewEmulatorClientState
+- Where: GI
+- Recommended: True
 
 ## DerivationInfoComponent
 
