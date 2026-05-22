@@ -205,6 +205,12 @@ variants that the provisioning emulator client MAY use on a per-group basis:
 Applications MAY mix the two variants across groups, for example using
 Variant A for groups where metadata hiding matters and Variant B elsewhere.
 
+Regardless of the variant chosen, a new emulator client MUST NOT send
+PrivateMessages into a higher-level group until that group has been updated with
+secrets from an emulation group epoch in which the new emulator client is a
+member. This is to ensure that the `reuse_guard` is properly computed with the
+emulator client's leaf index as described in {{reuse-guard}}.
+
 ### Trade-offs
 
 - **Observability.** Variant A produces an ordinary Commit that looks like
