@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 3 September 2026                                    Phoenix R&D
+Expires: 23 November 2026                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                            2 March 2026
+                                                             22 May 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 3 September 2026.
+   This Internet-Draft will expire on 23 November 2026.
 
 Copyright Notice
 
@@ -63,6 +63,9 @@ Table of Contents
    2.  Terminology
    3.  Applications
      3.1.  Virtual clients for performance
+       3.1.1.  Smaller trees
+       3.1.2.  Fewer blanks
+       3.1.3.  Emulation costs
      3.2.  Metadata hiding
    4.  Emulation group management
      4.1.  Adding an emulator client
@@ -72,24 +75,19 @@ Table of Contents
      5.1.  Delivery Service
      5.2.  Generating Virtual Client Secrets
      5.3.  Creating LeafNodes and UpdatePaths
-     5.4.  Adding emulator clients
-     5.5.  Virtual client actions
-       5.5.1.  Creating and uploading KeyPackages
-       5.5.2.  Externally joining groups with the virtual client
-     5.6.  Sending PrivateMessages
-     5.7.  Small-Space PRP
-     5.8.  Reuse Guard
-     5.9.  Delivery Service
+     5.4.  Virtual client actions
+       5.4.1.  Creating and uploading KeyPackages
+       5.4.2.  Externally joining groups with the virtual client
+     5.5.  Sending PrivateMessages
+       5.5.1.  Small-Space PRP
+       5.5.2.  Reuse Guard
+       5.5.3.  Coordinating ratchet generations with the DS
    6.  Security considerations
    7.  Privacy considerations
-   8.  Performance considerations
-     8.1.  Smaller Trees
-     8.2.  Fewer blanks
-   9.  Emulation costs
-   10. IANA considerations
-     10.1.  DerivationInfoComponent
-     10.2.  VirtualClientAction
-   11. Normative References
+   8.  IANA considerations
+     8.1.  DerivationInfoComponent
+     8.2.  VirtualClientAction
+   9.  Normative References
    Authors' Addresses
 
 1.  Introduction
@@ -168,11 +166,39 @@ Table of Contents
    operation in the emulation group to all virtual clients emulated in
    that group.
 
+3.1.1.  Smaller trees
+
+   As a general rule, groups where one or more sets of clients are
+   replaced by virtual clients have fewer members, which leads to
+   cheaper MLS operations where the cost depends on the group size,
+   e.g., commits with a path, the download size of the group state for
+   new members, etc.  This increase in performance can offset
+   performance penalties, for example, when using a PQ-secure cipher
+   suite, or if the application requires high update frequencies.
+
+3.1.2.  Fewer blanks
+
+   Blanks are typically created in the process of client removals.  With
+   virtual clients, the removal of an emulator client will not cause the
+   leaf of the virtual client (or indeed any node in the virtual
+   client's direct path) to be blanked, except if it is the last
+   remaining emulator client.  As a result, fluctuation in emulator
+   clients does not necessarily lead to blanks in the group of the
+   corresponding virtual clients, resulting in fewer overall blanks and
+   better performance for all group members.
+
+3.1.3.  Emulation costs
+
+   From a performance standpoint, using virtual clients only makes sense
+   if the performance benefits from smaller trees and fewer blanks
+   outweigh the performance overhead incurred by emulating the virtual
+   client in the first place.
+
 3.2.  Metadata hiding
 
    Virtual clients can be used to hide the emulator clients from other
    members of higher-level groups.  For example, removing group members
-   of the emulator group will only be visible in the higher-level group
+   of the emulation group will only be visible in the higher-level group
    as a regular group update.  Similarly, when an emulator client wants
    to send a message in a higher-level group, recipients will see the
    virtual client as the sender and won't be able to discern which
@@ -201,8 +227,8 @@ Table of Contents
 
 4.  Emulation group management
 
-   Emulation group is more elaborate than performing simple MLS
-   operation within the emulation group.
+   Managing the emulation group is more elaborate than performing simple
+   MLS operations within it.
 
    When adding a new emulator client, there are several pieces of
    cryptographic state that need to be synchronized before the new
@@ -252,18 +278,18 @@ Table of Contents
    1.  Request a fresh credential for the virtual client with a new
        signing key
 
-   2.  Perform an External Join to the emulation group.  Send an
+   2.  Perform an external join to the emulation group.  Send an
        application message containing a ResyncMessage to the emulation
        group with the new key.
 
    3.  Replace all active KeyPackages with new KeyPackages, generated
        from the new emulation group epoch.
 
-   4.  Perform an External Join to all of the groups that the virtual
+   4.  Perform an external join to all of the groups that the virtual
        client is a member of, using LeafNodes generated from the new
        emulation group epoch (see Section 5.2).  Welcome messages which
        were unprocessed by the offline devices are discarded, and these
-       groups are Externally Joined instead (potentially being queued
+       groups are joined externally instead (potentially being queued
        for user approval first).
 
    struct {
@@ -273,7 +299,7 @@ Table of Contents
 4.3.  Removing emulator clients
 
    To effectively remove an emulator client, it needs to be removed from
-   the emulation group _and_ a commit with an update path needs to be
+   the emulation group _and_ a Commit with an update path needs to be
    sent into every higher level group by another emulator client using
    the new emulation group's epoch to generate the necessary secrets
    (see Section 5.2).  The latter step is required to ensure that the
@@ -295,8 +321,8 @@ Table of Contents
 
    Client emulation requires that any message sent by an emulator client
    on behalf of a virtual client be delivered not just to the rest of
-   the supergroup to which the the message is sent, but also to all
-   other clients in the emulator group.
+   the higher-level group to which the message is sent, but also to all
+   other clients in the emulation group.
 
 5.2.  Generating Virtual Client Secrets
 
@@ -327,10 +353,10 @@ Table of Contents
 
    VirtualClientSecret(Input) = tree_node_[LeafNode(Input)]_secret
 
-   Emulator client MUST store both the (punctured) epoch_base_secret and
-   the epoch_id until no key material derived from it is actively used
-   anymore.  This is required for the addition of new clients to the
-   emulator group as described in Section Section 5.4.
+   Emulator clients MUST store both the (punctured) epoch_base_secret
+   and the epoch_id until no key material derived from it is actively
+   used anymore.  This is required for the addition of new clients to
+   the emulation group as described in Section 4.1.
 
    When deriving a secret for a virtual client, e.g. for use in a
    KeyPackage or LeafNode update, the deriving client samples a random
@@ -359,7 +385,7 @@ Table of Contents
    Depending on the operation, the acting emulator client will have to
    derive one or more secrets from the operation_secret.
 
-   There are four types of MLS-related secrets that can be derived from
+   There are five types of MLS-related secrets that can be derived from
    an operation_secret.
 
    *  signature_key_secret: Used to derive the signature key in a
@@ -374,30 +400,37 @@ Table of Contents
    *  path_generation_secret: Used to generate path_secrets for the
       UpdatePath of a virtual client
 
+   *  reuse_guard_secret: Used to derive the PRP key for reuse_guard
+      values when the virtual client sends a PrivateMessage (see
+      Section 5.5.2)
+
    signature_key_secret =
-     DeriveSecret(epoch_base_secret, "Signature Key")
+     DeriveSecret(operation_secret, "Signature Key")
 
    encryption_key_secret =
-     DeriveSecret(epoch_base_secret, "Encryption Key")
+     DeriveSecret(operation_secret, "Encryption Key")
 
    init_key_secret =
-     DeriveSecret(epoch_base_secret, "Init Key")
+     DeriveSecret(operation_secret, "Init Key")
 
    path_generation_secret =
-     DeriveSecret(epoch_base_secret, "Path Generation")
+     DeriveSecret(operation_secret, "Path Generation")
 
-   From these secrets, the deriving client can generate the
-   corresponding keypair by using the secret as the randomness required
-   in the key generation process.
+   reuse_guard_secret =
+     DeriveSecret(operation_secret, "Reuse Guard")
+
+   The first four secrets are used as the randomness required in the
+   corresponding key generation process. reuse_guard_secret is used as
+   described in Section 5.5.2.
 
 5.3.  Creating LeafNodes and UpdatePaths
 
    When creating a LeafNode, either for a Commit with path, an Update
    proposal or a KeyPackage, the creating emulator client MUST derive
-   the necessary secrets from the current epoch of the emulator group as
-   described in Section Section 5.2.
+   the necessary secrets from the current epoch of the emulation group
+   as described in Section Section 5.2.
 
-   Similarly, if an emulator client generates an Commit with an update
+   Similarly, if an emulator client generates a Commit with an update
    path, it MUST use path_generation_secret as the path_secret for the
    first parent_node instead of generating it randomly.
 
@@ -413,38 +446,30 @@ Table of Contents
    struct {
      uint32 leaf_index;
      opaque random<V>;
-   } EpochInfoTBE
+   } DerivationInfoTBE
 
-   The ciphertext is the serialized EpochInfoTBE encrypted under the
-   epoch's epoch_encryption_key with the epoch_id as AAD using the AEAD
-   scheme of the emulation group's ciphersuite.
+   The ciphertext is the serialized DerivationInfoTBE encrypted under
+   the epoch's epoch_encryption_key with the epoch_id as AAD using the
+   AEAD scheme of the emulation group's ciphersuite.
 
-   When other emulator clients receive an Update (i.e. either an Update
-   proposal or a Commit with an UpdatePath) in group that the virtual
-   client is a member in it uses the epoch_id to determine the epoch of
-   the emulator group from which to derive the secrets necessary to re-
-   create the key material of the LeafNode and a potential UpdatePath.
+   When other emulator clients receive a LeafNode update (i.e. either an
+   Update proposal or a Commit with an UpdatePath) in a higher-level
+   group that the virtual client is a member of, they use the epoch_id
+   to determine the epoch of the emulation group from which to derive
+   the secrets necessary to re-create the key material of the LeafNode
+   and potential UpdatePath.
 
-5.4.  Adding emulator clients
-
-   There are two ways of adding new clients to the emulation group.
-   Either new clients get sent the secret key material of all groups
-   that the virtual client is currently in, or it joins into all of the
-   virtual client's groups, either via a regular or an external commit.
-
-   TODO: Specify protocol
-
-5.5.  Virtual client actions
+5.4.  Virtual client actions
 
    There are two occasions where emulator clients need to communicate
    directly to operate the virtual client.  In both cases, the acting
    emulator client sends a Commit to the emulation group before taking
    an action with the virtual client.
 
-   The commit serves two purposes: First, the agreement on message
+   The Commit serves two purposes: First, the agreement on message
    ordering facilitated by the DS prevents concurrent conflicting
    actions by two or more emulator clients.  Second, the acting emulator
-   client can attach additional information to the commit using the
+   client can attach additional information to the Commit using the
    SafeAAD mechanism described in Section 4.9 of
    [I-D.ietf-mls-extensions].
 
@@ -465,14 +490,14 @@ Table of Contents
      };
    } VirtualClientAction;
 
-5.5.1.  Creating and uploading KeyPackages
+5.4.1.  Creating and uploading KeyPackages
 
    When creating a KeyPackage, the creating emulator client derives the
-   init_secret as described in Section 5.2.
+   init_key_secret as described in Section 5.2.
 
    Before uploading one or more KeyPackages for a virtual client, the
    uploading emulator client MUST create a KeyPackageUpload message and
-   send it to the emulator group as described in Section 5.5.
+   send it to the emulation group as described in Section 5.4.
 
    The recipients can use the leaf_index of the sender, as well as the
    random and epoch_id to derive the init_key for each KeyPackageRef.
@@ -496,22 +521,22 @@ Table of Contents
    KeyPackage to use and how to derive it when the virtual client
    receives a Welcome message.
 
-5.5.2.  Externally joining groups with the virtual client
+5.4.2.  Externally joining groups with the virtual client
 
    Before an emulator client uses an external commit to join a group
    with the virtual client, it MUST send an ExternalJoin message to the
-   emulation group as described in Section 5.5.
+   emulation group as described in Section 5.4.
 
    struct {
      opaque group_id<V>;
    } ExternalJoin
 
    The sender MUST then use an external join to join the group with
-   GroupID group_id.  When creating the commit to join the group
+   group ID group_id.  When creating the Commit to join the group
    externally, it MUST generate the LeafNode and path as described in
    Section 5.3.
 
-5.6.  Sending PrivateMessages
+5.5.  Sending PrivateMessages
 
    Given that MLS generates the encryption keys and nonces for
    PrivateMessages sequentially, but multiple emulator clients may send
@@ -523,12 +548,12 @@ Table of Contents
    clients MUST prevent this by computing the reuse_guard, as described
    below instead of sampling it randomly.
 
-5.7.  Small-Space PRP
+5.5.1.  Small-Space PRP
 
    A small-space pseudorandom permutation (PRP) is a cryptographic
    algorithm that works similar to a block cipher, while also being able
    to adhere to format constraints.  In particular, it is able to
-   perform a psuedorandom permutation over an arbitrary input and output
+   perform a pseudorandom permutation over an arbitrary input and output
    space.
 
    This document uses the FF1 mode from [NIST] with the input-output
@@ -537,7 +562,7 @@ Table of Contents
    output = SmallSpacePRP.Encrypt(key, input)
    input = SmallSpacePRP.Decrypt(key, output)
 
-5.8.  Reuse Guard
+5.5.2.  Reuse Guard
 
    MLS clients typically generate the bytes for the reuse_guard
    randomly.  When sending a message with a virtual client, however,
@@ -545,12 +570,14 @@ Table of Contents
    number of leaves in the emulation group is equal to its leaf_index.
    They then calculate:
 
-prp_key = ExpandWithLabel(leaf_node_secret, "reuse guard", key_schedule_nonce, 16)
-reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
+   prp_key = ExpandWithLabel(reuse_guard_secret, "reuse guard",
+                             key_schedule_nonce, 16)
+   reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
 
    ExpandWithLabel is computed with the emulation group's ciphersuite's
-   algorithms. leaf_node_secret is the secret corresponding to the
-   virtual client's LeafNode in the higher level group and
+   algorithms. reuse_guard_secret is derived as described in Section 5.2
+   from the operation_secret of the operation that produced the virtual
+   client's currently active LeafNode in the higher-level group.
    key_schedule_nonce is the nonce provided by the key schedule for
    encrypting this message.
 
@@ -560,7 +587,7 @@ reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
    particular, it does not leak which emulator client sent the message),
    but two emulator clients will never generate the same value.
 
-5.9.  Delivery Service
+5.5.3.  Coordinating ratchet generations with the DS
 
    The method discussed above for computing reuse_guard prevents
    emulator clients from ever reusing the same key-nonce pair, as this
@@ -636,54 +663,12 @@ reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
    actually hides the identity of the members may depend on the details
    of the AS, as well as how we solve the application messages problem.
 
-8.  Performance considerations
-
-   There are several use cases, where a specific group of clients
-   represents a higher-level entity such as a user, or a part of an
-   organization.  If that group of clients shares membership in a large
-   number of groups, where its sole purpose is to represent the higher-
-   level entity, then instead emulating a virtual client can yield a
-   number of performance benefits, especially if this strategy is
-   employed across an implementation.  Generally, the more emulator
-   clients are hidden behind a single virtual client and the more
-   clients are replaced by virtual clients, the higher the potential
-   performance benefits.
-
-8.1.  Smaller Trees
-
-   As a general rule, groups where one or more sets of clients are
-   replaced by virtual clients have fewer members, which leads to
-   cheaper MLS operations where the cost depends on the group size,
-   e.g., commits with a path, the download size of the group state for
-   new members, etc.  This increase in performance can offset
-   performance penalties, for example, when using a PQ-secure cipher
-   suite, or if the application requires high update frequencies
-   (deniability).
-
-8.2.  Fewer blanks
-
-   Blanks are typically created in the process of client removals.  With
-   virtual clients, the removal of an emulator client will not cause the
-   leaf of the virtual client (or indeed any node in the virtual
-   client’s direct path) to be blanked, except if it is the last
-   remaining emulator client.  As a result, fluctuation in emulator
-   clients does not necessarily lead to blanks in the group of the
-   corresponding virtual clients, resulting in fewer overall blanks and
-   better performance for all group members.
-
-9.  Emulation costs
-
-   From a performance standpoint, using virtual clients only makes sense
-   if the performance benefits from smaller trees and fewer blanks
-   outweigh the performance overhead incurred by emulating the virtual
-   client in the first place.
-
-10.  IANA considerations
+8.  IANA considerations
 
    This document requests the addition of a new value under the heading
-   "Messaging Layer Security" in the "MLS Component Types" regsitry.
+   "Messaging Layer Security" in the "MLS Component Types" registry.
 
-10.1.  DerivationInfoComponent
+8.1.  DerivationInfoComponent
 
    A component meant to communicate information on how to derive secrets
    for a given commit.
@@ -696,7 +681,7 @@ reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
 
    *  Recommended: True
 
-10.2.  VirtualClientAction
+8.2.  VirtualClientAction
 
    A component meant to communicate which virtual client action is taken
    in conjunction with the given commit in the emulation group.
@@ -709,14 +694,14 @@ reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
 
    *  Recommended: True
 
-11.  Normative References
+9.  Normative References
 
    [I-D.ietf-mls-extensions]
               Robert, R., "The Messaging Layer Security (MLS)
               Extensions", Work in Progress, Internet-Draft, draft-ietf-
-              mls-extensions-08, 21 July 2025,
+              mls-extensions-09, 2 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-mls-
-              extensions-08>.
+              extensions-09>.
 
    [NIST]     Dworkin, M., "Recommendation for Block Cipher Modes of
               Operation: Methods for Format-Preserving Encryption",
