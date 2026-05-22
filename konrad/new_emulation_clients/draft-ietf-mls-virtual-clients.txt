@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 12 November 2026                                    Phoenix R&D
+Expires: 23 November 2026                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                             11 May 2026
+                                                             22 May 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 November 2026.
+   This Internet-Draft will expire on 23 November 2026.
 
 Copyright Notice
 
@@ -269,6 +269,13 @@ Table of Contents
    Applications MAY mix the two variants across groups, for example
    using Variant A for groups where metadata hiding matters and Variant
    B elsewhere.
+
+   Regardless of the variant chosen, a new emulator client MUST NOT send
+   PrivateMessages into a higher-level group until that group has been
+   updated with secrets from an emulation group epoch in which the new
+   emulator client is a member.  This is to ensure that the reuse_guard
+   is properly computed with the emulator client's leaf index as
+   described in Section 5.5.2.
 
 4.1.1.  Trade-offs
 
