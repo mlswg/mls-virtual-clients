@@ -533,13 +533,23 @@ generation_id_secret =
   DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
 ~~~
 
-The `epoch_base_secret` is then used to key an instance of the PPRF defined in
-{{!I-D.ietf-mls-extensions}} using a tree with `2^32` leaves.
+The `epoch_base_secret` keys a Virtual Client Secret Tree, a tree of secrets
+with the same structure as the Secret Tree defined in Section 9 of
+{{!RFC9420}}, with the following differences:
 
-Secrets are derived from the PPRF as follows:
+- A Virtual Client Secret Tree always has `2^256` leaves, so that the
+  output of the emulation group's ciphersuite hash function can be used
+  directly as a leaf index.
+- The root of the tree is the `epoch_base_secret` rather than a secret
+  derived from the `encryption_secret` of an MLS group epoch.
+
+TODO: Re-evaluate the tree size. A smaller tree (e.g., `2^128` leaves with the
+leaf index derived by truncating `pprf_input`) is probably sufficient.
+
+Secrets are derived from the Virtual Client Secret Tree as follows:
 
 ~~~
-VirtualClientSecret(Input) = tree_node_[LeafNode(Input)]_secret
+VirtualClientSecret(Input) = tree_node_[LeafIndex(Input)]_secret
 ~~~
 
 Emulator clients MUST store the `epoch_id`, `epoch_encryption_key`,
