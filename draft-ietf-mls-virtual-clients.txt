@@ -66,6 +66,9 @@ Table of Contents
        3.1.1.  Smaller trees
        3.1.2.  Fewer blanks
        3.1.3.  Emulation costs
+       3.1.4.  Smaller trees
+       3.1.5.  Fewer blanks
+       3.1.6.  Emulation costs
      3.2.  Metadata hiding
    4.  Emulation group management
      4.1.  Adding an emulator client
@@ -165,8 +168,8 @@ Table of Contents
 
    At the same time, the virtual client emulation process (see
    Section 5) allows emulator clients to carry the benefit of a single
-   operation in the emulation group to all virtual clients emulated in
-   that group.
+   operation in the emulation group to all higher-level groups in which
+   the virtual client is a member.
 
 3.1.1.  Smaller trees
 
@@ -190,6 +193,34 @@ Table of Contents
    better performance for all group members.
 
 3.1.3.  Emulation costs
+
+   From a performance standpoint, using virtual clients only makes sense
+   if the performance benefits from smaller trees and fewer blanks
+   outweigh the performance overhead incurred by emulating the virtual
+   client in the first place.
+
+3.1.4.  Smaller trees
+
+   As a general rule, groups where one or more sets of clients are
+   replaced by virtual clients have fewer members, which leads to
+   cheaper MLS operations where the cost depends on the group size,
+   e.g., commits with a path, the download size of the group state for
+   new members, etc.  This increase in performance can offset
+   performance penalties, for example, when using a PQ-secure cipher
+   suite, or if the application requires high update frequencies.
+
+3.1.5.  Fewer blanks
+
+   Blanks are typically created in the process of client removals.  With
+   virtual clients, the removal of an emulator client will not cause the
+   leaf of the virtual client (or indeed any node in the virtual
+   client's direct path) to be blanked, except if it is the last
+   remaining emulator client.  As a result, fluctuation in emulator
+   clients does not necessarily lead to blanks in the group of the
+   corresponding virtual clients, resulting in fewer overall blanks and
+   better performance for all group members.
+
+3.1.6.  Emulation costs
 
    From a performance standpoint, using virtual clients only makes sense
    if the performance benefits from smaller trees and fewer blanks
@@ -505,6 +536,16 @@ Table of Contents
       application-defined source — and includes a Remove proposal for
       the virtual client's prior leaf to evict the old membership.
 
+   A newly added emulator client MUST NOT send a PrivateMessage in a
+   higher-level group under a virtual-client LeafNode whose
+   DerivationInfoComponent.epoch_id predates the emulation-group epoch
+   in which it was added.  Before the new emulator client can send
+   messages in such a higher-level group, an emulator client MUST rotate
+   the virtual-client LeafNode (e.g., by committing a Commit with an
+   update path or by an Update proposal followed by a Commit) to a more
+   recent emulation-group epoch in which the new emulator client is a
+   member.
+
 4.2.  Joining externally
 
    Without another online emulator client to bootstrap from, a new
@@ -594,6 +635,11 @@ Table of Contents
    To ensure that all emulator clients can act through the virtual
    client, they have to coordinate some of its actions.
 
+   Each emulation group MUST emulate exactly one virtual client.  An
+   emulation group MAY emulate that virtual client in multiple higher-
+   level groups, but the virtual client MUST NOT be represented by more
+   than one leaf in any given higher-level group.
+
 5.1.  Delivery Service
 
    Client emulation requires that any message sent by an emulator client
@@ -642,11 +688,17 @@ Table of Contents
 
    VirtualClientSecret(Input) = tree_node_[LeafIndex(Input)]_secret
 
-   Emulator clients MUST store the epoch_id, epoch_encryption_key,
-   generation_id_secret, and punctured epoch_base_secret until no key
-   material derived from the epoch is actively used anymore.  This is
-   required for the addition of new clients to the emulation group as
-   described in Section 4.1.
+   Emulator clients MUST retain the (punctured) epoch_base_secret, the
+   epoch_id, the generation_id_secret, and the number of leaves the
+   emulation group had at the corresponding epoch until no key material
+   or generation IDs associated with that epoch are actively used
+   anymore.  For each retained epoch in which an emulator client was a
+   member, it MUST also retain its own leaf index at that epoch.  The
+   epoch_base_secret and epoch_id are used for the addition of new
+   clients to the emulation group (Section 4.1); the
+   generation_id_secret is used for computing generation IDs
+   (Section 5.5.3); and the leaf count and leaf index are used for
+   computing the reuse_guard (Section 5.5.2).
 
    When deriving a secret for a virtual client, e.g. for use in a
    KeyPackage or LeafNode update, the deriving client chooses a
@@ -723,10 +775,6 @@ Table of Contents
    reuse_guard_secret =
      DeriveSecret(operation_secret, "Reuse Guard")
 
-   The first four secrets are used as the randomness required in the
-   corresponding key generation process. reuse_guard_secret is used as
-   described in Section 5.5.2.
-
    The source of the virtual client's signature key is application-
    defined.  An application MAY use signature_key_secret to derive a
    fresh signing key per operation, or MAY provide signing-key material
@@ -736,6 +784,8 @@ Table of Contents
    signing_key_material field of NewEmulatorClientState (see
    Section 4.1) carries the state a new emulator client needs; its
    contents are application-defined.
+
+   reuse_guard_secret is used as described in Section 5.5.2.
 
 5.3.  Creating LeafNodes and UpdatePaths
 
@@ -771,8 +821,15 @@ Table of Contents
    group that the virtual client is a member of, they use the epoch_id
    to determine the epoch of the emulation group from which to derive
    the secrets necessary to re-create the key material of the LeafNode
-   and potential UpdatePath.  The PPRF input is computed with
-   operation_type set to leaf_node.
+   and potential UpdatePath.
+
+   The DerivationInfoComponent on the active virtual-client LeafNode
+   binds that virtual client's membership in the higher-level group to
+   the emulation-group epoch identified by epoch_id.  Protocol steps
+   that require per-epoch emulation-group state for a higher-level
+   group, such as computing the reuse_guard (Section 5.5.2) or a
+   generation ID (Section 5.5.3), MUST use the emulation-group epoch
+   identified by the active virtual-client LeafNode.
 
 5.4.  Virtual client actions
 
@@ -881,8 +938,19 @@ Table of Contents
 
    MLS clients typically generate the bytes for the reuse_guard
    randomly.  When sending a message with a virtual client, however,
-   emulator clients choose a random value x such that x modulo the
-   number of leaves in the emulation group is equal to its leaf_index.
+   emulator clients choose a random value x such that x modulo N_e is
+   equal to leaf_index_e, where:
+
+   *  e is the emulation-group epoch that produced the active virtual-
+      client LeafNode in the higher-level group, identified by the
+      epoch_id field of that LeafNode's DerivationInfoComponent (see
+      Section 5.3).
+
+   *  N_e is the number of leaves the emulation group had at epoch e.
+
+   *  leaf_index_e is the encrypting emulator client's leaf index in the
+      emulation group at epoch e.
+
    They then calculate:
 
    prp_key = ExpandWithLabel(reuse_guard_secret, "reuse guard",
@@ -920,7 +988,7 @@ Table of Contents
    coordinating the use of individual ratchet generations for encryption
    through the DS.  Emulator clients MAY send a generation ID to the DS
    whenever they fan out a private message.  The generation ID is
-   derived as follow.
+   derived as follows.
 
    enum {
      reserved(0),
@@ -930,12 +998,20 @@ Table of Contents
    } RatchetType
 
    struct {
+     opaque group_id<V>;
+     uint64 epoch;
      uint32 generation;
      RatchetType ratchet_type;
    } PrivateMessageContext
 
    generation_id = ExpandWithLabel(generation_id_secret, "generation id",
                          PrivateMessageContext, Kdf.Nh)
+
+   *  group_id is the group_id of the higher-level group in which the
+      PrivateMessage is sent
+
+   *  epoch is the epoch of that higher-level group at which the
+      PrivateMessage is sent
 
    *  generation is the generation of the ratchet used for encryption
 
@@ -944,12 +1020,15 @@ Table of Contents
 
    *  ExpandWithLabel as defined in [RFC9420]
 
-   *  generation_id_secret is derived as specified in Section 5.2
+   *  generation_id_secret is derived as specified in Section 5.2 for
+      the emulation-group epoch identified by the active virtual-client
+      LeafNode in the higher-level group
 
    *  Kdf.Nh is from the emulation group's ciphersuite
 
    Attaching the generation ID to the PrivateMessage allows the DS to
-   detect collisions between generations per epoch and per ratchet type.
+   detect collisions between generations per higher-level group, per
+   higher-level group epoch and per ratchet type.
 
    Alternatively, devices communicating with an eventually-consistent DS
    may need to simply retain messages and encryption keys for a short
