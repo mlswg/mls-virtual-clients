@@ -1684,7 +1684,14 @@ uses its <code>operation_secret</code> to derive the corresponding <code>init_ke
               <p id="section-5.1.2-3.7.1"><code>retained_operation_secrets</code> contains every <code>operation_secret</code>
 whose derived key material is still live. This includes operation secrets
 for outstanding KeyPackages, for the current LeafNode of each higher-level
-group, and for sent but uncommitted LeafNodes or UpdatePaths.<a href="#section-5.1.2-3.7.1" class="pilcrow">¶</a></p>
+group, and for sent but uncommitted LeafNodes or UpdatePaths.
+<code>retained_operation_secrets</code> is needed for the <code>state_transfer</code> onboarding
+variant because the joining emulator client needs to reconstruct still-live
+virtual-client artifacts whose operation ratchet generations have already been
+deleted. The <code>external_commit</code> onboarding variant does not require these
+retained operation secrets if it replaces every still-live virtual-client
+artifact derived from an earlier emulation-group epoch, including outstanding
+KeyPackages and active LeafNodes in higher-level groups.<a href="#section-5.1.2-3.7.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.8">
               <p id="section-5.1.2-3.8.1"><code>past_emulation_epochs</code> carries, for every emulation-group epoch still

@@ -466,7 +466,15 @@ Table of Contents
       derived key material is still live.  This includes operation
       secrets for outstanding KeyPackages, for the current LeafNode of
       each higher-level group, and for sent but uncommitted LeafNodes or
-      UpdatePaths.
+      UpdatePaths. retained_operation_secrets is needed for the
+      state_transfer onboarding variant because the joining emulator
+      client needs to reconstruct still-live virtual-client artifacts
+      whose operation ratchet generations have already been deleted.
+      The external_commit onboarding variant does not require these
+      retained operation secrets if it replaces every still-live
+      virtual-client artifact derived from an earlier emulation-group
+      epoch, including outstanding KeyPackages and active LeafNodes in
+      higher-level groups.
 
    *  past_emulation_epochs carries, for every emulation-group epoch
       still referenced by an active LeafNode, KeyPackage, or retained
