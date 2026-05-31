@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-28T02:49:57.187082+00:00",
+  "timestamp": "2026-05-31T03:29:49.158724+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -750,6 +750,53 @@
       "mergeCommit": null,
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 20,
+      "id": "PR_kwDOKsv6Xc7gIwoP",
+      "title": "suggest values for IANA registry entries",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/20",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-05-28T07:29:37Z",
+      "updatedAt": "2026-05-28T17:09:02Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/suggest_component_values",
+      "headRefOid": "ac68f30e9db10b53ca18d55aab5ee2b271921c17",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABBUEksg",
+          "commit": {
+            "abbreviatedOid": "ac68f30"
+          },
+          "author": "raphaelrobert",
+          "authorAssociation": "MEMBER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-05-28T17:09:01Z",
+          "updatedAt": "2026-05-28T17:09:02Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "The more common syntax would be\n\n`Value: 0x000D (suggested)`",
+              "createdAt": "2026-05-28T17:09:02Z",
+              "updatedAt": "2026-05-28T17:09:02Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
