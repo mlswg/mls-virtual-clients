@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-31T03:29:49.158724+00:00",
+  "timestamp": "2026-06-07T03:34:18.035103+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -685,7 +685,7 @@
       "labels": [],
       "body": "This PR replaces the rather large 32-byte input PPRF for operation secrets with an RFC9420-style SecretTree + per-leaf Ratchet construction. This changes slightly how operation secrets are derived, but makes the PPRF significantly smaller.",
       "createdAt": "2026-05-26T07:08:55Z",
-      "updatedAt": "2026-05-26T07:29:00Z",
+      "updatedAt": "2026-06-05T12:24:56Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
@@ -697,7 +697,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABCGsSEw",
+          "commit": {
+            "abbreviatedOid": "139accf"
+          },
+          "author": "mulmarta",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I went over it and it makes a lot of sense.\n\nJust leaving a note, no strong opinions: Have you considered a separate ratchet for each operation type? This assumes a fixed set of operation types. On the other hand, it may optimize storage. So for example say a client has leaf node operations interleaved with key package operations and it deletes the secrets for leaf node operations. With one ratchet per operation type it could store just the beginning of the key package ratchet.",
+          "createdAt": "2026-06-05T12:24:56Z",
+          "updatedAt": "2026-06-05T12:24:56Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 18,
@@ -711,7 +725,7 @@
       "labels": [],
       "body": "(Stacked on #17)\r\n\r\nThis PR has clients derive the `reuse_guard_secret` from the `emulator_epoch_secret`. This changes its scope from per-higher-level group to per-emulation group epoch. This shouldn't impact security, but reduces the amount of bookkeeping for implementations.",
       "createdAt": "2026-05-26T07:27:14Z",
-      "updatedAt": "2026-05-26T13:58:14Z",
+      "updatedAt": "2026-06-05T12:47:02Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "konrad/smaller_pprf",
       "baseRefOid": "139accf6c306e2d6175af107d0a3b0b74476cf4e",
@@ -723,7 +737,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABCG1B2Q",
+          "commit": {
+            "abbreviatedOid": "100ae33"
+          },
+          "author": "mulmarta",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "So for my understanding, you're saying that deriving one `reuse_guard_secret` per higher level group is an overkill, because we don't need to guard against key reuse between groups. These groups already have different key schedules, so AEAD keys and nonces will be different. It makes sense to me.",
+          "createdAt": "2026-06-05T12:47:02Z",
+          "updatedAt": "2026-06-05T12:47:02Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 19,
@@ -737,7 +765,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-05-26T14:08:23Z",
-      "updatedAt": "2026-05-26T14:08:23Z",
+      "updatedAt": "2026-06-05T12:27:52Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
@@ -749,7 +777,28 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABCGtM3A",
+          "commit": {
+            "abbreviatedOid": "b8d67d0"
+          },
+          "author": "mulmarta",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-05T12:27:52Z",
+          "updatedAt": "2026-06-05T12:27:52Z",
+          "comments": [
+            {
+              "originalPosition": 64,
+              "body": "note: `random` will change after #17 ",
+              "createdAt": "2026-06-05T12:27:52Z",
+              "updatedAt": "2026-06-05T12:27:52Z"
+            }
+          ]
+        }
+      ]
     },
     {
       "number": 20,
