@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 27 November 2026                                    Phoenix R&D
+Expires: 11 December 2026                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                             26 May 2026
+                                                             9 June 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 November 2026.
+   This Internet-Draft will expire on 11 December 2026.
 
 Copyright Notice
 
@@ -358,6 +358,14 @@ Table of Contents
    struct {
      uint32 leaf_index;
      SecretTreeRatchetType ratchet_type;
+     select (SecretTreeRatchetState.ratchet_type) {
+       case application:
+         struct{};
+       case handshake:
+         struct{};
+       case operation:
+         VirtualClientOperationType operation_type;
+     };
      uint32 generation;
      opaque next_secret<V>;
    } SecretTreeRatchetState;
@@ -445,7 +453,8 @@ Table of Contents
       MUST NOT contain secrets that have already been deleted.  The
       application and handshake ratchet types are used for higher-level
       MLS Secret Trees.  The operation ratchet type is used for virtual-
-      client operation secrets.
+      client operation secrets and includes an operation_type field that
+      identifies the per-leaf operation-type ratchet.
 
    *  signing_key_material is an application-defined blob that conveys
       whatever signing-key state the joining emulator client needs.  For
@@ -469,9 +478,9 @@ Table of Contents
       UpdatePaths. retained_operation_secrets is needed for the
       state_transfer onboarding variant because the joining emulator
       client needs to reconstruct still-live virtual-client artifacts
-      whose operation ratchet generations have already been deleted.
-      The external_commit onboarding variant does not require these
-      retained operation secrets if it replaces every still-live
+      whose operation-type ratchet generations have already been
+      deleted.  The external_commit onboarding variant does not require
+      these retained operation secrets if it replaces every still-live
       virtual-client artifact derived from an earlier emulation-group
       epoch, including outstanding KeyPackages and active LeafNodes in
       higher-level groups.
@@ -684,19 +693,30 @@ Table of Contents
    *  The root of the tree is the epoch_base_secret rather than a secret
       derived from the encryption_secret of an MLS group epoch.
 
-   *  Each leaf has a single operation ratchet used to derive virtual-
-      client operation secrets.
+   *  Each leaf has one operation ratchet for each
+      VirtualClientOperationType.
 
    Emulator clients use the same ratchet advancement, skipping, and
-   deletion schedule for operation ratchets as RFC 9420 uses for sender
-   ratchets.  The serialized state of the Virtual Client Operation
-   Secret Tree is represented by SecretTreeState with
-   SecretTreeRatchetState.ratchet_type set to operation.  When a leaf
-   secret in the Virtual Client Operation Secret Tree is expanded, the
-   initial operation ratchet secret for that leaf is derived as follows:
+   deletion schedule for each operation ratchet as RFC 9420 uses for
+   sender ratchets.  The serialized state of the Virtual Client
+   Operation Secret Tree is represented by SecretTreeState with
+   SecretTreeRatchetState.ratchet_type set to operation and
+   SecretTreeRatchetState.operation_type set to the corresponding
+   VirtualClientOperationType.
 
-   operation_ratchet_secret[0] =
-     DeriveSecret(leaf_secret, "VC Operation Init")
+   When a leaf secret in the Virtual Client Operation Secret Tree is
+   expanded, the initial operation ratchet secret for each supported,
+   non-reserved VirtualClientOperationType is derived as follows:
+
+   operation_ratchet_secret[operation_type][0] =
+     ExpandWithLabel(leaf_secret, "vc operation init",
+                     operation_type, Kdf.Nh)
+
+   In this derivation, operation_type is the TLS-encoded
+   VirtualClientOperationType value.
+
+   The leaf_secret MUST be deleted after all initial operation ratchet
+   secrets for the leaf have been derived.
 
    Emulator clients MUST retain the operation_secret_tree, the epoch_id,
    the epoch_encryption_key, the generation_id_secret, and the number of
@@ -714,13 +734,13 @@ Table of Contents
    When deriving a secret for a virtual client, e.g. for use in a
    KeyPackage or LeafNode update, the deriving client chooses a
    VirtualClientOperationType and uses the next unused generation of its
-   own operation ratchet.  The operation_type is key_package when
-   creating a KeyPackage and leaf_node when creating a LeafNode for an
-   Update proposal, a Commit with an update path, or an external commit.
-   Applications MAY use the operation type application to derive
-   application-specific key material.  An emulator client MUST NOT use
-   the same operation ratchet generation for more than one virtual-
-   client operation.
+   own operation ratchet for that operation type.  The operation_type is
+   key_package when creating a KeyPackage and leaf_node when creating a
+   LeafNode for an Update proposal, a Commit with an update path, or an
+   external commit.  Applications MAY use the operation type application
+   to derive application-specific key material.  An emulator client MUST
+   NOT use the same generation of the same operation-type ratchet for
+   more than one virtual-client operation.
 
    The operation context is a value bound into the derivation of the
    operation_secret.  For key_package operations, operation_context is a
@@ -749,22 +769,23 @@ Table of Contents
                      OperationContext, Kdf.Nh)
 
    operation_ratchet_secret is the ratchet secret for generation in the
-   operation ratchet of leaf_index.  After deriving operation_secret and
-   next_operation_ratchet_secret, the emulator client MUST delete
-   operation_ratchet_secret and operation_generation_secret and update
-   the ratchet state to next_operation_ratchet_secret for generation +
-   1.  The emulator client MUST retain operation_secret as a
-   RetainedOperationSecret until all key material derived from it is no
-   longer active, and MUST delete operation_secret after that point.
+   operation_type ratchet of leaf_index.  After deriving
+   operation_secret and next_operation_ratchet_secret, the emulator
+   client MUST delete operation_ratchet_secret and
+   operation_generation_secret and update the ratchet state for the
+   selected operation_type to next_operation_ratchet_secret for
+   generation + 1.  The emulator client MUST retain operation_secret as
+   a RetainedOperationSecret until all key material derived from it is
+   no longer active, and MUST delete operation_secret after that point.
 
    Given an epoch_id, operation_type, generation, operation_context, and
    the leaf_index of the emulator client performing the virtual client
    operation, other emulator clients can derive the operation_secret,
-   advance the same operation ratchet, and use the operation_secret to
-   perform the same operation.  If the operation ratchet generation has
-   already been deleted, for example because the emulator client joined
-   after the operation took place, the emulator client uses the
-   corresponding RetainedOperationSecret transferred in
+   advance the same operation-type ratchet, and use the operation_secret
+   to perform the same operation.  If the operation-type ratchet
+   generation has already been deleted, for example because the emulator
+   client joined after the operation took place, the emulator client
+   uses the corresponding RetainedOperationSecret transferred in
    NewEmulatorClientState.
 
    Depending on the operation, the acting emulator client will have to
