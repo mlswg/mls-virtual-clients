@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 29 November 2026                                    Phoenix R&D
+Expires: 11 December 2026                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                             28 May 2026
+                                                             9 June 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 29 November 2026.
+   This Internet-Draft will expire on 11 December 2026.
 
 Copyright Notice
 
@@ -1072,7 +1072,7 @@ Table of Contents
    A component that carries the state a newly added emulator client
    needs to act as the virtual client.
 
-   *  Value: TBD1 (suggested value 0x000D)
+   *  Value: 0x000D (suggested)
 
    *  Name: NewEmulatorClientState
 
@@ -1085,7 +1085,7 @@ Table of Contents
    A component meant to communicate information on how to derive secrets
    for a given commit.
 
-   *  Value: TBD2 (suggested value 0x000E)
+   *  Value: 0x000E (suggested)
 
    *  Name: DerivationInfoComponent
 
@@ -1098,7 +1098,7 @@ Table of Contents
    A component meant to communicate which virtual client action is taken
    in conjunction with the given commit in the emulation group.
 
-   *  Value: TBD3 (suggested value 0x000F)
+   *  Value: 0x000F (suggested)
 
    *  Name: VirtualClientAction
 
