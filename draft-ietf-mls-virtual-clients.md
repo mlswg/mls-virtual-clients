@@ -331,6 +331,7 @@ struct {
   SecretTreeState operation_secret_tree;
   opaque epoch_encryption_key<V>;
   opaque generation_id_secret<V>;
+  opaque reuse_guard_secret<V>;
 } EmulationEpochState;
 
 enum {
@@ -421,9 +422,10 @@ struct {
 - `past_emulation_epochs` carries, for every emulation-group epoch still
   referenced by an active LeafNode, KeyPackage, or retained operation secret
   and not equal to the current epoch, the retained `operation_secret_tree`
-  state, the `epoch_encryption_key`, and the `generation_id_secret`. State for
-  the current emulation-group epoch is not included here because the joining
-  emulator client derives it from the emulation group's Welcome.
+  state, the `epoch_encryption_key`, the `generation_id_secret`, and the
+  `reuse_guard_secret`. State for the current emulation-group epoch is not
+  included here because the joining emulator client derives it from the
+  emulation group's Welcome.
 - `higher_level_groups` contains one entry per active higher-level group.
   Each entry carries the `group_id` and a `state_type` identifying which
   variant applies.
@@ -568,7 +570,7 @@ every new epoch of that group using the Safe Exporter API defined in
 emulator_epoch_secret = SafeExportSecret(virtual_clients_component_id)
 ~~~
 
-The `emulator_epoch_secret` is in turn used to derive four further secrets, after
+The `emulator_epoch_secret` is in turn used to derive five further secrets, after
 which it is deleted.
 
 ~~~
@@ -580,6 +582,8 @@ epoch_encryption_key =
   DeriveSecret(emulator_epoch_secret, "Encryption Key")
 generation_id_secret =
   DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
+reuse_guard_secret =
+  DeriveSecret(emulator_epoch_secret, "Reuse Guard")
 ~~~
 
 The `epoch_base_secret` keys a Virtual Client Operation Secret Tree, a tree of
@@ -627,18 +631,19 @@ expanded leaves; they are only usable from emulation-group epochs onward in
 which all emulator clients derive them at expansion time.
 
 Emulator clients MUST retain the `operation_secret_tree`, the `epoch_id`, the
-`epoch_encryption_key`, the `generation_id_secret`, and the
-number of leaf nodes the emulation group's ratchet tree had at the
+`epoch_encryption_key`, the `generation_id_secret`, the `reuse_guard_secret`,
+and the number of leaf nodes the emulation group's ratchet tree had at the
 corresponding epoch (including blank leaves, see {{reuse-guard}}) until no key
-material or generation IDs associated with that epoch are actively used anymore.
-For each retained epoch in which an emulator client was a member, it MUST also
-retain its own leaf index at that epoch. The `operation_secret_tree`,
-`epoch_id`, and `epoch_encryption_key` are used for deriving and processing
-virtual-client key material, including DerivationInfos and state transferred
-to new clients ({{adding-an-emulator-client}}); the `generation_id_secret` is
-used for computing generation IDs
-({{coordinating-ratchet-generations-with-the-ds}}); and the leaf count and
-leaf index are used for computing the `reuse_guard` ({{reuse-guard}}).
+material associated with that epoch is actively used anymore and no generation
+IDs or reuse guards need to be computed for that epoch. For each retained
+epoch in which an emulator client was a member, it MUST also retain its own
+leaf index at that epoch. The `operation_secret_tree`, `epoch_id`, and
+`epoch_encryption_key` are used for deriving and processing virtual-client key
+material, including DerivationInfos and state transferred to new clients
+({{adding-an-emulator-client}}); the `generation_id_secret` is used for
+computing generation IDs ({{coordinating-ratchet-generations-with-the-ds}});
+and the `reuse_guard_secret`, leaf count, and leaf index are used for
+computing the `reuse_guard` ({{reuse-guard}}).
 
 When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
 LeafNode update, the deriving client chooses a `VirtualClientOperationType` and
@@ -700,7 +705,7 @@ in NewEmulatorClientState.
 Depending on the operation, the acting emulator client will have to derive one
 or more secrets from the `operation_secret`.
 
-There are five types of MLS-related secrets that can be derived from an
+There are four types of MLS-related secrets that can be derived from an
 `operation_secret`.
 
 - `signature_key_secret`: Used to derive the signature key in a virtual client's
@@ -710,8 +715,6 @@ There are five types of MLS-related secrets that can be derived from an
   LeafNode of a virtual client
 - `path_generation_secret`: Used to generate `path_secret`s for the UpdatePath
   of a virtual client
-- `reuse_guard_secret`: Used to derive the PRP key for `reuse_guard` values when
-  the virtual client sends a PrivateMessage (see {{reuse-guard}})
 
 ~~~
 signature_key_secret =
@@ -725,9 +728,6 @@ init_key_secret =
 
 path_generation_secret =
   DeriveSecret(operation_secret, "Path Generation")
-
-reuse_guard_secret =
-  DeriveSecret(operation_secret, "Reuse Guard")
 ~~~
 
 The source of the virtual client's signature key is application-defined. An
@@ -985,10 +985,10 @@ reuse_guard = SmallSpacePRP.Encrypt(prp_key, x)
 
 ExpandWithLabel is computed with the emulation group's ciphersuite's algorithms.
 `reuse_guard_secret` is derived as described in
-{{generating-virtual-client-secrets}} from the `operation_secret` of the
-operation that produced the virtual client's currently active LeafNode in the
-higher-level group. `key_schedule_nonce` is the nonce provided by the key
-schedule for encrypting this message.
+{{generating-virtual-client-secrets}} for emulation-group epoch `e`, identified
+by the virtual client's currently active LeafNode in the higher-level group.
+`key_schedule_nonce` is the nonce provided by the key schedule for encrypting
+this message.
 
 `prp_key` is computed in a way that it is unique to the key-nonce pair and
 computable by all emulator clients (but nobody else). `reuse_guard` is computed
@@ -1128,6 +1128,12 @@ leaf indices at epoch `e`, and on the exact PRP instantiation described in
 {{small-space-prp}}. The PRP key is 128 bits regardless of the ciphersuites in
 use; this bounds the sender-attribution and unlinkability properties of the
 reuse guard but does not affect the confidentiality of MLS messages.
+
+Since `reuse_guard_secret` is shared across all higher-level groups for a
+given emulation-group epoch, two messages in different higher-level groups
+that happen to use the same `key_schedule_nonce` will use the same `prp_key`.
+This does not endanger nonce uniqueness, because the two messages are
+encrypted under independent keys.
 
 # Privacy Considerations
 
