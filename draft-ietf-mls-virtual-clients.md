@@ -1079,7 +1079,7 @@ object in which the component appears:
 
 The requested registration is:
 
-- Value: TBD
+- Value: 0x0006 (suggested)
 - Name: virtual_clients
 - Where: GI, LN, AD, ES
-- Recommended: True
+- Recommended: Y
