@@ -962,8 +962,7 @@ Table of Contents
    The ExternalJoin action is always sent this way (see Section 6.4.2).
    The key_package_upload action is one way applications MAY use to
    communicate a KeyPackageUpload message (Section 6.4.1) to the other
-   emulator clients; alternatively, the application can deliver
-   KeyPackageUpload messages over another channel.
+   emulator clients.
 
    enum {
      reserved(0),
