@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-07T03:34:18.035103+00:00",
+  "timestamp": "2026-06-11T03:37:48.067070+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -685,18 +685,26 @@
       "labels": [],
       "body": "This PR replaces the rather large 32-byte input PPRF for operation secrets with an RFC9420-style SecretTree + per-leaf Ratchet construction. This changes slightly how operation secrets are derived, but makes the PPRF significantly smaller.",
       "createdAt": "2026-05-26T07:08:55Z",
-      "updatedAt": "2026-06-05T12:24:56Z",
+      "updatedAt": "2026-06-10T10:11:25Z",
       "baseRepository": "mlswg/mls-virtual-clients",
-      "baseRefName": "main",
-      "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
+      "baseRefName": "konrad/keypackage_uploads",
+      "baseRefOid": "f3a3e28676a7d567bb2c62e9654f0260b37598bd",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/smaller_pprf",
-      "headRefOid": "139accf6c306e2d6175af107d0a3b0b74476cf4e",
+      "headRefOid": "95081835b86acda41ed6e6c35dd8ced2e462d83c",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I went over it and it makes a lot of sense.\r\n> \r\n> Just leaving a note, no strong opinions: Have you considered a separate ratchet for each operation type? This assumes a fixed set of operation types. On the other hand, it may optimize storage. So for example say a client has leaf node operations interleaved with key package operations and it deletes the secrets for leaf node operations. With one ratchet per operation type it could store just the beginning of the key package ratchet.\r\n\r\nGood idea. I don't think it necessarily assumes a fixed set of operations. When the client needs a secret for an operation, it either uses an existing ratchet, or spawns a new one for the operation type. Then we make ratchet spawning generic for the operation type.",
+          "createdAt": "2026-06-09T09:49:01Z",
+          "updatedAt": "2026-06-09T09:49:01Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOKsv6Xc8AAAABCGsSEw",
@@ -725,13 +733,13 @@
       "labels": [],
       "body": "(Stacked on #17)\r\n\r\nThis PR has clients derive the `reuse_guard_secret` from the `emulator_epoch_secret`. This changes its scope from per-higher-level group to per-emulation group epoch. This shouldn't impact security, but reduces the amount of bookkeeping for implementations.",
       "createdAt": "2026-05-26T07:27:14Z",
-      "updatedAt": "2026-06-05T12:47:02Z",
+      "updatedAt": "2026-06-10T10:11:56Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "konrad/smaller_pprf",
-      "baseRefOid": "139accf6c306e2d6175af107d0a3b0b74476cf4e",
+      "baseRefOid": "95081835b86acda41ed6e6c35dd8ced2e462d83c",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/derive_reuse_guard_from_epoch_base_secret",
-      "headRefOid": "100ae3360fad5fcd0388833d89c78d87a8b47669",
+      "headRefOid": "ce15dc9bf40ebbfe7d001904eea654dedabd5a37",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -765,13 +773,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-05-26T14:08:23Z",
-      "updatedAt": "2026-06-05T12:27:52Z",
+      "updatedAt": "2026-06-10T10:00:24Z",
       "baseRepository": "mlswg/mls-virtual-clients",
-      "baseRefName": "main",
-      "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
+      "baseRefName": "konrad/suggest_component_values",
+      "baseRefOid": "ce17e90e7c9fb9a3e724e4549f0663357ffd3e05",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/key_package_clarifications",
-      "headRefOid": "b8d67d00502c8ec00990f6787d6aafd72479938b",
+      "headRefOid": "0eb1577cfeb9340d64b06fb1549d6483baa11ae4",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -797,6 +805,26 @@
               "updatedAt": "2026-06-05T12:27:52Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABCa6SMg",
+          "commit": {
+            "abbreviatedOid": "b8d67d0"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-09T09:45:59Z",
+          "updatedAt": "2026-06-09T09:45:59Z",
+          "comments": [
+            {
+              "originalPosition": 64,
+              "body": "Good point. I'll keep that in mind when merging.",
+              "createdAt": "2026-06-09T09:45:59Z",
+              "updatedAt": "2026-06-09T09:45:59Z"
+            }
+          ]
         }
       ]
     },
@@ -812,13 +840,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-05-28T07:29:37Z",
-      "updatedAt": "2026-05-28T17:09:02Z",
+      "updatedAt": "2026-06-10T09:58:51Z",
       "baseRepository": "mlswg/mls-virtual-clients",
-      "baseRefName": "main",
-      "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
+      "baseRefName": "konrad/review-fixes",
+      "baseRefOid": "df659317cff84e49854c1853ca33d72f974133ee",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/suggest_component_values",
-      "headRefOid": "ac68f30e9db10b53ca18d55aab5ee2b271921c17",
+      "headRefOid": "ce17e90e7c9fb9a3e724e4549f0663357ffd3e05",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -846,6 +874,58 @@
           ]
         }
       ]
+    },
+    {
+      "number": 21,
+      "id": "PR_kwDOKsv6Xc7kt_v5",
+      "title": "make KeyPackage generation and upload more flexible",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/21",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-06-10T06:34:47Z",
+      "updatedAt": "2026-06-10T10:07:08Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "konrad/key_package_clarifications",
+      "baseRefOid": "0eb1577cfeb9340d64b06fb1549d6483baa11ae4",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/keypackage_uploads",
+      "headRefOid": "f3a3e28676a7d567bb2c62e9654f0260b37598bd",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 22,
+      "id": "PR_kwDOKsv6Xc7kxru8",
+      "title": "Address multile issues on encryption, reuse guard, and IANA",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/22",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "- Derive AEAD key and nonce for DerivationInfo encryption from epoch_encryption_key with the LeafNode's encryption_key as context, making each key-nonce pair unique per operation\r\n- Restrict NewEmulatorClientState to Welcome-encrypted GroupInfo\r\n- Define N_e as the ratchet tree's leaf count including blank leaves\r\n- Fully instantiate FF1 (radix, numeral encoding, tweak, byte order)\r\n- Unify the three component registrations into a single virtual_clients component (Where: GI, LN, AD, ES) that also resolves the SafeExportSecret component ID; rename DerivationInfoComponent struct to DerivationInfo\r\n- Consolidate duplicate new-emulator sending restriction; note that rotation cannot be done by the new client in PrivateMessage-only groups\r\n- Replace Security and Privacy Considerations TODOs with initial text\r\n- Editorial fixes (resync wording, key_package_info reference, typos)",
+      "createdAt": "2026-06-10T09:26:11Z",
+      "updatedAt": "2026-06-10T09:26:11Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "88fd940926abb07e1d8171f613faeff07c3edba2",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/review-fixes",
+      "headRefOid": "df659317cff84e49854c1853ca33d72f974133ee",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
