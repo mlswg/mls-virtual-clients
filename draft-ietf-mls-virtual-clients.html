@@ -1582,7 +1582,8 @@ struct {
   opaque epoch_id&lt;V&gt;;
   VirtualClientOperationType operation_type;
   uint32 leaf_index;
-  opaque random&lt;V&gt;;
+  uint32 generation;
+  opaque operation_context&lt;V&gt;;
   opaque operation_secret&lt;V&gt;;
 } RetainedOperationSecret;
 
@@ -1595,12 +1596,21 @@ enum {
   reserved(0),
   application(1),
   handshake(2),
+  operation(3),
   (255)
 } SecretTreeRatchetType;
 
 struct {
   uint32 leaf_index;
   SecretTreeRatchetType ratchet_type;
+  select (SecretTreeRatchetState.ratchet_type) {
+    case application:
+      struct{};
+    case handshake:
+      struct{};
+    case operation:
+      VirtualClientOperationType operation_type;
+  };
   uint32 generation;
   opaque next_secret&lt;V&gt;;
 } SecretTreeRatchetState;
@@ -1614,12 +1624,12 @@ struct {
   KeyPackageRef key_package_ref;
   opaque epoch_id&lt;V&gt;;
   uint32 leaf_index;
-  opaque random&lt;V&gt;;
+  uint32 generation;
 } KeyPackageDerivationInfo;
 
 struct {
   opaque epoch_id&lt;V&gt;;
-  PPRFState epoch_base_secret;
+  SecretTreeState operation_secret_tree;
   opaque epoch_encryption_key&lt;V&gt;;
   opaque generation_id_secret&lt;V&gt;;
 } EmulationEpochState;
@@ -1676,9 +1686,10 @@ unused low-order bits in the final octet <span class="bcp14">MUST</span> be zero
 <code>nodes</code> <span class="bcp14">MUST</span> be prefix-free and sorted lexicographically by prefix.<a href="#section-5.1.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.3">
-              <p id="section-5.1.2-3.3.1"><code>RetainedOperationSecret</code> carries an <code>operation_secret</code> whose PPRF input has
-been punctured, but whose derived key material is still live. Entries are
-identified by <code>(epoch_id, operation_type, leaf_index, random)</code>.<a href="#section-5.1.2-3.3.1" class="pilcrow">¶</a></p>
+              <p id="section-5.1.2-3.3.1"><code>RetainedOperationSecret</code> carries an <code>operation_secret</code> whose operation
+ratchet generation has been deleted, but whose derived key material is still
+live. Entries are identified by <code>(epoch_id, operation_type, leaf_index,
+generation, operation_context)</code>.<a href="#section-5.1.2-3.3.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.4">
               <p id="section-5.1.2-3.4.1"><code>SecretTreeState</code> serializes the retained state of an RFC 9420 Secret Tree.
@@ -1688,7 +1699,10 @@ state of a derived per-leaf hash ratchet; <code>next_secret</code> is the ratche
 that will be used to derive the secret for <code>generation</code>. The serialized state
 <span class="bcp14">MUST</span> contain exactly the retained secrets needed to continue the Secret Tree
 deletion schedule from the sender's current state and <span class="bcp14">MUST NOT</span> contain
-secrets that have already been deleted.<a href="#section-5.1.2-3.4.1" class="pilcrow">¶</a></p>
+secrets that have already been deleted. The <code>application</code> and <code>handshake</code>
+ratchet types are used for higher-level MLS Secret Trees. The <code>operation</code>
+ratchet type is used for virtual-client operation secrets and includes an
+<code>operation_type</code> field that identifies the per-leaf operation-type ratchet.<a href="#section-5.1.2-3.4.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.5">
               <p id="section-5.1.2-3.5.1"><code>signing_key_material</code> is an application-defined blob that conveys whatever
@@ -1703,19 +1717,27 @@ identifiers needed to find the corresponding retained <code>key_package</code>
 operation secret. When a Welcome arrives encrypted to one of these
 KeyPackages, the joining emulator client identifies the entry by
 KeyPackageRef, finds the <code>RetainedOperationSecret</code> matching <code>(epoch_id,
-key_package, leaf_index, random)</code>, and uses its <code>operation_secret</code> to derive
-the corresponding <code>init_key</code> and KeyPackage LeafNode key material.<a href="#section-5.1.2-3.6.1" class="pilcrow">¶</a></p>
+key_package, leaf_index, generation, zero-length operation_context)</code>, and
+uses its <code>operation_secret</code> to derive the corresponding <code>init_key</code> and
+KeyPackage LeafNode key material.<a href="#section-5.1.2-3.6.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.7">
-              <p id="section-5.1.2-3.7.1"><code>retained_operation_secrets</code> contains every punctured <code>operation_secret</code>
+              <p id="section-5.1.2-3.7.1"><code>retained_operation_secrets</code> contains every <code>operation_secret</code>
 whose derived key material is still live. This includes operation secrets
 for outstanding KeyPackages, for the current LeafNode of each higher-level
-group, and for sent but uncommitted LeafNodes or UpdatePaths.<a href="#section-5.1.2-3.7.1" class="pilcrow">¶</a></p>
+group, and for sent but uncommitted LeafNodes or UpdatePaths.
+<code>retained_operation_secrets</code> is needed for the <code>state_transfer</code> onboarding
+variant because the joining emulator client needs to reconstruct still-live
+virtual-client artifacts whose operation-type ratchet generations have already
+been deleted. The <code>external_commit</code> onboarding variant does not require these
+retained operation secrets if it replaces every still-live virtual-client
+artifact derived from an earlier emulation-group epoch, including outstanding
+KeyPackages and active LeafNodes in higher-level groups.<a href="#section-5.1.2-3.7.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.8">
               <p id="section-5.1.2-3.8.1"><code>past_emulation_epochs</code> carries, for every emulation-group epoch still
 referenced by an active LeafNode, KeyPackage, or retained operation secret
-and not equal to the current epoch, the punctured <code>epoch_base_secret</code> PPRF
+and not equal to the current epoch, the retained <code>operation_secret_tree</code>
 state, the <code>epoch_encryption_key</code>, and the <code>generation_id_secret</code>. State for
 the current emulation-group epoch is not included here because the joining
 emulator client derives it from the emulation group's Welcome.<a href="#section-5.1.2-3.8.1" class="pilcrow">¶</a></p>
@@ -1940,105 +1962,146 @@ generation_id_secret =
   DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
 </pre><a href="#section-6.2-4" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-5">The <code>epoch_base_secret</code> keys a Virtual Client Secret Tree, a tree of secrets
-with the same structure as the Secret Tree defined in Section 9 of
+<p id="section-6.2-5">The <code>epoch_base_secret</code> keys a Virtual Client Operation Secret Tree, a tree of
+secrets with the same structure as the Secret Tree defined in Section 9 of
 <span>[<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, with the following differences:<a href="#section-6.2-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.2-6.1">
-            <p id="section-6.2-6.1.1">A Virtual Client Secret Tree always has <code>2^256</code> leaves, so that the
-output of the emulation group's ciphersuite hash function can be used
-directly as a leaf index.<a href="#section-6.2-6.1.1" class="pilcrow">¶</a></p>
+            <p id="section-6.2-6.1.1">Like the Secret Tree, the Virtual Client Operation Secret Tree has the same
+set of nodes and edges as the emulation group's ratchet tree at the
+corresponding epoch. The <code>node_index</code> fields of the serialized
+<code>SecretTreeState</code> are interpreted relative to this tree.<a href="#section-6.2-6.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.2-6.2">
-            <p id="section-6.2-6.2.1">The root of the tree is the <code>epoch_base_secret</code> rather than a secret
-derived from the <code>encryption_secret</code> of an MLS group epoch.<a href="#section-6.2-6.2.1" class="pilcrow">¶</a></p>
+            <p id="section-6.2-6.2.1">The root of the tree is the <code>epoch_base_secret</code> rather than a secret derived
+from the <code>encryption_secret</code> of an MLS group epoch.<a href="#section-6.2-6.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.2-6.3">
+            <p id="section-6.2-6.3.1">Each leaf has one <code>operation</code> ratchet for each
+<code>VirtualClientOperationType</code>.<a href="#section-6.2-6.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-6.2-7">TODO: Re-evaluate the tree size. A smaller tree (e.g., <code>2^128</code> leaves with the
-leaf index derived by truncating <code>pprf_input</code>) is probably sufficient.<a href="#section-6.2-7" class="pilcrow">¶</a></p>
-<p id="section-6.2-8">Secrets are derived from the Virtual Client Secret Tree as follows:<a href="#section-6.2-8" class="pilcrow">¶</a></p>
+<p id="section-6.2-7">Emulator clients use the same ratchet advancement, skipping, and deletion
+schedule for each operation ratchet as RFC 9420 uses for sender ratchets. An
+emulator client that learns of an operation with generation <code>n</code> of a ratchet
+whose current state is at generation <code>m &lt; n</code> derives and retains the operation
+secrets for the skipped generations <code>m, ..., n-1</code> in the same way RFC 9420
+handles out-of-order PrivateMessages. Implementations <span class="bcp14">SHOULD</span> bound the number
+of skipped generations they retain and the time for which they retain them.
+The serialized state of the Virtual Client Operation Secret Tree is
+represented by <code>SecretTreeState</code> with <code>SecretTreeRatchetState.ratchet_type</code>
+set to <code>operation</code> and <code>SecretTreeRatchetState.operation_type</code> set to the
+corresponding <code>VirtualClientOperationType</code>.<a href="#section-6.2-7" class="pilcrow">¶</a></p>
+<p id="section-6.2-8">When a leaf secret in the Virtual Client Operation Secret Tree is expanded, the
+initial operation ratchet secret for each non-reserved
+<code>VirtualClientOperationType</code> defined in this document is derived as follows:<a href="#section-6.2-8" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2-9">
 <pre>
-VirtualClientSecret(Input) = tree_node_[LeafIndex(Input)]_secret
+operation_ratchet_secret[operation_type][0] =
+  ExpandWithLabel(leaf_secret, "vc operation init",
+                  operation_type, Kdf.Nh)
 </pre><a href="#section-6.2-9" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-10">Emulator clients <span class="bcp14">MUST</span> retain the (punctured) <code>epoch_base_secret</code>, the
-<code>epoch_id</code>, the <code>epoch_encryption_key</code>, the <code>generation_id_secret</code>, and the
+<p id="section-6.2-10">In this derivation, <code>operation_type</code> is the TLS-encoded
+<code>VirtualClientOperationType</code> value.<a href="#section-6.2-10" class="pilcrow">¶</a></p>
+<p id="section-6.2-11">The <code>leaf_secret</code> <span class="bcp14">MUST</span> be deleted immediately after the initial operation
+ratchet secrets for all operation types have been derived. As a consequence,
+operation types defined by future documents cannot be added to already
+expanded leaves; they are only usable from emulation-group epochs onward in
+which all emulator clients derive them at expansion time.<a href="#section-6.2-11" class="pilcrow">¶</a></p>
+<p id="section-6.2-12">Emulator clients <span class="bcp14">MUST</span> retain the <code>operation_secret_tree</code>, the <code>epoch_id</code>, the
+<code>epoch_encryption_key</code>, the <code>generation_id_secret</code>, and the
 number of leaf nodes the emulation group's ratchet tree had at the
 corresponding epoch (including blank leaves, see <a href="#reuse-guard" class="auto internal xref">Section 6.5.2</a>) until no key
 material or generation IDs associated with that epoch are actively used anymore.
 For each retained epoch in which an emulator client was a member, it <span class="bcp14">MUST</span> also
-retain its own leaf index at that epoch. The <code>epoch_base_secret</code>, <code>epoch_id</code>,
-and <code>epoch_encryption_key</code> are used for deriving and processing virtual-client
-key material, including DerivationInfos and state transferred to new
-clients (<a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>); the <code>generation_id_secret</code> is used for
-computing generation IDs (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 6.5.3</a>);
-and the leaf count and leaf index are used for computing the <code>reuse_guard</code>
-(<a href="#reuse-guard" class="auto internal xref">Section 6.5.2</a>).<a href="#section-6.2-10" class="pilcrow">¶</a></p>
-<p id="section-6.2-11">When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
-LeafNode update, the deriving client chooses a <code>VirtualClientOperationType</code>,
-samples a random octet string <code>random</code>, and hashes it with its leaf index in the
-emulation group using the hash function of the emulation group's ciphersuite.
-The <code>operation_type</code> is <code>key_package</code> when creating a KeyPackage, including the
-KeyPackage's <code>init_key</code> and LeafNode key material. The <code>operation_type</code> is
-<code>leaf_node</code> when creating a LeafNode for an Update proposal, a Commit with an
-update path, or an external commit. Applications <span class="bcp14">MAY</span> use the operation type
-<code>application</code> to derive application-specific key material.<a href="#section-6.2-11" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.2-12">
+retain its own leaf index at that epoch. The <code>operation_secret_tree</code>,
+<code>epoch_id</code>, and <code>epoch_encryption_key</code> are used for deriving and processing
+virtual-client key material, including DerivationInfos and state transferred
+to new clients (<a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>); the <code>generation_id_secret</code> is
+used for computing generation IDs
+(<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 6.5.3</a>); and the leaf count and
+leaf index are used for computing the <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 6.5.2</a>).<a href="#section-6.2-12" class="pilcrow">¶</a></p>
+<p id="section-6.2-13">When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
+LeafNode update, the deriving client chooses a <code>VirtualClientOperationType</code> and
+uses the next unused generation of its own operation ratchet for that operation
+type. The <code>operation_type</code> is <code>key_package</code> when creating a KeyPackage,
+including the KeyPackage's <code>init_key</code> and LeafNode key material. The
+<code>operation_type</code> is <code>leaf_node</code> when creating a LeafNode for an Update
+proposal, a Commit with an update path, or an external commit. Applications <span class="bcp14">MAY</span>
+use the operation type <code>application</code> to derive application-specific key
+material. An emulator client <span class="bcp14">MUST NOT</span> use the same generation of the same
+operation-type ratchet for more than one virtual-client operation.<a href="#section-6.2-13" class="pilcrow">¶</a></p>
+<p id="section-6.2-14">The operation context is a value bound into the derivation of the
+<code>operation_secret</code>. For <code>key_package</code> operations, <code>operation_context</code> is a
+zero-length octet string. For <code>leaf_node</code> operations, <code>operation_context</code> is the
+<code>group_id</code> of the higher-level group in which the LeafNode is used. For
+<code>application</code> operations, <code>operation_context</code> is application-defined and <span class="bcp14">MUST</span> be
+authenticated by the application together with the other derivation inputs.<a href="#section-6.2-14" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.2-15">
 <pre>
 struct {
+  opaque epoch_id&lt;V&gt;;
   uint32 leaf_index;
+  uint32 generation;
   VirtualClientOperationType operation_type;
-  opaque random&lt;V&gt;;
-} HashInput
+  opaque operation_context&lt;V&gt;;
+} OperationContext
 
-pprf_input = Hash(HashInput)
-</pre><a href="#section-6.2-12" class="pilcrow">¶</a>
+operation_generation_secret =
+  DeriveSecret(operation_ratchet_secret, "VC Operation Secret")
+
+next_operation_ratchet_secret =
+  DeriveSecret(operation_ratchet_secret, "VC Operation Ratchet")
+
+operation_secret =
+  ExpandWithLabel(operation_generation_secret, "vc operation",
+                  OperationContext, Kdf.Nh)
+</pre><a href="#section-6.2-15" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-13">The <code>pprf_input</code> is then used to derive an <code>operation_secret</code>.<a href="#section-6.2-13" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.2-14">
-<pre>
-operation_secret = VirtualClientSecret(pprf_input)
-</pre><a href="#section-6.2-14" class="pilcrow">¶</a>
-</div>
-<p id="section-6.2-15">After deriving <code>operation_secret</code>, the emulator client <span class="bcp14">MUST</span> puncture
-<code>pprf_input</code> from the PPRF state for the corresponding <code>epoch_base_secret</code>.
-The emulator client <span class="bcp14">MUST</span> retain <code>operation_secret</code> as a
-RetainedOperationSecret until all key material derived from it is no longer
-active, and <span class="bcp14">MUST</span> delete <code>operation_secret</code> after that point.<a href="#section-6.2-15" class="pilcrow">¶</a></p>
-<p id="section-6.2-16">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>random</code>, and the <code>leaf_index</code> of the
-emulator client performing the virtual client operation, other emulator
-clients can derive the <code>operation_secret</code>, puncture the same <code>pprf_input</code>, and
-use the <code>operation_secret</code> to perform the same operation. If the PPRF input has
-already been punctured, for example because the emulator client joined after
-the operation took place, the emulator client uses the corresponding
-RetainedOperationSecret transferred in NewEmulatorClientState.<a href="#section-6.2-16" class="pilcrow">¶</a></p>
-<p id="section-6.2-17">Depending on the operation, the acting emulator client will have to derive one
-or more secrets from the <code>operation_secret</code>.<a href="#section-6.2-17" class="pilcrow">¶</a></p>
-<p id="section-6.2-18">There are five types of MLS-related secrets that can be derived from an
-<code>operation_secret</code>.<a href="#section-6.2-18" class="pilcrow">¶</a></p>
+<p id="section-6.2-16"><code>operation_ratchet_secret</code> is the ratchet secret for <code>generation</code> in the
+<code>operation_type</code> ratchet of <code>leaf_index</code>. After deriving <code>operation_secret</code> and
+<code>next_operation_ratchet_secret</code>, the emulator client <span class="bcp14">MUST</span> delete
+<code>operation_ratchet_secret</code> and <code>operation_generation_secret</code> and update the
+ratchet state for the selected <code>operation_type</code> to
+<code>next_operation_ratchet_secret</code> for <code>generation + 1</code>. The emulator client <span class="bcp14">MUST</span>
+retain <code>operation_secret</code> as a RetainedOperationSecret until all key material
+derived from it is no longer active, and <span class="bcp14">MUST</span> delete <code>operation_secret</code> after
+that point.<a href="#section-6.2-16" class="pilcrow">¶</a></p>
+<p id="section-6.2-17">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>generation</code>, <code>operation_context</code>, and
+the <code>leaf_index</code> of the emulator client performing the virtual client
+operation, other emulator clients can derive the <code>operation_secret</code>, advance the
+same operation-type ratchet, and use the <code>operation_secret</code> to perform the same
+operation. If the operation-type ratchet generation has already been deleted,
+for example because the emulator client joined after the operation took place,
+the emulator client uses the corresponding RetainedOperationSecret transferred
+in NewEmulatorClientState.<a href="#section-6.2-17" class="pilcrow">¶</a></p>
+<p id="section-6.2-18">Depending on the operation, the acting emulator client will have to derive one
+or more secrets from the <code>operation_secret</code>.<a href="#section-6.2-18" class="pilcrow">¶</a></p>
+<p id="section-6.2-19">There are five types of MLS-related secrets that can be derived from an
+<code>operation_secret</code>.<a href="#section-6.2-19" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.2-19.1">
-            <p id="section-6.2-19.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
-leaf<a href="#section-6.2-19.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-6.2-20.1">
+            <p id="section-6.2-20.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
+leaf<a href="#section-6.2-20.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-19.2">
-            <p id="section-6.2-19.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-6.2-19.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-20.2">
+            <p id="section-6.2-20.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-6.2-20.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-19.3">
-            <p id="section-6.2-19.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
-LeafNode of a virtual client<a href="#section-6.2-19.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-20.3">
+            <p id="section-6.2-20.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
+LeafNode of a virtual client<a href="#section-6.2-20.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-19.4">
-            <p id="section-6.2-19.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
-of a virtual client<a href="#section-6.2-19.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-20.4">
+            <p id="section-6.2-20.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
+of a virtual client<a href="#section-6.2-20.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-19.5">
-            <p id="section-6.2-19.5.1"><code>reuse_guard_secret</code>: Used to derive the PRP key for <code>reuse_guard</code> values when
-the virtual client sends a PrivateMessage (see <a href="#reuse-guard" class="auto internal xref">Section 6.5.2</a>)<a href="#section-6.2-19.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-20.5">
+            <p id="section-6.2-20.5.1"><code>reuse_guard_secret</code>: Used to derive the PRP key for <code>reuse_guard</code> values when
+the virtual client sends a PrivateMessage (see <a href="#reuse-guard" class="auto internal xref">Section 6.5.2</a>)<a href="#section-6.2-20.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<div class="alignLeft art-text artwork" id="section-6.2-20">
+<div class="alignLeft art-text artwork" id="section-6.2-21">
 <pre>
 signature_key_secret =
   DeriveSecret(operation_secret, "Signature Key")
@@ -2054,16 +2117,16 @@ path_generation_secret =
 
 reuse_guard_secret =
   DeriveSecret(operation_secret, "Reuse Guard")
-</pre><a href="#section-6.2-20" class="pilcrow">¶</a>
+</pre><a href="#section-6.2-21" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-21">The source of the virtual client's signature key is application-defined. An
+<p id="section-6.2-22">The source of the virtual client's signature key is application-defined. An
 application <span class="bcp14">MAY</span> use <code>signature_key_secret</code> to derive a fresh signing key per
 operation, or <span class="bcp14">MAY</span> provide signing-key material through other means, for
 example a per-group or global signing key issued by the Authentication
 Service, or a signing key derived from an emulation-group epoch secret.
 Whatever the choice, the <code>signing_key_material</code> field of
 NewEmulatorClientState (see <a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>) carries the
-state a new emulator client needs; its contents are application-defined.<a href="#section-6.2-21" class="pilcrow">¶</a></p>
+state a new emulator client needs; its contents are application-defined.<a href="#section-6.2-22" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-leafnodes-and-updatepaths">
@@ -2093,7 +2156,7 @@ struct {
 
 struct {
   uint32 leaf_index;
-  opaque random&lt;V&gt;;
+  uint32 generation;
 } DerivationInfoTBE
 </pre><a href="#section-6.3-4" class="pilcrow">¶</a>
 </div>
@@ -2117,16 +2180,20 @@ LeafNode yields an identical ciphertext, which is benign.<a href="#section-6.3-7
 <p id="section-6.3-8">The operation type used to derive the LeafNode's <code>operation_secret</code> is
 determined by the LeafNode's <code>leaf_node_source</code>
 (<span><a href="https://rfc-editor.org/rfc/rfc9420#section-7.2" class="relref">Section 7.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>): <code>key_package</code> maps to <code>key_package</code>, while
-<code>update</code> and <code>commit</code> map to <code>leaf_node</code>. The <code>leaf_index</code> and <code>random</code> fields
-<span class="bcp14">MUST</span> be the values used with that operation type to derive the LeafNode's
-<code>operation_secret</code>.<a href="#section-6.3-8" class="pilcrow">¶</a></p>
+<code>update</code> and <code>commit</code> map to <code>leaf_node</code>. The <code>operation_context</code> is
+determined by the operation type as described in
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>: zero-length for <code>key_package</code>
+operations, and the <code>group_id</code> of the higher-level group in which the LeafNode
+is used for <code>leaf_node</code> operations. The <code>leaf_index</code> and <code>generation</code> fields
+<span class="bcp14">MUST</span> be the values used with that operation type and operation context to
+derive the LeafNode's <code>operation_secret</code>.<a href="#section-6.3-8" class="pilcrow">¶</a></p>
 <p id="section-6.3-9">When other emulator clients receive a LeafNode for the virtual client, they use
 the <code>epoch_id</code> to determine the epoch of the emulation group from which to
 derive the secrets necessary to re-create the key material of the LeafNode and
 potential UpdatePath. They decrypt the DerivationInfo and use the operation
 type determined from the LeafNode's <code>leaf_node_source</code>, together with the
-<code>leaf_index</code> and <code>random</code> fields, as inputs to the operation secret derivation
-described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>.<a href="#section-6.3-9" class="pilcrow">¶</a></p>
+<code>leaf_index</code> and <code>generation</code> fields, as inputs to the operation secret
+derivation described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>.<a href="#section-6.3-9" class="pilcrow">¶</a></p>
 <p id="section-6.3-10">The <code>DerivationInfo</code> on the active virtual-client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
 epoch identified by <code>epoch_id</code>. Protocol steps that require per-epoch
@@ -2185,9 +2252,10 @@ struct {
 <code>key_package</code> operation secret as described in
 <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>. The KeyPackage's LeafNode <span class="bcp14">MUST</span> contain a
 DerivationInfo as described in <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a> whose
-encrypted DerivationInfoTBE contains the same <code>leaf_index</code> and <code>random</code> values
-used for the KeyPackage operation. The <code>random</code> value <span class="bcp14">MUST</span> be the value
-reported for this KeyPackage in the corresponding KeyPackageUpload message.<a href="#section-6.4.1-1" class="pilcrow">¶</a></p>
+encrypted DerivationInfoTBE contains the same <code>leaf_index</code> and <code>generation</code>
+values used for the KeyPackage operation. The <code>generation</code> value <span class="bcp14">MUST</span> be the
+value reported for this KeyPackage in the corresponding KeyPackageUpload
+message.<a href="#section-6.4.1-1" class="pilcrow">¶</a></p>
 <p id="section-6.4.1-2">To make other emulator clients aware of the new KeyPackages and allow them to
 process any corresponding Welcome messages, the creating client <span class="bcp14">MUST</span> send them
 a KeyPackageUpload message covering all new KeyPackages before making the
@@ -2196,7 +2264,7 @@ KeyPackages available to other parties.<a href="#section-6.4.1-2" class="pilcrow
 <pre>
 struct {
   KeyPackageRef key_package_ref;
-  opaque random&lt;V&gt;;
+  uint32 generation;
 } KeyPackageInfo
 
 struct {
@@ -2212,8 +2280,8 @@ struct {
 described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-5.2" class="relref">Section 5.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>.<a href="#section-6.4.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.4.1-4.2">
-              <p id="section-6.4.1-4.2.1"><code>random</code>: The randomness used to generate the <code>init_key_secret</code> as described
-in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a><a href="#section-6.4.1-4.2.1" class="pilcrow">¶</a></p>
+              <p id="section-6.4.1-4.2.1"><code>generation</code>: The <code>key_package</code> operation ratchet generation used to generate
+the <code>init_key_secret</code> as described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a><a href="#section-6.4.1-4.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.4.1-4.3">
               <p id="section-6.4.1-4.3.1"><code>epoch_id</code>: The epoch ID of the emulation group epoch used to derive the
@@ -2229,11 +2297,12 @@ that created the KeyPackages<a href="#section-6.4.1-4.4.1" class="pilcrow">¶</a
 </li>
           </ul>
 <p id="section-6.4.1-5">Any emulator client that receives a KeyPackageUpload message can use the
-<code>leaf_index</code>, <code>operation_type</code> <code>key_package</code>, the <code>random</code>, and <code>epoch_id</code> to
-derive the <code>operation_secret</code> for each KeyPackageRef. They use that
-<code>operation_secret</code> to derive the KeyPackage's <code>init_key</code> and LeafNode key
-material. If the recipients receive a Welcome, they can then check which
-<code>init_key</code> to use based on the KeyPackageRef.<a href="#section-6.4.1-5" class="pilcrow">¶</a></p>
+<code>leaf_index</code>, <code>operation_type</code> <code>key_package</code>, the zero-length
+<code>operation_context</code>, the <code>generation</code>, and <code>epoch_id</code> to derive the
+<code>operation_secret</code> for each KeyPackageRef. They use that <code>operation_secret</code> to
+derive the KeyPackage's <code>init_key</code> and LeafNode key material. If the recipients
+receive a Welcome, they can then check which <code>init_key</code> to use based on the
+KeyPackageRef.<a href="#section-6.4.1-5" class="pilcrow">¶</a></p>
 <p id="section-6.4.1-6">How the creating client sends the message to the other emulator clients is up
 to the application, as long as every emulator client (including emulator
 clients added later, via <code>active_key_packages</code> in NewEmulatorClientState)

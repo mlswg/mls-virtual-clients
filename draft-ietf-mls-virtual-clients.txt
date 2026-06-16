@@ -362,7 +362,8 @@ Table of Contents
      opaque epoch_id<V>;
      VirtualClientOperationType operation_type;
      uint32 leaf_index;
-     opaque random<V>;
+     uint32 generation;
+     opaque operation_context<V>;
      opaque operation_secret<V>;
    } RetainedOperationSecret;
 
@@ -375,12 +376,21 @@ Table of Contents
      reserved(0),
      application(1),
      handshake(2),
+     operation(3),
      (255)
    } SecretTreeRatchetType;
 
    struct {
      uint32 leaf_index;
      SecretTreeRatchetType ratchet_type;
+     select (SecretTreeRatchetState.ratchet_type) {
+       case application:
+         struct{};
+       case handshake:
+         struct{};
+       case operation:
+         VirtualClientOperationType operation_type;
+     };
      uint32 generation;
      opaque next_secret<V>;
    } SecretTreeRatchetState;
@@ -394,12 +404,12 @@ Table of Contents
      KeyPackageRef key_package_ref;
      opaque epoch_id<V>;
      uint32 leaf_index;
-     opaque random<V>;
+     uint32 generation;
    } KeyPackageDerivationInfo;
 
    struct {
      opaque epoch_id<V>;
-     PPRFState epoch_base_secret;
+     SecretTreeState operation_secret_tree;
      opaque epoch_encryption_key<V>;
      opaque generation_id_secret<V>;
    } EmulationEpochState;
@@ -452,10 +462,10 @@ Table of Contents
       the final octet MUST be zero.  The entries in nodes MUST be
       prefix-free and sorted lexicographically by prefix.
 
-   *  RetainedOperationSecret carries an operation_secret whose PPRF
-      input has been punctured, but whose derived key material is still
-      live.  Entries are identified by (epoch_id, operation_type,
-      leaf_index, random).
+   *  RetainedOperationSecret carries an operation_secret whose
+      operation ratchet generation has been deleted, but whose derived
+      key material is still live.  Entries are identified by (epoch_id,
+      operation_type, leaf_index, generation, operation_context).
 
    *  SecretTreeState serializes the retained state of an RFC 9420
       Secret Tree.  Each SecretTreeNodeState contains an unexpanded tree
@@ -465,7 +475,11 @@ Table of Contents
       be used to derive the secret for generation.  The serialized state
       MUST contain exactly the retained secrets needed to continue the
       Secret Tree deletion schedule from the sender's current state and
-      MUST NOT contain secrets that have already been deleted.
+      MUST NOT contain secrets that have already been deleted.  The
+      application and handshake ratchet types are used for higher-level
+      MLS Secret Trees.  The operation ratchet type is used for virtual-
+      client operation secrets and includes an operation_type field that
+      identifies the per-leaf operation-type ratchet.
 
    *  signing_key_material is an application-defined blob that conveys
       whatever signing-key state the joining emulator client needs.  For
@@ -478,20 +492,28 @@ Table of Contents
       key_package operation secret.  When a Welcome arrives encrypted to
       one of these KeyPackages, the joining emulator client identifies
       the entry by KeyPackageRef, finds the RetainedOperationSecret
-      matching (epoch_id, key_package, leaf_index, random), and uses its
-      operation_secret to derive the corresponding init_key and
-      KeyPackage LeafNode key material.
+      matching (epoch_id, key_package, leaf_index, generation, zero-
+      length operation_context), and uses its operation_secret to derive
+      the corresponding init_key and KeyPackage LeafNode key material.
 
-   *  retained_operation_secrets contains every punctured
-      operation_secret whose derived key material is still live.  This
-      includes operation secrets for outstanding KeyPackages, for the
-      current LeafNode of each higher-level group, and for sent but
-      uncommitted LeafNodes or UpdatePaths.
+   *  retained_operation_secrets contains every operation_secret whose
+      derived key material is still live.  This includes operation
+      secrets for outstanding KeyPackages, for the current LeafNode of
+      each higher-level group, and for sent but uncommitted LeafNodes or
+      UpdatePaths. retained_operation_secrets is needed for the
+      state_transfer onboarding variant because the joining emulator
+      client needs to reconstruct still-live virtual-client artifacts
+      whose operation-type ratchet generations have already been
+      deleted.  The external_commit onboarding variant does not require
+      these retained operation secrets if it replaces every still-live
+      virtual-client artifact derived from an earlier emulation-group
+      epoch, including outstanding KeyPackages and active LeafNodes in
+      higher-level groups.
 
    *  past_emulation_epochs carries, for every emulation-group epoch
       still referenced by an active LeafNode, KeyPackage, or retained
-      operation secret and not equal to the current epoch, the punctured
-      epoch_base_secret PPRF state, the epoch_encryption_key, and the
+      operation secret and not equal to the current epoch, the retained
+      operation_secret_tree state, the epoch_encryption_key, and the
       generation_id_secret.  State for the current emulation-group epoch
       is not included here because the joining emulator client derives
       it from the emulation group's Welcome.
@@ -681,34 +703,63 @@ Table of Contents
    generation_id_secret =
      DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
 
-   The epoch_base_secret keys a Virtual Client Secret Tree, a tree of
-   secrets with the same structure as the Secret Tree defined in
+   The epoch_base_secret keys a Virtual Client Operation Secret Tree, a
+   tree of secrets with the same structure as the Secret Tree defined in
    Section 9 of [RFC9420], with the following differences:
 
-   *  A Virtual Client Secret Tree always has 2^256 leaves, so that the
-      output of the emulation group's ciphersuite hash function can be
-      used directly as a leaf index.
+   *  Like the Secret Tree, the Virtual Client Operation Secret Tree has
+      the same set of nodes and edges as the emulation group's ratchet
+      tree at the corresponding epoch.  The node_index fields of the
+      serialized SecretTreeState are interpreted relative to this tree.
 
    *  The root of the tree is the epoch_base_secret rather than a secret
       derived from the encryption_secret of an MLS group epoch.
 
-   TODO: Re-evaluate the tree size.  A smaller tree (e.g., 2^128 leaves
-   with the leaf index derived by truncating pprf_input) is probably
-   sufficient.
+   *  Each leaf has one operation ratchet for each
+      VirtualClientOperationType.
 
-   Secrets are derived from the Virtual Client Secret Tree as follows:
+   Emulator clients use the same ratchet advancement, skipping, and
+   deletion schedule for each operation ratchet as RFC 9420 uses for
+   sender ratchets.  An emulator client that learns of an operation with
+   generation n of a ratchet whose current state is at generation m < n
+   derives and retains the operation secrets for the skipped generations
+   m, ..., n-1 in the same way RFC 9420 handles out-of-order
+   PrivateMessages.  Implementations SHOULD bound the number of skipped
+   generations they retain and the time for which they retain them.  The
+   serialized state of the Virtual Client Operation Secret Tree is
+   represented by SecretTreeState with
+   SecretTreeRatchetState.ratchet_type set to operation and
+   SecretTreeRatchetState.operation_type set to the corresponding
+   VirtualClientOperationType.
 
-   VirtualClientSecret(Input) = tree_node_[LeafIndex(Input)]_secret
+   When a leaf secret in the Virtual Client Operation Secret Tree is
+   expanded, the initial operation ratchet secret for each non-reserved
+   VirtualClientOperationType defined in this document is derived as
+   follows:
 
-   Emulator clients MUST retain the (punctured) epoch_base_secret, the
-   epoch_id, the epoch_encryption_key, the generation_id_secret, and the
-   number of leaf nodes the emulation group's ratchet tree had at the
+   operation_ratchet_secret[operation_type][0] =
+     ExpandWithLabel(leaf_secret, "vc operation init",
+                     operation_type, Kdf.Nh)
+
+   In this derivation, operation_type is the TLS-encoded
+   VirtualClientOperationType value.
+
+   The leaf_secret MUST be deleted immediately after the initial
+   operation ratchet secrets for all operation types have been derived.
+   As a consequence, operation types defined by future documents cannot
+   be added to already expanded leaves; they are only usable from
+   emulation-group epochs onward in which all emulator clients derive
+   them at expansion time.
+
+   Emulator clients MUST retain the operation_secret_tree, the epoch_id,
+   the epoch_encryption_key, the generation_id_secret, and the number of
+   leaf nodes the emulation group's ratchet tree had at the
    corresponding epoch (including blank leaves, see Section 6.5.2) until
    no key material or generation IDs associated with that epoch are
    actively used anymore.  For each retained epoch in which an emulator
    client was a member, it MUST also retain its own leaf index at that
-   epoch.  The epoch_base_secret, epoch_id, and epoch_encryption_key are
-   used for deriving and processing virtual-client key material,
+   epoch.  The operation_secret_tree, epoch_id, and epoch_encryption_key
+   are used for deriving and processing virtual-client key material,
    including DerivationInfos and state transferred to new clients
    (Section 5.1); the generation_id_secret is used for computing
    generation IDs (Section 6.5.3); and the leaf count and leaf index are
@@ -716,43 +767,62 @@ Table of Contents
 
    When deriving a secret for a virtual client, e.g. for use in a
    KeyPackage or LeafNode update, the deriving client chooses a
-   VirtualClientOperationType, samples a random octet string random, and
-   hashes it with its leaf index in the emulation group using the hash
-   function of the emulation group's ciphersuite.  The operation_type is
+   VirtualClientOperationType and uses the next unused generation of its
+   own operation ratchet for that operation type.  The operation_type is
    key_package when creating a KeyPackage, including the KeyPackage's
    init_key and LeafNode key material.  The operation_type is leaf_node
    when creating a LeafNode for an Update proposal, a Commit with an
    update path, or an external commit.  Applications MAY use the
    operation type application to derive application-specific key
-   material.
+   material.  An emulator client MUST NOT use the same generation of the
+   same operation-type ratchet for more than one virtual-client
+   operation.
+
+   The operation context is a value bound into the derivation of the
+   operation_secret.  For key_package operations, operation_context is a
+   zero-length octet string.  For leaf_node operations,
+   operation_context is the group_id of the higher-level group in which
+   the LeafNode is used.  For application operations, operation_context
+   is application-defined and MUST be authenticated by the application
+   together with the other derivation inputs.
 
    struct {
+     opaque epoch_id<V>;
      uint32 leaf_index;
+     uint32 generation;
      VirtualClientOperationType operation_type;
-     opaque random<V>;
-   } HashInput
+     opaque operation_context<V>;
+   } OperationContext
 
-   pprf_input = Hash(HashInput)
+   operation_generation_secret =
+     DeriveSecret(operation_ratchet_secret, "VC Operation Secret")
 
-   The pprf_input is then used to derive an operation_secret.
+   next_operation_ratchet_secret =
+     DeriveSecret(operation_ratchet_secret, "VC Operation Ratchet")
 
-   operation_secret = VirtualClientSecret(pprf_input)
+   operation_secret =
+     ExpandWithLabel(operation_generation_secret, "vc operation",
+                     OperationContext, Kdf.Nh)
 
-   After deriving operation_secret, the emulator client MUST puncture
-   pprf_input from the PPRF state for the corresponding
-   epoch_base_secret.  The emulator client MUST retain operation_secret
-   as a RetainedOperationSecret until all key material derived from it
-   is no longer active, and MUST delete operation_secret after that
-   point.
+   operation_ratchet_secret is the ratchet secret for generation in the
+   operation_type ratchet of leaf_index.  After deriving
+   operation_secret and next_operation_ratchet_secret, the emulator
+   client MUST delete operation_ratchet_secret and
+   operation_generation_secret and update the ratchet state for the
+   selected operation_type to next_operation_ratchet_secret for
+   generation + 1.  The emulator client MUST retain operation_secret as
+   a RetainedOperationSecret until all key material derived from it is
+   no longer active, and MUST delete operation_secret after that point.
 
-   Given an epoch_id, operation_type, random, and the leaf_index of the
-   emulator client performing the virtual client operation, other
-   emulator clients can derive the operation_secret, puncture the same
-   pprf_input, and use the operation_secret to perform the same
-   operation.  If the PPRF input has already been punctured, for example
-   because the emulator client joined after the operation took place,
-   the emulator client uses the corresponding RetainedOperationSecret
-   transferred in NewEmulatorClientState.
+   Given an epoch_id, operation_type, generation, operation_context, and
+   the leaf_index of the emulator client performing the virtual client
+   operation, other emulator clients can derive the operation_secret,
+   advance the same operation-type ratchet, and use the operation_secret
+   to perform the same operation.  If the operation-type ratchet
+   generation has already been deleted, for example because the emulator
+   client joined after the operation took place, the emulator client
+   uses the corresponding RetainedOperationSecret transferred in
+   NewEmulatorClientState.
 
    Depending on the operation, the acting emulator client will have to
    derive one or more secrets from the operation_secret.
@@ -828,7 +898,7 @@ Table of Contents
 
    struct {
      uint32 leaf_index;
-     opaque random<V>;
+     uint32 generation;
    } DerivationInfoTBE
 
    The ciphertext is the serialized DerivationInfoTBE encrypted with the
@@ -851,18 +921,21 @@ Table of Contents
    The operation type used to derive the LeafNode's operation_secret is
    determined by the LeafNode's leaf_node_source (Section 7.2 of
    [RFC9420]): key_package maps to key_package, while update and commit
-   map to leaf_node.  The leaf_index and random fields MUST be the
-   values used with that operation type to derive the LeafNode's
-   operation_secret.
+   map to leaf_node.  The operation_context is determined by the
+   operation type as described in Section 6.2: zero-length for
+   key_package operations, and the group_id of the higher-level group in
+   which the LeafNode is used for leaf_node operations.  The leaf_index
+   and generation fields MUST be the values used with that operation
+   type and operation context to derive the LeafNode's operation_secret.
 
    When other emulator clients receive a LeafNode for the virtual
    client, they use the epoch_id to determine the epoch of the emulation
    group from which to derive the secrets necessary to re-create the key
    material of the LeafNode and potential UpdatePath.  They decrypt the
    DerivationInfo and use the operation type determined from the
-   LeafNode's leaf_node_source, together with the leaf_index and random
-   fields, as inputs to the operation secret derivation described in
-   Section 6.2.
+   LeafNode's leaf_node_source, together with the leaf_index and
+   generation fields, as inputs to the operation secret derivation
+   described in Section 6.2.
 
    The DerivationInfo on the active virtual-client LeafNode binds that
    virtual client's membership in the higher-level group to the
@@ -915,9 +988,9 @@ Table of Contents
    a key_package operation secret as described in Section 6.2.  The
    KeyPackage's LeafNode MUST contain a DerivationInfo as described in
    Section 6.3 whose encrypted DerivationInfoTBE contains the same
-   leaf_index and random values used for the KeyPackage operation.  The
-   random value MUST be the value reported for this KeyPackage in the
-   corresponding KeyPackageUpload message.
+   leaf_index and generation values used for the KeyPackage operation.
+   The generation value MUST be the value reported for this KeyPackage
+   in the corresponding KeyPackageUpload message.
 
    To make other emulator clients aware of the new KeyPackages and allow
    them to process any corresponding Welcome messages, the creating
@@ -926,7 +999,7 @@ Table of Contents
 
    struct {
      KeyPackageRef key_package_ref;
-     opaque random<V>;
+     uint32 generation;
    } KeyPackageInfo
 
    struct {
@@ -938,8 +1011,8 @@ Table of Contents
    *  key_package_ref: The hash reference of the generated KeyPackage
       computed as described in Section 5.2 of [RFC9420].
 
-   *  random: The randomness used to generate the init_key_secret as
-      described in Section 6.2
+   *  generation: The key_package operation ratchet generation used to
+      generate the init_key_secret as described in Section 6.2
 
    *  epoch_id: The epoch ID of the emulation group epoch used to derive
       the init_key_secret
@@ -951,8 +1024,9 @@ Table of Contents
       init_key_secret for each individual KeyPackage
 
    Any emulator client that receives a KeyPackageUpload message can use
-   the leaf_index, operation_type key_package, the random, and epoch_id
-   to derive the operation_secret for each KeyPackageRef.  They use that
+   the leaf_index, operation_type key_package, the zero-length
+   operation_context, the generation, and epoch_id to derive the
+   operation_secret for each KeyPackageRef.  They use that
    operation_secret to derive the KeyPackage's init_key and LeafNode key
    material.  If the recipients receive a Welcome, they can then check
    which init_key to use based on the KeyPackageRef.
