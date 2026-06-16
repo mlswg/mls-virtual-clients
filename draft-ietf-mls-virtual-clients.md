@@ -391,7 +391,7 @@ struct {
   KeyPackages, the joining emulator client identifies the entry by
   KeyPackageRef, finds the `RetainedOperationSecret` matching `(epoch_id,
   key_package, leaf_index, random)`, and uses its `operation_secret` to derive
-  the corresponding `init_key`.
+  the corresponding `init_key` and KeyPackage LeafNode key material.
 - `retained_operation_secrets` contains every punctured `operation_secret`
   whose derived key material is still live. This includes operation secrets
   for outstanding KeyPackages, for the current LeafNode of each higher-level
@@ -437,9 +437,9 @@ current epoch's key-schedule outputs and the retained per-epoch state:
   private key for the parent of the virtual client's leaf, if that node is
   non-blank. Subsequent entries correspond to the next non-blank nodes on the
   direct path toward the root, in order. The virtual client's leaf private key
-  itself is derivable from the corresponding retained `leaf_node` operation
-  secret identified by the DerivationInfo on the current LeafNode and is
-  therefore not transferred explicitly.
+  itself is derivable from the corresponding retained operation secret
+  identified by the DerivationInfo on the current LeafNode and is therefore not
+  transferred explicitly.
 
 For `external_commit` entries, no additional per-group fields are included. The
 joining emulator client external-commits into the group — fetching the current
@@ -597,10 +597,11 @@ When deriving a secret for a virtual client, e.g. for use in a KeyPackage or
 LeafNode update, the deriving client chooses a `VirtualClientOperationType`,
 samples a random octet string `random`, and hashes it with its leaf index in the
 emulation group using the hash function of the emulation group's ciphersuite.
-The `operation_type` is `key_package` when creating a KeyPackage and `leaf_node`
-when creating a LeafNode for an Update proposal, a Commit with an update path,
-or an external commit. Applications MAY use the operation type `application` to
-derive application-specific key material.
+The `operation_type` is `key_package` when creating a KeyPackage, including the
+KeyPackage's `init_key` and LeafNode key material. The `operation_type` is
+`leaf_node` when creating a LeafNode for an Update proposal, a Commit with an
+update path, or an external commit. Applications MAY use the operation type
+`application` to derive application-specific key material.
 
 ~~~
 struct {
@@ -676,10 +677,13 @@ state a new emulator client needs; its contents are application-defined.
 
 ## Creating LeafNodes and UpdatePaths
 
-When creating a LeafNode, either for a Commit with path, an Update proposal or a
-KeyPackage, the creating emulator client MUST derive the necessary secrets from
-the current epoch of the emulation group as described in Section
-{{generating-virtual-client-secrets}}.
+When creating a LeafNode, either for a Commit with an update path, an Update
+proposal, an external commit, or a KeyPackage, the creating emulator client MUST
+derive the necessary secrets from the current epoch of the emulation group as
+described in Section {{generating-virtual-client-secrets}}. For a LeafNode in a
+KeyPackage, the creating emulator client MUST use the same `key_package`
+operation secret used to derive the KeyPackage's `init_key_secret`. For other
+LeafNodes, the creating emulator client MUST use a `leaf_node` operation secret.
 
 Similarly, if an emulator client generates a Commit with an update path, it
 MUST use `path_generation_secret` as the `path_secret` for the first
@@ -719,11 +723,20 @@ Since every virtual-client operation produces a LeafNode with a fresh
 distinct key-nonce pair. Re-encrypting the same DerivationInfoTBE for the same
 LeafNode yields an identical ciphertext, which is benign.
 
-When other emulator clients receive a LeafNode update (i.e. either an Update
-proposal or a Commit with an UpdatePath) in a higher-level group that the
-virtual client is a member of, they use the `epoch_id` to determine the epoch
-of the emulation group from which to derive the secrets necessary to re-create
-the key material of the LeafNode and potential UpdatePath.
+The operation type used to derive the LeafNode's `operation_secret` is
+determined by the LeafNode's `leaf_node_source`
+({{Section 7.2 of !RFC9420}}): `key_package` maps to `key_package`, while
+`update` and `commit` map to `leaf_node`. The `leaf_index` and `random` fields
+MUST be the values used with that operation type to derive the LeafNode's
+`operation_secret`.
+
+When other emulator clients receive a LeafNode for the virtual client, they use
+the `epoch_id` to determine the epoch of the emulation group from which to
+derive the secrets necessary to re-create the key material of the LeafNode and
+potential UpdatePath. They decrypt the DerivationInfo and use the operation
+type determined from the LeafNode's `leaf_node_source`, together with the
+`leaf_index` and `random` fields, as inputs to the operation secret derivation
+described in {{generating-virtual-client-secrets}}.
 
 The `DerivationInfo` on the active virtual-client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
@@ -768,16 +781,23 @@ struct {
 ### Creating and uploading KeyPackages
 
 When creating a KeyPackage, the creating emulator client derives the
-`init_key_secret` as described in {{generating-virtual-client-secrets}}.
+`init_key_secret`, `signature_key_secret`, and `encryption_key_secret` from a
+`key_package` operation secret as described in
+{{generating-virtual-client-secrets}}. The KeyPackage's LeafNode MUST contain a
+DerivationInfo as described in {{creating-leafnodes-and-updatepaths}} whose
+encrypted DerivationInfoTBE contains the same `leaf_index` and `random` values
+used for the KeyPackage operation. The `random` value MUST be the value
+reported for this KeyPackage in the corresponding KeyPackageUpload message.
 
 Before uploading one or more KeyPackages for a virtual client, the uploading
 emulator client MUST create a KeyPackageUpload message and send it to the
 emulation group as described in {{virtual-client-actions}}.
 
 The recipients can use the `leaf_index` of the sender, `operation_type`
-`key_package`, the `random`, and `epoch_id` to derive the `init_key` for each
-KeyPackageRef. If the recipients receive a Welcome, they can then check which
-`init_key` to use based on the KeyPackageRef.
+`key_package`, the `random`, and `epoch_id` to derive the `operation_secret` for
+each KeyPackageRef. They use that `operation_secret` to derive the KeyPackage's
+`init_key` and LeafNode key material. If the recipients receive a Welcome, they
+can then check which `init_key` to use based on the KeyPackageRef.
 
 ~~~ tls
 struct {
