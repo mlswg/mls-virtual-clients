@@ -2141,16 +2141,21 @@ emulation-group epoch identified by the active virtual-client LeafNode.<a href="
         <h3 id="name-virtual-client-actions">
 <a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-virtual-client-actions" class="section-name selfRef">Virtual client actions</a>
         </h3>
-<p id="section-6.4-1">There are two occasions where emulator clients need to communicate directly to
-operate the virtual client. In both cases, the acting emulator client sends a
-Commit to the emulation group before taking an action with the virtual client.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
-<p id="section-6.4-2">The Commit serves two purposes: First, the agreement on message ordering
-facilitated by the DS prevents concurrent conflicting actions by two or more
-emulator clients. Second, the acting emulator client can attach additional
-information to the Commit using the SafeAAD mechanism described in
+<p id="section-6.4-1">Emulator clients sometimes need to communicate directly to operate the virtual
+client. The acting emulator client can attach such information to a Commit to
+the emulation group using the SafeAAD mechanism described in
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09#section-4.9" class="relref">Section 4.9</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>. The SafeAAD component data of the
-<code>virtual_clients</code> component is a VirtualClientAction struct.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
-<div class="lang-tls sourcecode" id="section-6.4-3">
+<code>virtual_clients</code> component is a VirtualClientAction struct.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">Sending an action as part of a Commit serves two purposes: First, the
+agreement on message ordering facilitated by the DS prevents concurrent
+conflicting actions by two or more emulator clients. Second, the action is
+authenticated as part of the Commit.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">The ExternalJoin action is always sent this way (see
+<a href="#externally-joining-groups-with-the-virtual-client" class="auto internal xref">Section 6.4.2</a>). The
+<code>key_package_upload</code> action is one way applications <span class="bcp14">MAY</span> use to communicate a
+KeyPackageUpload message (<a href="#creating-and-uploading-keypackages" class="auto internal xref">Section 6.4.1</a>) to the other
+emulator clients.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+<div class="lang-tls sourcecode" id="section-6.4-4">
 <pre>
 enum {
   reserved(0),
@@ -2168,7 +2173,7 @@ struct {
       ExternalJoin external_join;
   };
 } VirtualClientAction;
-</pre><a href="#section-6.4-3" class="pilcrow">¶</a>
+</pre><a href="#section-6.4-4" class="pilcrow">¶</a>
 </div>
 <div id="creating-and-uploading-keypackages">
 <section id="section-6.4.1">
@@ -2183,15 +2188,11 @@ DerivationInfo as described in <a href="#creating-leafnodes-and-updatepaths" cla
 encrypted DerivationInfoTBE contains the same <code>leaf_index</code> and <code>random</code> values
 used for the KeyPackage operation. The <code>random</code> value <span class="bcp14">MUST</span> be the value
 reported for this KeyPackage in the corresponding KeyPackageUpload message.<a href="#section-6.4.1-1" class="pilcrow">¶</a></p>
-<p id="section-6.4.1-2">Before uploading one or more KeyPackages for a virtual client, the uploading
-emulator client <span class="bcp14">MUST</span> create a KeyPackageUpload message and send it to the
-emulation group as described in <a href="#virtual-client-actions" class="auto internal xref">Section 6.4</a>.<a href="#section-6.4.1-2" class="pilcrow">¶</a></p>
-<p id="section-6.4.1-3">The recipients can use the <code>leaf_index</code> of the sender, <code>operation_type</code>
-            <code>key_package</code>, the <code>random</code>, and <code>epoch_id</code> to derive the <code>operation_secret</code> for
-each KeyPackageRef. They use that <code>operation_secret</code> to derive the KeyPackage's
-<code>init_key</code> and LeafNode key material. If the recipients receive a Welcome, they
-can then check which <code>init_key</code> to use based on the KeyPackageRef.<a href="#section-6.4.1-3" class="pilcrow">¶</a></p>
-<div class="lang-tls sourcecode" id="section-6.4.1-4">
+<p id="section-6.4.1-2">To make other emulator clients aware of the new KeyPackages and allow them to
+process any corresponding Welcome messages, the creating client <span class="bcp14">MUST</span> send them
+a KeyPackageUpload message covering all new KeyPackages before making the
+KeyPackages available to other parties.<a href="#section-6.4.1-2" class="pilcrow">¶</a></p>
+<div class="lang-tls sourcecode" id="section-6.4.1-3">
 <pre>
 struct {
   KeyPackageRef key_package_ref;
@@ -2200,15 +2201,44 @@ struct {
 
 struct {
   opaque epoch_id&lt;V&gt;;
+  uint32 leaf_index;
   KeyPackageInfo key_package_info&lt;V&gt;;
 } KeyPackageUpload
-</pre><a href="#section-6.4.1-4" class="pilcrow">¶</a>
+</pre><a href="#section-6.4.1-3" class="pilcrow">¶</a>
 </div>
-<p id="section-6.4.1-5">After successfully sending the message, the sender <span class="bcp14">MUST</span> then upload the
-corresponding KeyPackages.<a href="#section-6.4.1-5" class="pilcrow">¶</a></p>
-<p id="section-6.4.1-6">The entries in <code>key_package_info</code> allow emulator clients to identify which
-KeyPackage to use and how to derive it when the virtual client receives a
-Welcome message.<a href="#section-6.4.1-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.4.1-4.1">
+              <p id="section-6.4.1-4.1.1"><code>key_package_ref</code>: The hash reference of the generated KeyPackage computed as
+described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-5.2" class="relref">Section 5.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>.<a href="#section-6.4.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.4.1-4.2">
+              <p id="section-6.4.1-4.2.1"><code>random</code>: The randomness used to generate the <code>init_key_secret</code> as described
+in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a><a href="#section-6.4.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.4.1-4.3">
+              <p id="section-6.4.1-4.3.1"><code>epoch_id</code>: The epoch ID of the emulation group epoch used to derive the
+<code>init_key_secret</code><a href="#section-6.4.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.4.1-4.4">
+              <p id="section-6.4.1-4.4.1"><code>leaf_index</code>: The leaf index of the emulator client in the emulation group
+that created the KeyPackages<a href="#section-6.4.1-4.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.4.1-4.5">
+              <p id="section-6.4.1-4.5.1"><code>key_package_info</code>: The information required to re-derive the
+<code>init_key_secret</code> for each individual KeyPackage<a href="#section-6.4.1-4.5.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-6.4.1-5">Any emulator client that receives a KeyPackageUpload message can use the
+<code>leaf_index</code>, <code>operation_type</code> <code>key_package</code>, the <code>random</code>, and <code>epoch_id</code> to
+derive the <code>operation_secret</code> for each KeyPackageRef. They use that
+<code>operation_secret</code> to derive the KeyPackage's <code>init_key</code> and LeafNode key
+material. If the recipients receive a Welcome, they can then check which
+<code>init_key</code> to use based on the KeyPackageRef.<a href="#section-6.4.1-5" class="pilcrow">¶</a></p>
+<p id="section-6.4.1-6">How the creating client sends the message to the other emulator clients is up
+to the application, as long as every emulator client (including emulator
+clients added later, via <code>active_key_packages</code> in NewEmulatorClientState)
+eventually receives it. One way to send the message is the
+<code>key_package_upload</code> action described in <a href="#virtual-client-actions" class="auto internal xref">Section 6.4</a>.<a href="#section-6.4.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="externally-joining-groups-with-the-virtual-client">

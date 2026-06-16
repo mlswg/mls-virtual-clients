@@ -874,18 +874,22 @@ Table of Contents
 
 6.4.  Virtual client actions
 
-   There are two occasions where emulator clients need to communicate
-   directly to operate the virtual client.  In both cases, the acting
-   emulator client sends a Commit to the emulation group before taking
-   an action with the virtual client.
+   Emulator clients sometimes need to communicate directly to operate
+   the virtual client.  The acting emulator client can attach such
+   information to a Commit to the emulation group using the SafeAAD
+   mechanism described in Section 4.9 of [I-D.ietf-mls-extensions].  The
+   SafeAAD component data of the virtual_clients component is a
+   VirtualClientAction struct.
 
-   The Commit serves two purposes: First, the agreement on message
-   ordering facilitated by the DS prevents concurrent conflicting
-   actions by two or more emulator clients.  Second, the acting emulator
-   client can attach additional information to the Commit using the
-   SafeAAD mechanism described in Section 4.9 of
-   [I-D.ietf-mls-extensions].  The SafeAAD component data of the
-   virtual_clients component is a VirtualClientAction struct.
+   Sending an action as part of a Commit serves two purposes: First, the
+   agreement on message ordering facilitated by the DS prevents
+   concurrent conflicting actions by two or more emulator clients.
+   Second, the action is authenticated as part of the Commit.
+
+   The ExternalJoin action is always sent this way (see Section 6.4.2).
+   The key_package_upload action is one way applications MAY use to
+   communicate a KeyPackageUpload message (Section 6.4.1) to the other
+   emulator clients.
 
    enum {
      reserved(0),
@@ -915,16 +919,10 @@ Table of Contents
    random value MUST be the value reported for this KeyPackage in the
    corresponding KeyPackageUpload message.
 
-   Before uploading one or more KeyPackages for a virtual client, the
-   uploading emulator client MUST create a KeyPackageUpload message and
-   send it to the emulation group as described in Section 6.4.
-
-   The recipients can use the leaf_index of the sender, operation_type
-   key_package, the random, and epoch_id to derive the operation_secret
-   for each KeyPackageRef.  They use that operation_secret to derive the
-   KeyPackage's init_key and LeafNode key material.  If the recipients
-   receive a Welcome, they can then check which init_key to use based on
-   the KeyPackageRef.
+   To make other emulator clients aware of the new KeyPackages and allow
+   them to process any corresponding Welcome messages, the creating
+   client MUST send them a KeyPackageUpload message covering all new
+   KeyPackages before making the KeyPackages available to other parties.
 
    struct {
      KeyPackageRef key_package_ref;
@@ -933,15 +931,37 @@ Table of Contents
 
    struct {
      opaque epoch_id<V>;
+     uint32 leaf_index;
      KeyPackageInfo key_package_info<V>;
    } KeyPackageUpload
 
-   After successfully sending the message, the sender MUST then upload
-   the corresponding KeyPackages.
+   *  key_package_ref: The hash reference of the generated KeyPackage
+      computed as described in Section 5.2 of [RFC9420].
 
-   The entries in key_package_info allow emulator clients to identify
-   which KeyPackage to use and how to derive it when the virtual client
-   receives a Welcome message.
+   *  random: The randomness used to generate the init_key_secret as
+      described in Section 6.2
+
+   *  epoch_id: The epoch ID of the emulation group epoch used to derive
+      the init_key_secret
+
+   *  leaf_index: The leaf index of the emulator client in the emulation
+      group that created the KeyPackages
+
+   *  key_package_info: The information required to re-derive the
+      init_key_secret for each individual KeyPackage
+
+   Any emulator client that receives a KeyPackageUpload message can use
+   the leaf_index, operation_type key_package, the random, and epoch_id
+   to derive the operation_secret for each KeyPackageRef.  They use that
+   operation_secret to derive the KeyPackage's init_key and LeafNode key
+   material.  If the recipients receive a Welcome, they can then check
+   which init_key to use based on the KeyPackageRef.
+
+   How the creating client sends the message to the other emulator
+   clients is up to the application, as long as every emulator client
+   (including emulator clients added later, via active_key_packages in
+   NewEmulatorClientState) eventually receives it.  One way to send the
+   message is the key_package_upload action described in Section 6.4.
 
 6.4.2.  Externally joining groups with the virtual client
 
