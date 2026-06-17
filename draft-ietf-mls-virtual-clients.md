@@ -838,13 +838,21 @@ struct {
 struct {
   uint32 leaf_index;
   uint32 generation;
-  uint32 key_package_index;
+  select (LeafNode.leaf_node_source) {
+    case key_package:
+      uint32 key_package_index;
+    case update:
+    case commit:
+      struct{};
+  };
 } DerivationInfoTBE
 ~~~
 
 The `ciphertext` is the serialized DerivationInfoTBE encrypted with the AEAD
 scheme of the emulation group's ciphersuite, with the `epoch_id` as AAD. The
-AEAD key and nonce are derived from the epoch's `epoch_encryption_key`, using
+`LeafNode.leaf_node_source` selector is the `leaf_node_source` of the LeafNode
+carrying the DerivationInfo. The AEAD key and nonce are derived from the
+epoch's `epoch_encryption_key`, using
 the serialized `encryption_key` field of the LeafNode carrying the component
 as context:
 
@@ -871,9 +879,8 @@ is used for `leaf_node` operations. The `leaf_index` and `generation` fields
 MUST be the values used with that operation type and operation context to
 derive the LeafNode's `operation_secret`. For KeyPackage LeafNodes,
 `generation` identifies the batch `key_package` operation generation and
-`key_package_index` identifies the individual KeyPackage within that batch.
-For `leaf_node` operations, `key_package_index` MUST be zero and is not used in
-the operation secret derivation.
+`key_package_index` identifies the individual KeyPackage within that batch. For
+`leaf_node` operations, the DerivationInfoTBE contains no `key_package_index`.
 
 When other emulator clients receive a LeafNode for the virtual client, they use
 the `epoch_id` to determine the epoch of the emulation group from which to
@@ -950,7 +957,8 @@ The KeyPackage's LeafNode MUST contain a DerivationInfo as described in
 contains the same `leaf_index`, `generation`, and `key_package_index` values
 used for the KeyPackage. The `generation` value MUST be the generation reported
 in the corresponding KeyPackageUpload message, and the `key_package_index`
-value MUST be the value reported for this KeyPackageRef in that upload.
+field, which is present for KeyPackage LeafNodes, MUST be the value reported
+for this KeyPackageRef in that upload.
 
 The KeyPackageUpload closes the batch. After sending the KeyPackageUpload, the
 creating emulator client MUST NOT use the same operation generation to derive
