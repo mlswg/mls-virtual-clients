@@ -2231,13 +2231,21 @@ struct {
 struct {
   uint32 leaf_index;
   uint32 generation;
-  uint32 key_package_index;
+  select (LeafNode.leaf_node_source) {
+    case key_package:
+      uint32 key_package_index;
+    case update:
+    case commit:
+      struct{};
+  };
 } DerivationInfoTBE
 </pre><a href="#section-6.3-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3-5">The <code>ciphertext</code> is the serialized DerivationInfoTBE encrypted with the AEAD
 scheme of the emulation group's ciphersuite, with the <code>epoch_id</code> as AAD. The
-AEAD key and nonce are derived from the epoch's <code>epoch_encryption_key</code>, using
+<code>LeafNode.leaf_node_source</code> selector is the <code>leaf_node_source</code> of the LeafNode
+carrying the DerivationInfo. The AEAD key and nonce are derived from the
+epoch's <code>epoch_encryption_key</code>, using
 the serialized <code>encryption_key</code> field of the LeafNode carrying the component
 as context:<a href="#section-6.3-5" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.3-6">
@@ -2263,9 +2271,8 @@ is used for <code>leaf_node</code> operations. The <code>leaf_index</code> and <
 <span class="bcp14">MUST</span> be the values used with that operation type and operation context to
 derive the LeafNode's <code>operation_secret</code>. For KeyPackage LeafNodes,
 <code>generation</code> identifies the batch <code>key_package</code> operation generation and
-<code>key_package_index</code> identifies the individual KeyPackage within that batch.
-For <code>leaf_node</code> operations, <code>key_package_index</code> <span class="bcp14">MUST</span> be zero and is not used in
-the operation secret derivation.<a href="#section-6.3-8" class="pilcrow">¶</a></p>
+<code>key_package_index</code> identifies the individual KeyPackage within that batch. For
+<code>leaf_node</code> operations, the DerivationInfoTBE contains no <code>key_package_index</code>.<a href="#section-6.3-8" class="pilcrow">¶</a></p>
 <p id="section-6.3-9">When other emulator clients receive a LeafNode for the virtual client, they use
 the <code>epoch_id</code> to determine the epoch of the emulation group from which to
 derive the secrets necessary to re-create the key material of the LeafNode and
@@ -2344,7 +2351,8 @@ Senders <span class="bcp14">SHOULD</span> use consecutive values starting at zer
 contains the same <code>leaf_index</code>, <code>generation</code>, and <code>key_package_index</code> values
 used for the KeyPackage. The <code>generation</code> value <span class="bcp14">MUST</span> be the generation reported
 in the corresponding KeyPackageUpload message, and the <code>key_package_index</code>
-value <span class="bcp14">MUST</span> be the value reported for this KeyPackageRef in that upload.<a href="#section-6.4.1-2" class="pilcrow">¶</a></p>
+field, which is present for KeyPackage LeafNodes, <span class="bcp14">MUST</span> be the value reported
+for this KeyPackageRef in that upload.<a href="#section-6.4.1-2" class="pilcrow">¶</a></p>
 <p id="section-6.4.1-3">The KeyPackageUpload closes the batch. After sending the KeyPackageUpload, the
 creating emulator client <span class="bcp14">MUST NOT</span> use the same operation generation to derive
 additional KeyPackages. After deriving all per-KeyPackage material needed for
