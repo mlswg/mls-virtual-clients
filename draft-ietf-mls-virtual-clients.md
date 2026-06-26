@@ -679,8 +679,16 @@ operation generation MUST NOT be used to derive additional KeyPackages. The
 `operation_type` is `leaf_node` when creating a LeafNode for an Update
 proposal, a Commit with an update path, or an external commit. Applications MAY
 use the operation type `application` to derive application-specific key
-material. An emulator client MUST NOT use the same generation of the same
-operation-type ratchet for more than one virtual-client operation.
+material.
+
+Deriving an `operation_secret` consumes the corresponding operation-ratchet
+generation, even if the virtual-client operation does not result in a
+higher-level MLS message that is accepted into the higher-level group's
+transcript. Once a generation has been consumed, an emulator client MUST NOT use
+the same generation of the same operation-type ratchet for another virtual-client
+operation. If the operation fails, the emulator client MUST delete any retained
+secret material derived from the failed operation after the client determines
+that the operation will not be used.
 
 The operation context is a value bound into the derivation of the
 `operation_secret`. For `key_package` operations, `operation_context` is a
@@ -914,17 +922,14 @@ agreement on message ordering facilitated by the DS prevents concurrent
 conflicting actions by two or more emulator clients. Second, the action is
 authenticated as part of the Commit.
 
-The ExternalJoin action is always sent this way (see
-{{externally-joining-groups-with-the-virtual-client}}). The
-`key_package_upload` action is one way applications MAY use to communicate a
-KeyPackageUpload message ({{creating-and-uploading-keypackages}}) to the other
-emulator clients.
+The `key_package_upload` action is one way applications MAY use to communicate
+a KeyPackageUpload message ({{creating-and-uploading-keypackages}}) to the
+other emulator clients.
 
 ~~~ tls
 enum {
   reserved(0),
   key_package_upload(1),
-  external_join(2),
   (255)
 } ActionType;
 
@@ -933,8 +938,6 @@ struct {
   select (VirtualClientAction.action_type) {
     case key_package_upload:
       KeyPackageUpload key_package_upload;
-    case external_join:
-      ExternalJoin external_join;
   };
 } VirtualClientAction;
 ~~~
@@ -1024,19 +1027,10 @@ to send the message is the
 
 ### Externally joining groups with the virtual client
 
-Before an emulator client uses an external commit to join a group with the
-virtual client, it MUST send an ExternalJoin message to the emulation group as
-described in {{virtual-client-actions}}.
-
-~~~ tls
-struct {
-  opaque group_id<V>;
-} ExternalJoin
-~~~
-
-The sender MUST then use an external join to join the group with group ID
-`group_id`. When creating the Commit to join the group externally, it MUST
-generate the LeafNode and path as described in
+An emulator client that uses an external commit to join a group with the virtual
+client relies on the higher-level group's Commit sequencing rules to determine
+whether that external commit is accepted. When creating the Commit to join the
+group externally, it MUST generate the LeafNode and path as described in
 {{creating-leafnodes-and-updatepaths}}.
 
 ## Sending PrivateMessages
