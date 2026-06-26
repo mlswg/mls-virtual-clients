@@ -819,15 +819,16 @@ state a new emulator client needs; its contents are application-defined.
 
 ## Creating LeafNodes and UpdatePaths
 
-When creating a LeafNode, either for a Commit with an update path, an Update
-proposal, an external commit, or a KeyPackage, the creating emulator client MUST
-derive the necessary secrets from the current epoch of the emulation group as
-described in Section {{generating-virtual-client-secrets}}. For a LeafNode in a
-KeyPackage, the creating emulator client MUST use the same per-KeyPackage seed
-secret used to derive the KeyPackage's `init_key_secret`. That seed is derived
-from the batch `key_package` operation secret and the KeyPackage's
-`key_package_index`. For other LeafNodes, the creating emulator client MUST use
-a `leaf_node` operation secret.
+When creating a LeafNode, either for group creation, a Commit with an update
+path, an Update proposal, an external commit, or a KeyPackage, the creating
+emulator client MUST derive the necessary secrets from the current epoch of the
+emulation group as described in Section {{generating-virtual-client-secrets}}.
+For a LeafNode whose `leaf_node_source` is `key_package`, the creating emulator
+client MUST use the same per-KeyPackage seed secret used to derive the
+KeyPackage's `init_key_secret`. That seed is derived from the batch
+`key_package` operation secret and the KeyPackage's `key_package_index`. For a
+LeafNode whose `leaf_node_source` is `update` or `commit`, the creating
+emulator client MUST use a `leaf_node` operation secret.
 
 Similarly, if an emulator client generates a Commit with an update path, it
 MUST use `path_generation_secret` as the `path_secret` for the first
@@ -844,17 +845,36 @@ struct {
 } DerivationInfo
 
 struct {
+  opaque epoch_secret<V>;
+} GroupCreationSecret;
+
+struct {
+  opaque init_secret<V>;
+} ExternalInitSecret;
+
+struct {
   uint32 leaf_index;
   uint32 generation;
   select (LeafNode.leaf_node_source) {
     case key_package:
       uint32 key_package_index;
     case update:
-    case commit:
       struct{};
+    case commit:
+      optional<ExternalInitSecret> external_init_secret;
   };
+  optional<GroupCreationSecret> group_creation_secret;
 } DerivationInfoTBE
 ~~~
+
+For a LeafNode in an external Commit, `external_init_secret` MUST contain the
+`init_secret` produced by external initialization as described in
+{{Section 8.3 of !RFC9420}}. For a LeafNode in any other Commit, the
+`external_init_secret` field MUST be absent. For the creator LeafNode of a
+newly created higher-level group, `group_creation_secret` MUST be present and
+contain the initial `epoch_secret` generated for that group as described in
+{{Section 11 of !RFC9420}}. For all other LeafNodes, `group_creation_secret`
+MUST be absent.
 
 The `ciphertext` is the serialized DerivationInfoTBE encrypted with the AEAD
 scheme of the emulation group's ciphersuite, with the `epoch_id` as AAD. The
@@ -889,6 +909,10 @@ derive the LeafNode's `operation_secret`. For KeyPackage LeafNodes,
 `generation` identifies the batch `key_package` operation generation and
 `key_package_index` identifies the individual KeyPackage within that batch. For
 `leaf_node` operations, the DerivationInfoTBE contains no `key_package_index`.
+For external Commit LeafNodes, the DerivationInfoTBE additionally carries the
+external init secret needed to process the Commit. For the creator LeafNode of
+a newly created higher-level group, it additionally carries the initial epoch
+secret needed to initialize the group.
 
 When other emulator clients receive a LeafNode for the virtual client, they use
 the `epoch_id` to determine the epoch of the emulation group from which to
@@ -901,6 +925,11 @@ LeafNode, they then use `key_package_index` to derive the per-KeyPackage seed
 secret from the batch `key_package` operation secret and use that seed to
 re-create the LeafNode key material.
 
+When processing an external Commit sent by the virtual client, an emulator
+client uses the `external_init_secret` from the DerivationInfoTBE as the
+external init secret for the new epoch. If `external_init_secret` is absent,
+the emulator client MUST reject the Commit.
+
 The `DerivationInfo` on the active virtual-client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
 epoch identified by `epoch_id`. Protocol steps that require per-epoch
@@ -908,6 +937,32 @@ emulation-group state for a higher-level group, such as computing the
 `reuse_guard` ({{reuse-guard}}) or a generation ID
 ({{coordinating-ratchet-generations-with-the-ds}}), MUST use the
 emulation-group epoch identified by the active virtual-client LeafNode.
+
+## Creating groups with the virtual client
+
+When an emulator client creates a higher-level group with the virtual client as
+the creator, it MUST create the initial LeafNode as described in
+{{creating-leafnodes-and-updatepaths}}. The LeafNode's DerivationInfoTBE MUST
+contain a `group_creation_secret` carrying the initial epoch secret for the
+group.
+
+The application MUST fan out the initial group creation material to all current
+emulator clients before delivering any other content from that higher-level
+group to those emulator clients. The initial group creation material consists
+of the GroupInfo for the newly created group, the creator LeafNode or a
+ratchet_tree extension that contains it, and any application-defined context
+needed to associate the material with the higher-level group. An emulator
+client MUST process the initial group creation material before processing any
+other content from that higher-level group.
+
+When processing initial group creation material, an emulator client verifies the
+GroupInfo and ratchet tree as described in {{Section 12.4.3 of !RFC9420}},
+decrypts the DerivationInfo in the creator LeafNode, reconstructs the
+LeafNode's key material as described in {{creating-leafnodes-and-updatepaths}},
+and uses the `epoch_secret` from `group_creation_secret` to initialize the
+higher-level group's epoch 0 state. If `group_creation_secret` is absent or if
+the GroupInfo cannot be verified using the resulting epoch state, the emulator
+client MUST reject the initial group creation material.
 
 ## Virtual client actions
 
