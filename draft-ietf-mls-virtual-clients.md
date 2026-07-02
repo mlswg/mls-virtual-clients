@@ -733,11 +733,21 @@ ratchet state for the selected `operation_type` to
 `next_operation_ratchet_secret` for `generation + 1`. The emulator client MUST
 retain enough secret material to reproduce all active key material derived from
 `operation_secret`. For `key_package` operations, the emulator client derives
-the per-KeyPackage material for every KeyPackage in the batch and MUST delete
-the batch `operation_secret` after all per-KeyPackage material needed for the
-batch has been derived. For other operations, the emulator client retains
-`operation_secret` as a RetainedOperationSecret. The emulator client MUST
-delete retained secret material after it is no longer active.
+the per-KeyPackage seed secrets for every KeyPackage in the batch and MUST
+delete the batch `operation_secret` after all per-KeyPackage material needed
+for the batch has been derived.
+
+Retaining `operation_secret`s and per-KeyPackage seed secrets beyond their
+immediate use is only necessary if the application intends to onboard new
+emulator clients through provisioning state transfer (Variant A,
+{{adding-an-emulator-client}}). If that is the case, the emulator client MUST
+retain them as RetainedOperationSecrets and RetainedKeyPackageMaterial until
+all key material derived from them is no longer active, and MUST delete them
+after that point. Otherwise, the emulator client MUST delete them as soon as
+it has derived the key material required for the operation. The derived key
+material that remains in use (such as the `init_key` private key of an
+outstanding KeyPackage) is retained independently of the secret it was
+derived from.
 
 Given an `epoch_id`, `operation_type`, `generation`, `operation_context`, and
 the `leaf_index` of the emulator client performing the virtual client
@@ -1325,7 +1335,11 @@ and delete its keys. The same applies to the retained state defined in this
 document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
 emulation-epoch state ({{adding-an-emulator-client}}) extend the window during
 which a compromise reveals previously transmitted data, and emulator clients
-SHOULD delete them as soon as they are no longer needed.
+SHOULD delete them as soon as they are no longer needed. Applications that do
+not onboard emulator clients through state transfer need not retain
+RetainedOperationSecrets or RetainedKeyPackageMaterial at all (see
+{{generating-virtual-client-secrets}}) and can instead retain only the derived
+key material still in use, reducing this window.
 
 Some of this state is reachable through the virtual client's LeafNodes. The
 DerivationInfo of an external Commit LeafNode embeds the `init_secret` of the
