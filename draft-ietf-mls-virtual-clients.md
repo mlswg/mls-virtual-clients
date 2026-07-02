@@ -173,397 +173,6 @@ evict stale clients. For example, an emulator client could become stale (i.e.
 inactive), while another keeps sending updates. From the point of view of the
 higher-level group, the virtual client would remain active.
 
-# Emulation group management
-
-Managing the emulation group is more elaborate than performing simple MLS
-operations within it.
-
-When adding a new emulator client, there are several pieces of cryptographic
-state that need to be synchronized before the new emulator client can start
-using the virtual client. The emulator client can either get this state from
-another emulator client, or if all other emulator clients are offline, the
-emulator client can use a series of external joins to onboard itself.
-
-## Adding an emulator client
-
-A joining emulator client is added to the emulation group by a provisioning
-emulator client via the usual MLS Add + Welcome. The GroupInfo in that
-Welcome carries the `virtual_clients` component ({{iana-considerations}}),
-whose component data is a NewEmulatorClientState struct that provides the
-state the joining emulator client needs to act as the virtual client going
-forward.
-
-The NewEmulatorClientState struct contains the complete secret state of the
-virtual client. Emulator clients MUST include it only in GroupInfo objects that
-are encrypted as part of a Welcome message for the emulation group. In
-particular, a GroupInfo object published to enable external commits into the
-emulation group MUST NOT contain a `virtual_clients` component.
-
-How the joining emulator client subsequently becomes an active participant in
-each higher-level group is application-defined. This document specifies two
-variants that the provisioning emulator client MAY use on a per-group basis:
-
-- **Variant A (provisioning state transfer).** The provisioning emulator client
-  includes, for each higher-level group, the key-schedule outputs of the current
-  epoch together with the HPKE private keys on the virtual client's direct path.
-  The joining emulator obtains the RatchetTree and the GroupContext from an
-  application-defined source.
-- **Variant B (external commit).** The provisioning emulator client only
-  identifies which higher-level groups the virtual client is in. The joining
-  emulator client acquires each group's current GroupInfo (from the DS or some
-  other application-defined source) and performs an external commit into the
-  group, evicting the virtual client's prior membership with a "resync" Remove
-  proposal as described in {{Section 12.4.3.2 of !RFC9420}}.
-
-Applications MAY mix the two variants across groups, for example using
-Variant A for groups where metadata hiding matters and Variant B elsewhere.
-
-Regardless of the variant chosen, a new emulator client MUST NOT send
-PrivateMessages in a higher-level group while the DerivationInfo of
-the active virtual-client LeafNode identifies an emulation-group epoch in which
-the new emulator client was not a member. The new emulator client has no leaf
-index at that epoch and therefore cannot compute the `reuse_guard` as described
-in {{reuse-guard}}. Before the new emulator client can send messages in such a
-higher-level group, the virtual-client LeafNode MUST be rotated (e.g., by a
-Commit with an update path or an Update proposal followed by a Commit) to a
-more recent emulation-group epoch in which the new emulator client is a member.
-
-Note that in higher-level groups where handshake messages are sent as
-PrivateMessages, the new emulator client cannot send this rotating Commit
-itself. In such groups, the rotation has to be performed by an existing
-emulator client, unless the application permits handshake messages framed as
-PublicMessages or external commits (Variant B), in which case the new emulator
-client can rotate the LeafNode itself.
-
-### Trade-offs
-
-- **Observability.** Variant A produces an ordinary Commit that looks like
-  any other key rotation to the rest of the higher-level group. Variant B
-  appears as the virtual client leaving and re-joining, which is visible to
-  every member and may undermine metadata-hiding goals.
-- **Forward secrecy.** Variant A chains the new epoch from the previous epoch's
-  `init_secret`. Variant B breaks the commit chain resulting in weaker forward
-  secrecy at the point of onboarding.
-- **Policy.** Some applications may restrict external commits by policy leaving
-  Variant A as the only option.
-- **State transfer cost.** Variant A requires O(log N) HPKE private keys and the
-  current epoch's key-schedule state per higher-level group. Depending on group
-  size and the group's ciphersuite, this may exceed the application's
-  performance constraints. Variant B's overhead is constant per group.
-
-### State transfer protocol
-
-Applications MAY use the following structs to transfer group data to the newly
-added emulator client.
-
-~~~ tls
-opaque HPKEPrivateKey<V>;
-
-struct {
-  uint8 prefix_length;
-  opaque prefix<V>;
-  opaque node_secret<V>;
-} PPRFNode;
-
-struct {
-  PPRFNode nodes<V>;
-} PPRFState;
-
-enum {
-  reserved(0),
-  key_package(1),
-  leaf_node(2),
-  application(3),
-  (255)
-} VirtualClientOperationType;
-
-struct {
-  opaque epoch_id<V>;
-  VirtualClientOperationType operation_type;
-  uint32 leaf_index;
-  uint32 generation;
-  opaque operation_context<V>;
-  opaque operation_secret<V>;
-} RetainedOperationSecret;
-
-struct {
-  uint32 node_index;
-  opaque node_secret<V>;
-} SecretTreeNodeState;
-
-enum {
-  reserved(0),
-  application(1),
-  handshake(2),
-  operation(3),
-  (255)
-} SecretTreeRatchetType;
-
-struct {
-  uint32 leaf_index;
-  SecretTreeRatchetType ratchet_type;
-  select (SecretTreeRatchetState.ratchet_type) {
-    case application:
-      struct{};
-    case handshake:
-      struct{};
-    case operation:
-      VirtualClientOperationType operation_type;
-  };
-  uint32 generation;
-  opaque next_secret<V>;
-} SecretTreeRatchetState;
-
-struct {
-  SecretTreeNodeState node_secrets<V>;
-  SecretTreeRatchetState ratchet_states<V>;
-} SecretTreeState;
-
-struct {
-  KeyPackageRef key_package_ref;
-  opaque epoch_id<V>;
-  uint32 leaf_index;
-  uint32 generation;
-  uint32 key_package_index;
-} KeyPackageDerivationInfo;
-
-struct {
-  opaque epoch_id<V>;
-  uint32 leaf_index;
-  uint32 generation;
-  uint32 key_package_index;
-  opaque key_package_seed_secret<V>;
-} RetainedKeyPackageMaterial;
-
-struct {
-  opaque epoch_id<V>;
-  SecretTreeState operation_secret_tree;
-  opaque epoch_encryption_key<V>;
-  opaque generation_id_secret<V>;
-  opaque reuse_guard_secret<V>;
-} EmulationEpochState;
-
-enum {
-  reserved(0),
-  state_transfer(1),
-  external_commit(2),
-  (255)
-} HigherLevelGroupStateType;
-
-struct {
-  opaque group_id<V>;
-  HigherLevelGroupStateType state_type;
-  select (HigherLevelGroupState.state_type) {
-    case state_transfer:
-      opaque init_secret<V>;
-      opaque sender_data_secret<V>;
-      opaque exporter_secret<V>;
-      opaque external_secret<V>;
-      opaque confirmation_key<V>;
-      opaque membership_key<V>;
-      opaque resumption_psk<V>;
-      opaque epoch_authenticator<V>;
-      SecretTreeState secret_tree;
-      PPRFState safe_exporter_tree;
-      HPKEPrivateKey direct_path_private_keys<V>;
-    case external_commit:
-      struct{};
-  };
-} HigherLevelGroupState;
-
-struct {
-  opaque signing_key_material<V>;
-  KeyPackageDerivationInfo active_key_packages<V>;
-  RetainedKeyPackageMaterial retained_key_package_material<V>;
-  RetainedOperationSecret retained_operation_secrets<V>;
-  EmulationEpochState past_emulation_epochs<V>;
-  HigherLevelGroupState higher_level_groups<V>;
-} NewEmulatorClientState;
-~~~
-
-- `HPKEPrivateKey` contains the serialized HPKE KEM private key for the
-  ciphersuite used by the higher-level group.
-- `PPRFState` serializes a punctured binary-tree PRF as the set of retained
-  subtree roots. The root of an unpunctured tree is represented by a
-  `PPRFNode` with `prefix_length` 0 and a zero-length `prefix`. For other
-  nodes, `prefix` contains the first `prefix_length` bits of the node's path,
-  packed from most-significant bit to least-significant bit in each octet. Any
-  unused low-order bits in the final octet MUST be zero. The entries in
-  `nodes` MUST be prefix-free and sorted lexicographically by prefix.
-- `RetainedOperationSecret` carries an `operation_secret` whose operation
-  ratchet generation has been deleted, but whose derived key material is still
-  live. Entries are identified by `(epoch_id, operation_type, leaf_index,
-  generation, operation_context)`.
-- `RetainedKeyPackageMaterial` carries a `key_package_seed_secret` derived from
-  a batch `key_package` operation secret whose operation-ratchet generation has
-  been deleted. Entries are identified by `(epoch_id, leaf_index, generation,
-  key_package_index)`.
-- `SecretTreeState` serializes the retained state of an RFC 9420 Secret Tree.
-  Each `SecretTreeNodeState` contains an unexpanded tree node secret and its
-  RFC 9420 tree node index. Each `SecretTreeRatchetState` contains the current
-  state of a derived per-leaf hash ratchet; `next_secret` is the ratchet secret
-  that will be used to derive the secret for `generation`. The serialized state
-  MUST contain exactly the retained secrets needed to continue the Secret Tree
-  deletion schedule from the sender's current state and MUST NOT contain
-  secrets that have already been deleted. The `application` and `handshake`
-  ratchet types are used for higher-level MLS Secret Trees. The `operation`
-  ratchet type is used for virtual-client operation secrets and includes an
-  `operation_type` field that identifies the per-leaf operation-type ratchet.
-- `signing_key_material` is an application-defined blob that conveys whatever
-  signing-key state the joining emulator client needs. For configurations
-  where signing keys are derived from emulation-group secrets, it MAY be
-  zero-length. See {{generating-virtual-client-secrets}}.
-- `active_key_packages` lists every KeyPackage the virtual client has
-  outstanding. Each entry carries the KeyPackageRef together with the
-  identifiers needed to find the corresponding per-KeyPackage material. When a
-  Welcome arrives encrypted to one of these KeyPackages, the joining emulator
-  client identifies the entry by KeyPackageRef, then finds the
-  `RetainedKeyPackageMaterial` matching `(epoch_id, leaf_index, generation,
-  key_package_index)`.
-- `retained_key_package_material` contains per-KeyPackage seed secrets whose
-  derived key material is still live, for example because the corresponding
-  KeyPackage is outstanding or because the current LeafNode of a higher-level
-  group was created from that seed secret. This includes the seed secret of
-  the creator LeafNode of a higher-level group created by the virtual client
-  ({{creating-groups-with-the-virtual-client}}), for which no KeyPackage
-  exists.
-- `retained_operation_secrets` contains retained `operation_secret` values
-  whose derived key material is still live. This includes operation secrets for
-  the current LeafNode of each higher-level group and operation secrets for
-  sent but uncommitted LeafNodes or UpdatePaths. It MUST NOT include a
-  `key_package` operation secret after that secret has been used to derive a
-  KeyPackageUpload batch; KeyPackage-derived material is represented by
-  `retained_key_package_material`.
-  `retained_operation_secrets` is needed for the `state_transfer` onboarding
-  variant because the joining emulator client needs to reconstruct still-live
-  virtual-client artifacts whose operation-type ratchet generations have already
-  been deleted. The `external_commit` onboarding variant does not require these
-  retained operation secrets or retained KeyPackage material if it replaces
-  every still-live virtual-client artifact derived from an earlier
-  emulation-group epoch, including outstanding KeyPackages and active LeafNodes
-  in higher-level groups.
-- `past_emulation_epochs` carries, for every emulation-group epoch still
-  referenced by an active LeafNode, outstanding KeyPackage, or retained
-  operation secret or retained KeyPackage material and not equal to the current
-  epoch, the retained `operation_secret_tree` state, the
-  `epoch_encryption_key`, the `generation_id_secret`, and the
-  `reuse_guard_secret`. State for the current emulation-group epoch is not
-  included here because the joining emulator client derives it from the
-  emulation group's Welcome.
-- `higher_level_groups` contains one entry per active higher-level group.
-  Each entry carries the `group_id` and a `state_type` identifying which
-  variant applies.
-
-For `state_transfer` entries, the provisioning emulator client transfers the
-current epoch's key-schedule outputs and the retained per-epoch state:
-
-- `init_secret` chains the joining emulator client's subsequent Commit
-  into the next epoch (`init_secret[n-1]` combines with the new
-  `commit_secret` to produce `joiner_secret[n]`).
-- `sender_data_secret` lets the joining emulator client decrypt sender
-  data on incoming PrivateMessages.
-- `exporter_secret` lets the joining emulator client produce
-  application-level exports from this epoch.
-- `external_secret` lets other parties perform further external
-  commits from this epoch.
-- `confirmation_key` lets the joining emulator client verify the
-  `confirmation_tag` on any incoming Commit.
-- `membership_key` lets the joining emulator client produce a valid
-  `membership_tag` on its own Commit sent as PublicMessage.
-- `resumption_psk` lets the joining emulator client participate as an
-  origin for resumption PSKs in this epoch, if the application uses them.
-- `epoch_authenticator` authenticates the current group state.
-- `secret_tree` is the current state of the group's Secret Tree, from
-  which the joining emulator client derives per-member handshake- and
-  application-ratchet keys needed to decrypt in-flight PrivateMessages.
-- `safe_exporter_tree` is the current punctured state of the Safe Exporter API's
-  Exporter Tree if the higher-level group uses that API. If the group does not
-  use the Safe Exporter API, `nodes` is zero-length. When used for a Safe
-  Exporter Tree, `PPRFState` paths are 16-bit paths indexed by `ComponentID`.
-- `direct_path_private_keys` is the list of HPKE private keys for each non-blank
-  node in the virtual client's filtered direct path. The first entry is the
-  private key for the parent of the virtual client's leaf, if that node is
-  non-blank. Subsequent entries correspond to the next non-blank nodes on the
-  direct path toward the root, in order. The virtual client's leaf private key
-  itself is derivable from the retained operation secret or retained
-  per-KeyPackage material identified by the DerivationInfo on the current
-  LeafNode and is therefore not transferred explicitly.
-
-For `external_commit` entries, no additional per-group fields are included. The
-joining emulator client external-commits into the group — fetching the current
-GroupInfo from the DS or another application-defined source — and includes a
-Remove proposal for the virtual client's prior leaf to evict the old membership.
-
-## Joining externally
-
-Without another online emulator client to bootstrap from, a new emulator can
-join the emulation group externally. A prerequisite for this external join is
-that the new client has the ability to learn which groups the virtual client is
-in and to externally join those groups.
-
-If those prerequisites are met, the new client needs to follow these steps:
-
-1. Obtain a fresh credential that other emulation clients will accept.
-2. Perform an external join to the emulation group.
-3. Replace the virtual client's active key material by performing the following
-   steps. Before each step, generate, derive or otherwise obtain the necessary
-   credential and private signature key material. Ensure that other emulation
-   clients can obtain the private key material. Details on credential and
-   signature key generation and distribution are left to the application. The
-   application MAY derive signature key material based on the new emulation
-   group epoch as described in {{generating-virtual-client-secrets}}.
-
-   1. Replace all active KeyPackages with new KeyPackages, generated from the
-      new emulation group epoch.
-   2. Perform an external join to all of the groups that the virtual client is a
-      member of, using LeafNodes generated from the new emulation group epoch
-      (see {{generating-virtual-client-secrets}}). Welcome messages which were
-      unprocessed by the offline devices are discarded, and these groups are
-      joined externally instead (potentially being queued for user approval
-      first).
-
-## Removing emulator clients
-
-Since all emulator clients hold all key material of the virtual client, removing
-the emulator client entails its removal from the emulation group, as well as
-rotating or revoking any other virtual-client specific key material.
-
-To effectively remove an emulator client, the emulator client committing the
-proposal that removes the target client MUST take the following steps in order:
-
-1. Effect the deletion of outstanding KeyPackages of the virtual client from the
-   DS. The set of outstanding KeyPackages can be determined from the
-   `KeyPackageUpload` messages previously sent to the emulation group (see
-   {{creating-and-uploading-keypackages}}).
-2. Commit a Remove proposal for the emulation client to be removed in the
-   emulation group, advancing it to a new epoch from which new virtual client
-   secrets will be derived (see {{generating-virtual-client-secrets}}).
-
-Next, the application MUST provide new credentials and authentication key
-material for the virtual client that can be used to replace existing credentials
-and authentication key material in the next steps. The application MAY use the
-`signature_key_secret` derived from any of the `operation_secret`s during the
-next steps to derive group-specific key material. The application SHOULD take
-steps to revoke any valid long lived credentials associated with the virtual
-client that the removed emulator client had access to.
-
-Using the new emulation-group epoch, any combination of remaining emulator
-clients MUST do the following steps (in any order):
-
-- Effect an update of the key material in every higher-level group in which the
-  virtual client is a member, using the new credential and authentication key
-  material provided by the application. This MAY be done by creating a commit
-  with an update path or sending an update proposal.
-- Upload a fresh set of KeyPackages derived from the new emulation-group epoch
-  to replace those deleted in step 1.
-
-A corollary of this removal procedure is that in most scenarios another emulator
-client is required to be online and perform the necessary updates. The DS must
-also support deletion of previously uploaded KeyPackages. This is in contrast to
-the simple multi-client setup, where an external sender can effectively remove
-individual clients and there are no additional functional requirements for the
-DS.
-
 # Client emulation
 
 To ensure that all emulator clients can act through the virtual client, they
@@ -1311,6 +920,397 @@ Alternatively, devices communicating with an eventually-consistent DS may need
 to simply retain messages and encryption keys for a short period of time after
 sending, in case it becomes necessary to decrypt another device's message and
 re-encrypt and re-send their original message with another encryption key.
+
+# Emulation group management
+
+Managing the emulation group is more elaborate than performing simple MLS
+operations within it.
+
+When adding a new emulator client, there are several pieces of cryptographic
+state that need to be synchronized before the new emulator client can start
+using the virtual client. The emulator client can either get this state from
+another emulator client, or if all other emulator clients are offline, the
+emulator client can use a series of external joins to onboard itself.
+
+## Adding an emulator client
+
+A joining emulator client is added to the emulation group by a provisioning
+emulator client via the usual MLS Add + Welcome. The GroupInfo in that
+Welcome carries the `virtual_clients` component ({{iana-considerations}}),
+whose component data is a NewEmulatorClientState struct that provides the
+state the joining emulator client needs to act as the virtual client going
+forward.
+
+The NewEmulatorClientState struct contains the complete secret state of the
+virtual client. Emulator clients MUST include it only in GroupInfo objects that
+are encrypted as part of a Welcome message for the emulation group. In
+particular, a GroupInfo object published to enable external commits into the
+emulation group MUST NOT contain a `virtual_clients` component.
+
+How the joining emulator client subsequently becomes an active participant in
+each higher-level group is application-defined. This document specifies two
+variants that the provisioning emulator client MAY use on a per-group basis:
+
+- **Variant A (provisioning state transfer).** The provisioning emulator client
+  includes, for each higher-level group, the key-schedule outputs of the current
+  epoch together with the HPKE private keys on the virtual client's direct path.
+  The joining emulator obtains the RatchetTree and the GroupContext from an
+  application-defined source.
+- **Variant B (external commit).** The provisioning emulator client only
+  identifies which higher-level groups the virtual client is in. The joining
+  emulator client acquires each group's current GroupInfo (from the DS or some
+  other application-defined source) and performs an external commit into the
+  group, evicting the virtual client's prior membership with a "resync" Remove
+  proposal as described in {{Section 12.4.3.2 of !RFC9420}}.
+
+Applications MAY mix the two variants across groups, for example using
+Variant A for groups where metadata hiding matters and Variant B elsewhere.
+
+Regardless of the variant chosen, a new emulator client MUST NOT send
+PrivateMessages in a higher-level group while the DerivationInfo of
+the active virtual-client LeafNode identifies an emulation-group epoch in which
+the new emulator client was not a member. The new emulator client has no leaf
+index at that epoch and therefore cannot compute the `reuse_guard` as described
+in {{reuse-guard}}. Before the new emulator client can send messages in such a
+higher-level group, the virtual-client LeafNode MUST be rotated (e.g., by a
+Commit with an update path or an Update proposal followed by a Commit) to a
+more recent emulation-group epoch in which the new emulator client is a member.
+
+Note that in higher-level groups where handshake messages are sent as
+PrivateMessages, the new emulator client cannot send this rotating Commit
+itself. In such groups, the rotation has to be performed by an existing
+emulator client, unless the application permits handshake messages framed as
+PublicMessages or external commits (Variant B), in which case the new emulator
+client can rotate the LeafNode itself.
+
+### Trade-offs
+
+- **Observability.** Variant A produces an ordinary Commit that looks like
+  any other key rotation to the rest of the higher-level group. Variant B
+  appears as the virtual client leaving and re-joining, which is visible to
+  every member and may undermine metadata-hiding goals.
+- **Forward secrecy.** Variant A chains the new epoch from the previous epoch's
+  `init_secret`. Variant B breaks the commit chain resulting in weaker forward
+  secrecy at the point of onboarding.
+- **Policy.** Some applications may restrict external commits by policy leaving
+  Variant A as the only option.
+- **State transfer cost.** Variant A requires O(log N) HPKE private keys and the
+  current epoch's key-schedule state per higher-level group. Depending on group
+  size and the group's ciphersuite, this may exceed the application's
+  performance constraints. Variant B's overhead is constant per group.
+
+### State transfer protocol
+
+Applications MAY use the following structs to transfer group data to the newly
+added emulator client.
+
+~~~ tls
+opaque HPKEPrivateKey<V>;
+
+struct {
+  uint8 prefix_length;
+  opaque prefix<V>;
+  opaque node_secret<V>;
+} PPRFNode;
+
+struct {
+  PPRFNode nodes<V>;
+} PPRFState;
+
+enum {
+  reserved(0),
+  key_package(1),
+  leaf_node(2),
+  application(3),
+  (255)
+} VirtualClientOperationType;
+
+struct {
+  opaque epoch_id<V>;
+  VirtualClientOperationType operation_type;
+  uint32 leaf_index;
+  uint32 generation;
+  opaque operation_context<V>;
+  opaque operation_secret<V>;
+} RetainedOperationSecret;
+
+struct {
+  uint32 node_index;
+  opaque node_secret<V>;
+} SecretTreeNodeState;
+
+enum {
+  reserved(0),
+  application(1),
+  handshake(2),
+  operation(3),
+  (255)
+} SecretTreeRatchetType;
+
+struct {
+  uint32 leaf_index;
+  SecretTreeRatchetType ratchet_type;
+  select (SecretTreeRatchetState.ratchet_type) {
+    case application:
+      struct{};
+    case handshake:
+      struct{};
+    case operation:
+      VirtualClientOperationType operation_type;
+  };
+  uint32 generation;
+  opaque next_secret<V>;
+} SecretTreeRatchetState;
+
+struct {
+  SecretTreeNodeState node_secrets<V>;
+  SecretTreeRatchetState ratchet_states<V>;
+} SecretTreeState;
+
+struct {
+  KeyPackageRef key_package_ref;
+  opaque epoch_id<V>;
+  uint32 leaf_index;
+  uint32 generation;
+  uint32 key_package_index;
+} KeyPackageDerivationInfo;
+
+struct {
+  opaque epoch_id<V>;
+  uint32 leaf_index;
+  uint32 generation;
+  uint32 key_package_index;
+  opaque key_package_seed_secret<V>;
+} RetainedKeyPackageMaterial;
+
+struct {
+  opaque epoch_id<V>;
+  SecretTreeState operation_secret_tree;
+  opaque epoch_encryption_key<V>;
+  opaque generation_id_secret<V>;
+  opaque reuse_guard_secret<V>;
+} EmulationEpochState;
+
+enum {
+  reserved(0),
+  state_transfer(1),
+  external_commit(2),
+  (255)
+} HigherLevelGroupStateType;
+
+struct {
+  opaque group_id<V>;
+  HigherLevelGroupStateType state_type;
+  select (HigherLevelGroupState.state_type) {
+    case state_transfer:
+      opaque init_secret<V>;
+      opaque sender_data_secret<V>;
+      opaque exporter_secret<V>;
+      opaque external_secret<V>;
+      opaque confirmation_key<V>;
+      opaque membership_key<V>;
+      opaque resumption_psk<V>;
+      opaque epoch_authenticator<V>;
+      SecretTreeState secret_tree;
+      PPRFState safe_exporter_tree;
+      HPKEPrivateKey direct_path_private_keys<V>;
+    case external_commit:
+      struct{};
+  };
+} HigherLevelGroupState;
+
+struct {
+  opaque signing_key_material<V>;
+  KeyPackageDerivationInfo active_key_packages<V>;
+  RetainedKeyPackageMaterial retained_key_package_material<V>;
+  RetainedOperationSecret retained_operation_secrets<V>;
+  EmulationEpochState past_emulation_epochs<V>;
+  HigherLevelGroupState higher_level_groups<V>;
+} NewEmulatorClientState;
+~~~
+
+- `HPKEPrivateKey` contains the serialized HPKE KEM private key for the
+  ciphersuite used by the higher-level group.
+- `PPRFState` serializes a punctured binary-tree PRF as the set of retained
+  subtree roots. The root of an unpunctured tree is represented by a
+  `PPRFNode` with `prefix_length` 0 and a zero-length `prefix`. For other
+  nodes, `prefix` contains the first `prefix_length` bits of the node's path,
+  packed from most-significant bit to least-significant bit in each octet. Any
+  unused low-order bits in the final octet MUST be zero. The entries in
+  `nodes` MUST be prefix-free and sorted lexicographically by prefix.
+- `RetainedOperationSecret` carries an `operation_secret` whose operation
+  ratchet generation has been deleted, but whose derived key material is still
+  live. Entries are identified by `(epoch_id, operation_type, leaf_index,
+  generation, operation_context)`.
+- `RetainedKeyPackageMaterial` carries a `key_package_seed_secret` derived from
+  a batch `key_package` operation secret whose operation-ratchet generation has
+  been deleted. Entries are identified by `(epoch_id, leaf_index, generation,
+  key_package_index)`.
+- `SecretTreeState` serializes the retained state of an RFC 9420 Secret Tree.
+  Each `SecretTreeNodeState` contains an unexpanded tree node secret and its
+  RFC 9420 tree node index. Each `SecretTreeRatchetState` contains the current
+  state of a derived per-leaf hash ratchet; `next_secret` is the ratchet secret
+  that will be used to derive the secret for `generation`. The serialized state
+  MUST contain exactly the retained secrets needed to continue the Secret Tree
+  deletion schedule from the sender's current state and MUST NOT contain
+  secrets that have already been deleted. The `application` and `handshake`
+  ratchet types are used for higher-level MLS Secret Trees. The `operation`
+  ratchet type is used for virtual-client operation secrets and includes an
+  `operation_type` field that identifies the per-leaf operation-type ratchet.
+- `signing_key_material` is an application-defined blob that conveys whatever
+  signing-key state the joining emulator client needs. For configurations
+  where signing keys are derived from emulation-group secrets, it MAY be
+  zero-length. See {{generating-virtual-client-secrets}}.
+- `active_key_packages` lists every KeyPackage the virtual client has
+  outstanding. Each entry carries the KeyPackageRef together with the
+  identifiers needed to find the corresponding per-KeyPackage material. When a
+  Welcome arrives encrypted to one of these KeyPackages, the joining emulator
+  client identifies the entry by KeyPackageRef, then finds the
+  `RetainedKeyPackageMaterial` matching `(epoch_id, leaf_index, generation,
+  key_package_index)`.
+- `retained_key_package_material` contains per-KeyPackage seed secrets whose
+  derived key material is still live, for example because the corresponding
+  KeyPackage is outstanding or because the current LeafNode of a higher-level
+  group was created from that seed secret. This includes the seed secret of
+  the creator LeafNode of a higher-level group created by the virtual client
+  ({{creating-groups-with-the-virtual-client}}), for which no KeyPackage
+  exists.
+- `retained_operation_secrets` contains retained `operation_secret` values
+  whose derived key material is still live. This includes operation secrets for
+  the current LeafNode of each higher-level group and operation secrets for
+  sent but uncommitted LeafNodes or UpdatePaths. It MUST NOT include a
+  `key_package` operation secret after that secret has been used to derive a
+  KeyPackageUpload batch; KeyPackage-derived material is represented by
+  `retained_key_package_material`.
+  `retained_operation_secrets` is needed for the `state_transfer` onboarding
+  variant because the joining emulator client needs to reconstruct still-live
+  virtual-client artifacts whose operation-type ratchet generations have already
+  been deleted. The `external_commit` onboarding variant does not require these
+  retained operation secrets or retained KeyPackage material if it replaces
+  every still-live virtual-client artifact derived from an earlier
+  emulation-group epoch, including outstanding KeyPackages and active LeafNodes
+  in higher-level groups.
+- `past_emulation_epochs` carries, for every emulation-group epoch still
+  referenced by an active LeafNode, outstanding KeyPackage, or retained
+  operation secret or retained KeyPackage material and not equal to the current
+  epoch, the retained `operation_secret_tree` state, the
+  `epoch_encryption_key`, the `generation_id_secret`, and the
+  `reuse_guard_secret`. State for the current emulation-group epoch is not
+  included here because the joining emulator client derives it from the
+  emulation group's Welcome.
+- `higher_level_groups` contains one entry per active higher-level group.
+  Each entry carries the `group_id` and a `state_type` identifying which
+  variant applies.
+
+For `state_transfer` entries, the provisioning emulator client transfers the
+current epoch's key-schedule outputs and the retained per-epoch state:
+
+- `init_secret` chains the joining emulator client's subsequent Commit
+  into the next epoch (`init_secret[n-1]` combines with the new
+  `commit_secret` to produce `joiner_secret[n]`).
+- `sender_data_secret` lets the joining emulator client decrypt sender
+  data on incoming PrivateMessages.
+- `exporter_secret` lets the joining emulator client produce
+  application-level exports from this epoch.
+- `external_secret` lets other parties perform further external
+  commits from this epoch.
+- `confirmation_key` lets the joining emulator client verify the
+  `confirmation_tag` on any incoming Commit.
+- `membership_key` lets the joining emulator client produce a valid
+  `membership_tag` on its own Commit sent as PublicMessage.
+- `resumption_psk` lets the joining emulator client participate as an
+  origin for resumption PSKs in this epoch, if the application uses them.
+- `epoch_authenticator` authenticates the current group state.
+- `secret_tree` is the current state of the group's Secret Tree, from
+  which the joining emulator client derives per-member handshake- and
+  application-ratchet keys needed to decrypt in-flight PrivateMessages.
+- `safe_exporter_tree` is the current punctured state of the Safe Exporter API's
+  Exporter Tree if the higher-level group uses that API. If the group does not
+  use the Safe Exporter API, `nodes` is zero-length. When used for a Safe
+  Exporter Tree, `PPRFState` paths are 16-bit paths indexed by `ComponentID`.
+- `direct_path_private_keys` is the list of HPKE private keys for each non-blank
+  node in the virtual client's filtered direct path. The first entry is the
+  private key for the parent of the virtual client's leaf, if that node is
+  non-blank. Subsequent entries correspond to the next non-blank nodes on the
+  direct path toward the root, in order. The virtual client's leaf private key
+  itself is derivable from the retained operation secret or retained
+  per-KeyPackage material identified by the DerivationInfo on the current
+  LeafNode and is therefore not transferred explicitly.
+
+For `external_commit` entries, no additional per-group fields are included. The
+joining emulator client external-commits into the group — fetching the current
+GroupInfo from the DS or another application-defined source — and includes a
+Remove proposal for the virtual client's prior leaf to evict the old membership.
+
+## Joining externally
+
+Without another online emulator client to bootstrap from, a new emulator can
+join the emulation group externally. A prerequisite for this external join is
+that the new client has the ability to learn which groups the virtual client is
+in and to externally join those groups.
+
+If those prerequisites are met, the new client needs to follow these steps:
+
+1. Obtain a fresh credential that other emulation clients will accept.
+2. Perform an external join to the emulation group.
+3. Replace the virtual client's active key material by performing the following
+   steps. Before each step, generate, derive or otherwise obtain the necessary
+   credential and private signature key material. Ensure that other emulation
+   clients can obtain the private key material. Details on credential and
+   signature key generation and distribution are left to the application. The
+   application MAY derive signature key material based on the new emulation
+   group epoch as described in {{generating-virtual-client-secrets}}.
+
+   1. Replace all active KeyPackages with new KeyPackages, generated from the
+      new emulation group epoch.
+   2. Perform an external join to all of the groups that the virtual client is a
+      member of, using LeafNodes generated from the new emulation group epoch
+      (see {{generating-virtual-client-secrets}}). Welcome messages which were
+      unprocessed by the offline devices are discarded, and these groups are
+      joined externally instead (potentially being queued for user approval
+      first).
+
+## Removing emulator clients
+
+Since all emulator clients hold all key material of the virtual client, removing
+the emulator client entails its removal from the emulation group, as well as
+rotating or revoking any other virtual-client specific key material.
+
+To effectively remove an emulator client, the emulator client committing the
+proposal that removes the target client MUST take the following steps in order:
+
+1. Effect the deletion of outstanding KeyPackages of the virtual client from the
+   DS. The set of outstanding KeyPackages can be determined from the
+   `KeyPackageUpload` messages previously sent to the emulation group (see
+   {{creating-and-uploading-keypackages}}).
+2. Commit a Remove proposal for the emulation client to be removed in the
+   emulation group, advancing it to a new epoch from which new virtual client
+   secrets will be derived (see {{generating-virtual-client-secrets}}).
+
+Next, the application MUST provide new credentials and authentication key
+material for the virtual client that can be used to replace existing credentials
+and authentication key material in the next steps. The application MAY use the
+`signature_key_secret` derived from any of the `operation_secret`s during the
+next steps to derive group-specific key material. The application SHOULD take
+steps to revoke any valid long lived credentials associated with the virtual
+client that the removed emulator client had access to.
+
+Using the new emulation-group epoch, any combination of remaining emulator
+clients MUST do the following steps (in any order):
+
+- Effect an update of the key material in every higher-level group in which the
+  virtual client is a member, using the new credential and authentication key
+  material provided by the application. This MAY be done by creating a commit
+  with an update path or sending an update proposal.
+- Upload a fresh set of KeyPackages derived from the new emulation-group epoch
+  to replace those deleted in step 1.
+
+A corollary of this removal procedure is that in most scenarios another emulator
+client is required to be online and perform the necessary updates. The DS must
+also support deletion of previously uploaded KeyPackages. This is in contrast to
+the simple multi-client setup, where an external sender can effectively remove
+individual clients and there are no additional functional requirements for the
+DS.
 
 # Security Considerations
 
