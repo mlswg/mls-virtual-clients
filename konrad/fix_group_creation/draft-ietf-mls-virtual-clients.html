@@ -1051,11 +1051,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">MVC</td>
-<td class="right">June 2026</td>
+<td class="right">July 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Alwen, et al.</td>
-<td class="center">Expires 28 December 2026</td>
+<td class="center">Expires 3 January 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1068,12 +1068,12 @@ svg {
 <dd class="internet-draft">draft-ietf-mls-virtual-clients-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-26" class="published">26 June 2026</time>
+<time datetime="2026-07-02" class="published">2 July 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-28">28 December 2026</time></dd>
+<dd class="expires"><time datetime="2027-01-03">3 January 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1125,7 +1125,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 28 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 3 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1744,7 +1744,10 @@ key_package_index)</code>.<a href="#section-5.1.2-3.7.1" class="pilcrow">¶</a><
               <p id="section-5.1.2-3.8.1"><code>retained_key_package_material</code> contains per-KeyPackage seed secrets whose
 derived key material is still live, for example because the corresponding
 KeyPackage is outstanding or because the current LeafNode of a higher-level
-group was created from that KeyPackage.<a href="#section-5.1.2-3.8.1" class="pilcrow">¶</a></p>
+group was created from that seed secret. This includes the seed secret of
+the creator LeafNode of a higher-level group created by the virtual client
+(<a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 6.4</a>), for which no KeyPackage
+exists.<a href="#section-5.1.2-3.8.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.1.2-3.9">
               <p id="section-5.1.2-3.9.1"><code>retained_operation_secrets</code> contains retained <code>operation_secret</code> values
@@ -2060,24 +2063,29 @@ computing the <code>reuse_guard</code> (<a href="#reuse-guard" class="auto inter
 upload or LeafNode update, the deriving client chooses a
 <code>VirtualClientOperationType</code> and uses the next unused generation of its own
 operation ratchet for that operation type. The <code>operation_type</code> is
-<code>key_package</code> when creating a KeyPackageUpload batch. A single <code>key_package</code>
-operation generation derives the batch operation secret for all KeyPackages in
-that upload, and individual KeyPackages are domain-separated with
-<code>key_package_index</code> as described in <a href="#creating-and-uploading-keypackages" class="auto internal xref">Section 6.5.1</a>. The
-batch is closed by the upload: after a KeyPackageUpload has been sent, the same
-operation generation <span class="bcp14">MUST NOT</span> be used to derive additional KeyPackages. The
-<code>operation_type</code> is <code>leaf_node</code> when creating a LeafNode for an Update
-proposal, a Commit with an update path, or an external commit. Applications <span class="bcp14">MAY</span>
-use the operation type <code>application</code> to derive application-specific key
-material.<a href="#section-6.2-13" class="pilcrow">¶</a></p>
+<code>key_package</code> when deriving per-KeyPackage seed secrets, either for a
+KeyPackageUpload batch or for the creator LeafNode of a newly created
+higher-level group (<a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 6.4</a>). A single
+<code>key_package</code> operation generation derives the batch operation secret for all
+KeyPackages in that upload, and individual KeyPackages are domain-separated
+with <code>key_package_index</code> as described in
+<a href="#creating-and-uploading-keypackages" class="auto internal xref">Section 6.5.1</a>. The batch is closed by the upload:
+after a KeyPackageUpload has been sent, the same operation generation <span class="bcp14">MUST NOT</span>
+be used to derive additional KeyPackages. The <code>operation_type</code> is <code>leaf_node</code>
+when creating a LeafNode for an Update proposal, a Commit with an update path,
+or an external commit. Applications <span class="bcp14">MAY</span> use the operation type <code>application</code>
+to derive application-specific key material.<a href="#section-6.2-13" class="pilcrow">¶</a></p>
 <p id="section-6.2-14">Deriving an <code>operation_secret</code> consumes the corresponding operation-ratchet
 generation, even if the virtual-client operation does not result in a
 higher-level MLS message that is accepted into the higher-level group's
 transcript. Once a generation has been consumed, an emulator client <span class="bcp14">MUST NOT</span> use
 the same generation of the same operation-type ratchet for another virtual-client
-operation. If the operation fails, the emulator client <span class="bcp14">MUST</span> delete any retained
-secret material derived from the failed operation after the client determines
-that the operation will not be used.<a href="#section-6.2-14" class="pilcrow">¶</a></p>
+operation. A retry of a failed operation is another virtual-client operation:
+if, for example, a group creation or an external commit is rejected and
+attempted again, the retry <span class="bcp14">MUST</span> consume a fresh generation. If the operation
+fails, the emulator client <span class="bcp14">MUST</span> delete any retained secret material derived
+from the failed operation after the client determines that the operation will
+not be used.<a href="#section-6.2-14" class="pilcrow">¶</a></p>
 <p id="section-6.2-15">The operation context is a value bound into the derivation of the
 <code>operation_secret</code>. For <code>key_package</code> operations, <code>operation_context</code> is a
 zero-length octet string. For <code>leaf_node</code> operations, <code>operation_context</code> is the
@@ -2092,7 +2100,7 @@ struct {
   uint32 generation;
   VirtualClientOperationType operation_type;
   opaque operation_context&lt;V&gt;;
-} OperationContext
+} OperationContext;
 
 operation_generation_secret =
   DeriveSecret(operation_ratchet_secret, "VC Operation Secret")
@@ -2177,7 +2185,7 @@ emulator client derives a per-KeyPackage seed secret from that batch
 <pre>
 struct {
   uint32 key_package_index;
-} KeyPackageSeedContext
+} KeyPackageSeedContext;
 </pre><a href="#section-6.2-25" class="pilcrow">¶</a>
 </div>
 <div class="alignLeft art-text artwork" id="section-6.2-26">
@@ -2220,11 +2228,14 @@ state a new emulator client needs; its contents are application-defined.<a href=
 <p id="section-6.3-1">When creating a LeafNode, either for group creation, a Commit with an update
 path, an Update proposal, an external commit, or a KeyPackage, the creating
 emulator client <span class="bcp14">MUST</span> derive the necessary secrets from the current epoch of the
-emulation group as described in Section <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>.
+emulation group as described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>.
 For a LeafNode whose <code>leaf_node_source</code> is <code>key_package</code>, the creating emulator
-client <span class="bcp14">MUST</span> use the same per-KeyPackage seed secret used to derive the
-KeyPackage's <code>init_key_secret</code>. That seed is derived from the batch
-<code>key_package</code> operation secret and the KeyPackage's <code>key_package_index</code>. For a
+client <span class="bcp14">MUST</span> use a per-KeyPackage seed secret, derived from a batch
+<code>key_package</code> operation secret and the LeafNode's <code>key_package_index</code>. For the
+LeafNode of a KeyPackage, this <span class="bcp14">MUST</span> be the same seed secret used to derive the
+KeyPackage's <code>init_key_secret</code>. For the creator LeafNode of a newly created
+higher-level group, the seed secret is derived from a dedicated <code>key_package</code>
+operation as described in <a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 6.4</a>. For a
 LeafNode whose <code>leaf_node_source</code> is <code>update</code> or <code>commit</code>, the creating
 emulator client <span class="bcp14">MUST</span> use a <code>leaf_node</code> operation secret.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
 <p id="section-6.3-2">Similarly, if an emulator client generates a Commit with an update path, it
@@ -2238,11 +2249,7 @@ DerivationInfo struct as the <code>virtual_clients</code> component data in the 
 struct {
   opaque epoch_id&lt;V&gt;;
   opaque ciphertext&lt;V&gt;;
-} DerivationInfo
-
-struct {
-  opaque epoch_secret&lt;V&gt;;
-} GroupCreationSecret;
+} DerivationInfo;
 
 struct {
   opaque init_secret&lt;V&gt;;
@@ -2259,18 +2266,13 @@ struct {
     case commit:
       optional&lt;ExternalInitSecret&gt; external_init_secret;
   };
-  optional&lt;GroupCreationSecret&gt; group_creation_secret;
-} DerivationInfoTBE
+} DerivationInfoTBE;
 </pre><a href="#section-6.3-4" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3-5">For a LeafNode in an external Commit, <code>external_init_secret</code> <span class="bcp14">MUST</span> contain the
 <code>init_secret</code> produced by external initialization as described in
 <span><a href="https://rfc-editor.org/rfc/rfc9420#section-8.3" class="relref">Section 8.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>. For a LeafNode in any other Commit, the
-<code>external_init_secret</code> field <span class="bcp14">MUST</span> be absent. For the creator LeafNode of a
-newly created higher-level group, <code>group_creation_secret</code> <span class="bcp14">MUST</span> be present and
-contain the initial <code>epoch_secret</code> generated for that group as described in
-<span><a href="https://rfc-editor.org/rfc/rfc9420#section-11" class="relref">Section 11</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>. For all other LeafNodes, <code>group_creation_secret</code>
-          <span class="bcp14">MUST</span> be absent.<a href="#section-6.3-5" class="pilcrow">¶</a></p>
+<code>external_init_secret</code> field <span class="bcp14">MUST</span> be absent.<a href="#section-6.3-5" class="pilcrow">¶</a></p>
 <p id="section-6.3-6">The <code>ciphertext</code> is the serialized DerivationInfoTBE encrypted with the AEAD
 scheme of the emulation group's ciphersuite, with the <code>epoch_id</code> as AAD. The
 <code>LeafNode.leaf_node_source</code> selector is the <code>leaf_node_source</code> of the LeafNode
@@ -2289,7 +2291,14 @@ derivation_info_nonce = ExpandWithLabel(epoch_encryption_key, "nonce",
 <p id="section-6.3-8">Since every virtual-client operation produces a LeafNode with a fresh
 <code>encryption_key</code>, each distinct DerivationInfoTBE is encrypted under a
 distinct key-nonce pair. Re-encrypting the same DerivationInfoTBE for the same
-LeafNode yields an identical ciphertext, which is benign.<a href="#section-6.3-8" class="pilcrow">¶</a></p>
+LeafNode yields an identical ciphertext, which is benign. This only holds
+because a consumed operation-ratchet generation is never reused: for external
+Commit LeafNodes, the DerivationInfoTBE contains the <code>external_init_secret</code>,
+which changes with every encapsulation. Deriving a LeafNode for a retried
+external Commit from the same generation would therefore encrypt a different
+DerivationInfoTBE under the same key and nonce and compromise the AEAD.
+Instead, the retry <span class="bcp14">MUST</span> consume a fresh generation as described in
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>.<a href="#section-6.3-8" class="pilcrow">¶</a></p>
 <p id="section-6.3-9">The operation type used to derive the LeafNode's <code>operation_secret</code> is
 determined by the LeafNode's <code>leaf_node_source</code>
 (<span><a href="https://rfc-editor.org/rfc/rfc9420#section-7.2" class="relref">Section 7.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>): <code>key_package</code> maps to <code>key_package</code>, while
@@ -2304,9 +2313,7 @@ derive the LeafNode's <code>operation_secret</code>. For KeyPackage LeafNodes,
 <code>key_package_index</code> identifies the individual KeyPackage within that batch. For
 <code>leaf_node</code> operations, the DerivationInfoTBE contains no <code>key_package_index</code>.
 For external Commit LeafNodes, the DerivationInfoTBE additionally carries the
-external init secret needed to process the Commit. For the creator LeafNode of
-a newly created higher-level group, it additionally carries the initial epoch
-secret needed to initialize the group.<a href="#section-6.3-9" class="pilcrow">¶</a></p>
+external init secret needed to process the Commit.<a href="#section-6.3-9" class="pilcrow">¶</a></p>
 <p id="section-6.3-10">When other emulator clients receive a LeafNode for the virtual client, they use
 the <code>epoch_id</code> to determine the epoch of the emulation group from which to
 derive the secrets necessary to re-create the key material of the LeafNode and
@@ -2321,13 +2328,22 @@ re-create the LeafNode key material.<a href="#section-6.3-10" class="pilcrow">¶
 client uses the <code>external_init_secret</code> from the DerivationInfoTBE as the
 external init secret for the new epoch. If <code>external_init_secret</code> is absent,
 the emulator client <span class="bcp14">MUST</span> reject the Commit.<a href="#section-6.3-11" class="pilcrow">¶</a></p>
-<p id="section-6.3-12">The <code>DerivationInfo</code> on the active virtual-client LeafNode binds that
+<p id="section-6.3-12">The <code>external_init_secret</code> is carried in the DerivationInfo because the other
+emulator clients cannot always derive it themselves. If the external Commit
+resynchronizes the virtual client's membership in a group it is already a
+member of, the other emulator clients hold the previous epoch's
+<code>external_secret</code> and could recover the init secret from the <code>kem_output</code> in
+the ExternalInit proposal (<span><a href="https://rfc-editor.org/rfc/rfc9420#section-8.3" class="relref">Section 8.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>). If the virtual client
+externally joins a group it was not previously a member of, however, they hold
+no prior epoch state for that group and cannot. Carrying the init secret in
+the DerivationInfo covers both cases uniformly.<a href="#section-6.3-12" class="pilcrow">¶</a></p>
+<p id="section-6.3-13">The <code>DerivationInfo</code> on the active virtual-client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
 epoch identified by <code>epoch_id</code>. Protocol steps that require per-epoch
 emulation-group state for a higher-level group, such as computing the
 <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 6.6.2</a>) or a generation ID
 (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 6.6.3</a>), <span class="bcp14">MUST</span> use the
-emulation-group epoch identified by the active virtual-client LeafNode.<a href="#section-6.3-12" class="pilcrow">¶</a></p>
+emulation-group epoch identified by the active virtual-client LeafNode.<a href="#section-6.3-13" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-groups-with-the-virtual-client">
@@ -2337,25 +2353,48 @@ emulation-group epoch identified by the active virtual-client LeafNode.<a href="
         </h3>
 <p id="section-6.4-1">When an emulator client creates a higher-level group with the virtual client as
 the creator, it <span class="bcp14">MUST</span> create the initial LeafNode as described in
-<a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a>. The LeafNode's DerivationInfoTBE <span class="bcp14">MUST</span>
-contain a <code>group_creation_secret</code> carrying the initial epoch secret for the
-group.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
-<p id="section-6.4-2">The application <span class="bcp14">MUST</span> fan out the initial group creation material to all current
+<a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a>. <span>[<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> does not prescribe a
+<code>leaf_node_source</code> for the creator's LeafNode. The creator LeafNode of a
+virtual client <span class="bcp14">MUST</span> have <code>leaf_node_source</code> <code>key_package</code>. Since no KeyPackage
+is published for this LeafNode, the creating emulator client derives its key
+material from a dedicated <code>key_package</code> operation: it consumes a fresh
+<code>key_package</code> operation-ratchet generation and derives a single per-KeyPackage
+seed secret with <code>key_package_index</code> 0. No KeyPackageUpload is sent for this
+operation. The batch consists of only this derivation and is closed
+immediately, and the batch <code>operation_secret</code> is deleted after the seed secret
+has been derived.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">Instead of choosing the initial epoch secret of the new group randomly as
+described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-11" class="relref">Section 11</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, the creating emulator client <span class="bcp14">MUST</span>
+derive it from the creator LeafNode's per-KeyPackage seed secret:<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.4-3">
+<pre>
+epoch_secret = DeriveSecret(key_package_seed_secret, "Group Creation")
+</pre><a href="#section-6.4-3" class="pilcrow">¶</a>
+</div>
+<p id="section-6.4-4">DeriveSecret is computed with the higher-level group's ciphersuite, so that
+<code>epoch_secret</code> has the size KDF.Nh required by that group's key schedule. This
+makes the initial epoch state of the higher-level group derivable by every
+emulator client from the DerivationInfo on the creator LeafNode alone, and it
+makes retried group creation attempts, each of which consumes a fresh
+generation (see <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>), independent of one
+another.<a href="#section-6.4-4" class="pilcrow">¶</a></p>
+<p id="section-6.4-5">The application <span class="bcp14">MUST</span> fan out the initial group creation material to all current
 emulator clients before delivering any other content from that higher-level
 group to those emulator clients. The initial group creation material consists
 of the GroupInfo for the newly created group, the creator LeafNode or a
 ratchet_tree extension that contains it, and any application-defined context
 needed to associate the material with the higher-level group. An emulator
 client <span class="bcp14">MUST</span> process the initial group creation material before processing any
-other content from that higher-level group.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
-<p id="section-6.4-3">When processing initial group creation material, an emulator client verifies the
-GroupInfo and ratchet tree as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3" class="relref">Section 12.4.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>,
-decrypts the DerivationInfo in the creator LeafNode, reconstructs the
-LeafNode's key material as described in <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a>,
-and uses the <code>epoch_secret</code> from <code>group_creation_secret</code> to initialize the
-higher-level group's epoch 0 state. If <code>group_creation_secret</code> is absent or if
-the GroupInfo cannot be verified using the resulting epoch state, the emulator
-client <span class="bcp14">MUST</span> reject the initial group creation material.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+other content from that higher-level group.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
+<p id="section-6.4-6">When processing initial group creation material, an emulator client verifies
+the GroupInfo as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.1" class="relref">Section 12.4.3.1</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> and the ratchet
+tree as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.3" class="relref">Section 12.4.3.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, decrypts the
+DerivationInfo in the creator LeafNode, reconstructs the LeafNode's key
+material as described in <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a>, re-derives
+<code>epoch_secret</code> from the same per-KeyPackage seed secret, and uses it to
+initialize the higher-level group's epoch 0 state. If the GroupInfo cannot be
+verified using the resulting epoch state, the emulator client <span class="bcp14">MUST</span> reject the
+initial group creation material.<a href="#section-6.4-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="virtual-client-actions">
@@ -2428,14 +2467,14 @@ KeyPackages available to other parties.<a href="#section-6.5.1-4" class="pilcrow
 struct {
   KeyPackageRef key_package_ref;
   uint32 key_package_index;
-} KeyPackageInfo
+} KeyPackageInfo;
 
 struct {
   opaque epoch_id&lt;V&gt;;
   uint32 leaf_index;
   uint32 generation;
   KeyPackageInfo key_package_info&lt;V&gt;;
-} KeyPackageUpload
+} KeyPackageUpload;
 </pre><a href="#section-6.5.1-5" class="pilcrow">¶</a>
 </div>
 <ul class="normal">
@@ -2622,14 +2661,14 @@ enum {
   application(1),
   handshake(2),
   (255)
-} RatchetType
+} RatchetType;
 
 struct {
   opaque group_id&lt;V&gt;;
   uint64 epoch;
   uint32 generation;
   RatchetType ratchet_type;
-} PrivateMessageContext
+} PrivateMessageContext;
 
 generation_id = ExpandWithLabel(generation_id_secret, "generation id",
                       PrivateMessageContext, Kdf.Nh)
@@ -2709,6 +2748,18 @@ document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
 emulation-epoch state (<a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>) extend the window during
 which a compromise reveals previously transmitted data, and emulator clients
 <span class="bcp14">SHOULD</span> delete them as soon as they are no longer needed.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">Some of this state is reachable through the virtual client's LeafNodes. The
+DerivationInfo of an external Commit LeafNode embeds the <code>init_secret</code> of the
+epoch created by that Commit, encrypted under the emulation-group epoch's
+<code>epoch_encryption_key</code>. The LeafNode persists in the higher-level group's
+ratchet tree until the virtual client's leaf is next updated, and emulator
+clients retain the <code>epoch_encryption_key</code> for as long as the LeafNode is
+active. Similarly, the initial epoch secret of a higher-level group created by
+the virtual client remains derivable from the retained per-KeyPackage seed
+secret of the creator LeafNode
+(<a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 6.4</a>). Updating the virtual client's
+LeafNode soon after an external commit or a group creation allows emulator
+clients to delete this state and limits the exposure.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-compromise-security">
@@ -2814,6 +2865,14 @@ generations are in use.<a href="#section-8-3.3.1" class="pilcrow">¶</a></p>
 <a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>, or <a href="#joining-externally" class="auto internal xref">Section 5.2</a>) is visible to all
 members of the higher-level group as the virtual client leaving and
 re-joining.<a href="#section-8-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.5">
+          <p id="section-8-3.5.1">The DerivationInfo ciphertext of a LeafNode with <code>leaf_node_source</code> <code>commit</code>
+is longer when it carries an <code>external_init_secret</code>. Parties with access to
+the ratchet tree, including members who join after the external commit, can
+therefore tell that the virtual client's current leaf was created by an
+external commit rather than a regular Commit, for as long as that leaf
+remains in the tree.<a href="#section-8-3.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
