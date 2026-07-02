@@ -970,6 +970,13 @@ operation. The batch consists of only this derivation and is closed
 immediately, and the batch `operation_secret` is deleted after the seed secret
 has been derived.
 
+Like any other LeafNode with `leaf_node_source` `key_package`, the creator
+LeafNode carries a `lifetime` ({{Section 7.2 of !RFC9420}}), and members
+validating the ratchet tree, including members joining later, may reject a
+leaf whose lifetime has expired. The creating emulator client SHOULD choose
+the lifetime according to the application's LeafNode validity policy, and the
+virtual client's leaf SHOULD be updated before the lifetime expires.
+
 Instead of choosing the initial epoch secret of the new group randomly as
 described in {{Section 11 of !RFC9420}}, the creating emulator client MUST
 derive it from the creator LeafNode's per-KeyPackage seed secret:
@@ -993,7 +1000,9 @@ of the GroupInfo for the newly created group, the creator LeafNode or a
 ratchet_tree extension that contains it, and any application-defined context
 needed to associate the material with the higher-level group. An emulator
 client MUST process the initial group creation material before processing any
-other content from that higher-level group.
+other content from that higher-level group. This requirement parallels the one
+for external join material in
+{{externally-joining-groups-with-the-virtual-client}}.
 
 When processing initial group creation material, an emulator client verifies
 the GroupInfo as described in {{Section 12.4.3.1 of !RFC9420}} and the ratchet
