@@ -2363,30 +2363,38 @@ seed secret with <code>key_package_index</code> 0. No KeyPackageUpload is sent f
 operation. The batch consists of only this derivation and is closed
 immediately, and the batch <code>operation_secret</code> is deleted after the seed secret
 has been derived.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
-<p id="section-6.4-2">Instead of choosing the initial epoch secret of the new group randomly as
+<p id="section-6.4-2">Like any other LeafNode with <code>leaf_node_source</code> <code>key_package</code>, the creator
+LeafNode carries a <code>lifetime</code> (<span><a href="https://rfc-editor.org/rfc/rfc9420#section-7.2" class="relref">Section 7.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>), and members
+validating the ratchet tree, including members joining later, may reject a
+leaf whose lifetime has expired. The creating emulator client <span class="bcp14">SHOULD</span> choose
+the lifetime according to the application's LeafNode validity policy, and the
+virtual client's leaf <span class="bcp14">SHOULD</span> be updated before the lifetime expires.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">Instead of choosing the initial epoch secret of the new group randomly as
 described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-11" class="relref">Section 11</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, the creating emulator client <span class="bcp14">MUST</span>
-derive it from the creator LeafNode's per-KeyPackage seed secret:<a href="#section-6.4-2" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.4-3">
+derive it from the creator LeafNode's per-KeyPackage seed secret:<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.4-4">
 <pre>
 epoch_secret = DeriveSecret(key_package_seed_secret, "Group Creation")
-</pre><a href="#section-6.4-3" class="pilcrow">¶</a>
+</pre><a href="#section-6.4-4" class="pilcrow">¶</a>
 </div>
-<p id="section-6.4-4">DeriveSecret is computed with the higher-level group's ciphersuite, so that
+<p id="section-6.4-5">DeriveSecret is computed with the higher-level group's ciphersuite, so that
 <code>epoch_secret</code> has the size KDF.Nh required by that group's key schedule. This
 makes the initial epoch state of the higher-level group derivable by every
 emulator client from the DerivationInfo on the creator LeafNode alone, and it
 makes retried group creation attempts, each of which consumes a fresh
 generation (see <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>), independent of one
-another.<a href="#section-6.4-4" class="pilcrow">¶</a></p>
-<p id="section-6.4-5">The application <span class="bcp14">MUST</span> fan out the initial group creation material to all current
+another.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
+<p id="section-6.4-6">The application <span class="bcp14">MUST</span> fan out the initial group creation material to all current
 emulator clients before delivering any other content from that higher-level
 group to those emulator clients. The initial group creation material consists
 of the GroupInfo for the newly created group, the creator LeafNode or a
 ratchet_tree extension that contains it, and any application-defined context
 needed to associate the material with the higher-level group. An emulator
 client <span class="bcp14">MUST</span> process the initial group creation material before processing any
-other content from that higher-level group.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
-<p id="section-6.4-6">When processing initial group creation material, an emulator client verifies
+other content from that higher-level group. This requirement parallels the one
+for external join material in
+<a href="#externally-joining-groups-with-the-virtual-client" class="auto internal xref">Section 6.5.2</a>.<a href="#section-6.4-6" class="pilcrow">¶</a></p>
+<p id="section-6.4-7">When processing initial group creation material, an emulator client verifies
 the GroupInfo as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.1" class="relref">Section 12.4.3.1</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> and the ratchet
 tree as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.3" class="relref">Section 12.4.3.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, decrypts the
 DerivationInfo in the creator LeafNode, reconstructs the LeafNode's key
@@ -2394,7 +2402,7 @@ material as described in <a href="#creating-leafnodes-and-updatepaths" class="au
 <code>epoch_secret</code> from the same per-KeyPackage seed secret, and uses it to
 initialize the higher-level group's epoch 0 state. If the GroupInfo cannot be
 verified using the resulting epoch state, the emulator client <span class="bcp14">MUST</span> reject the
-initial group creation material.<a href="#section-6.4-6" class="pilcrow">¶</a></p>
+initial group creation material.<a href="#section-6.4-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="virtual-client-actions">
@@ -2536,6 +2544,27 @@ client relies on the higher-level group's Commit sequencing rules to determine
 whether that external commit is accepted. When creating the Commit to join the
 group externally, it <span class="bcp14">MUST</span> generate the LeafNode and path as described in
 <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a>.<a href="#section-6.5.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.5.2-2">An external Commit sent on behalf of the virtual client reaches the other
+emulator clients like any other virtual-client message (see
+<a href="#delivery-service" class="auto internal xref">Section 6.1</a>). If the virtual client was already a member of the
+group, the other emulator clients hold the group's state and process the
+external Commit like any other handshake message. If the virtual client
+externally joins a group it was not previously a member of, however, the
+other emulator clients hold no state for that group and cannot process the
+Commit by itself.<a href="#section-6.5.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.5.2-3">For such groups, the application <span class="bcp14">MUST</span> make the external join material
+available to all current emulator clients before delivering any other content
+from that higher-level group to them. The external join material consists of
+the GroupInfo the joining emulator client used to create the external Commit,
+the ratchet tree of the corresponding epoch (unless it is carried in the
+GroupInfo's <code>ratchet_tree</code> extension), and any application-defined context
+needed to associate the material with the higher-level group. An emulator
+client <span class="bcp14">MUST</span> process the external join material together with the external
+Commit before processing any other content from that higher-level group.<a href="#section-6.5.2-3" class="pilcrow">¶</a></p>
+<p id="section-6.5.2-4">When processing external join material, an emulator client verifies the
+GroupInfo as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.2" class="relref">Section 12.4.3.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> and the ratchet
+tree as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.3" class="relref">Section 12.4.3.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> before applying the
+external Commit.<a href="#section-6.5.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
