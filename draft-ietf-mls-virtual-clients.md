@@ -423,7 +423,10 @@ struct {
 - `retained_key_package_material` contains per-KeyPackage seed secrets whose
   derived key material is still live, for example because the corresponding
   KeyPackage is outstanding or because the current LeafNode of a higher-level
-  group was created from that KeyPackage.
+  group was created from that seed secret. This includes the seed secret of
+  the creator LeafNode of a higher-level group created by the virtual client
+  ({{creating-groups-with-the-virtual-client}}), for which no KeyPackage
+  exists.
 - `retained_operation_secrets` contains retained `operation_secret` values
   whose derived key material is still live. This includes operation secrets for
   the current LeafNode of each higher-level group and operation secrets for
@@ -670,25 +673,30 @@ When deriving a secret for a virtual client, e.g. for use in a KeyPackage
 upload or LeafNode update, the deriving client chooses a
 `VirtualClientOperationType` and uses the next unused generation of its own
 operation ratchet for that operation type. The `operation_type` is
-`key_package` when creating a KeyPackageUpload batch. A single `key_package`
-operation generation derives the batch operation secret for all KeyPackages in
-that upload, and individual KeyPackages are domain-separated with
-`key_package_index` as described in {{creating-and-uploading-keypackages}}. The
-batch is closed by the upload: after a KeyPackageUpload has been sent, the same
-operation generation MUST NOT be used to derive additional KeyPackages. The
-`operation_type` is `leaf_node` when creating a LeafNode for an Update
-proposal, a Commit with an update path, or an external commit. Applications MAY
-use the operation type `application` to derive application-specific key
-material.
+`key_package` when deriving per-KeyPackage seed secrets, either for a
+KeyPackageUpload batch or for the creator LeafNode of a newly created
+higher-level group ({{creating-groups-with-the-virtual-client}}). A single
+`key_package` operation generation derives the batch operation secret for all
+KeyPackages in that upload, and individual KeyPackages are domain-separated
+with `key_package_index` as described in
+{{creating-and-uploading-keypackages}}. The batch is closed by the upload:
+after a KeyPackageUpload has been sent, the same operation generation MUST NOT
+be used to derive additional KeyPackages. The `operation_type` is `leaf_node`
+when creating a LeafNode for an Update proposal, a Commit with an update path,
+or an external commit. Applications MAY use the operation type `application`
+to derive application-specific key material.
 
 Deriving an `operation_secret` consumes the corresponding operation-ratchet
 generation, even if the virtual-client operation does not result in a
 higher-level MLS message that is accepted into the higher-level group's
 transcript. Once a generation has been consumed, an emulator client MUST NOT use
 the same generation of the same operation-type ratchet for another virtual-client
-operation. If the operation fails, the emulator client MUST delete any retained
-secret material derived from the failed operation after the client determines
-that the operation will not be used.
+operation. A retry of a failed operation is another virtual-client operation:
+if, for example, a group creation or an external commit is rejected and
+attempted again, the retry MUST consume a fresh generation. If the operation
+fails, the emulator client MUST delete any retained secret material derived
+from the failed operation after the client determines that the operation will
+not be used.
 
 The operation context is a value bound into the derivation of the
 `operation_secret`. For `key_package` operations, `operation_context` is a
@@ -704,7 +712,7 @@ struct {
   uint32 generation;
   VirtualClientOperationType operation_type;
   opaque operation_context<V>;
-} OperationContext
+} OperationContext;
 
 operation_generation_secret =
   DeriveSecret(operation_ratchet_secret, "VC Operation Secret")
@@ -784,7 +792,7 @@ emulator client derives a per-KeyPackage seed secret from that batch
 ~~~ tls
 struct {
   uint32 key_package_index;
-} KeyPackageSeedContext
+} KeyPackageSeedContext;
 ~~~
 
 ~~~
@@ -819,15 +827,19 @@ state a new emulator client needs; its contents are application-defined.
 
 ## Creating LeafNodes and UpdatePaths
 
-When creating a LeafNode, either for a Commit with an update path, an Update
-proposal, an external commit, or a KeyPackage, the creating emulator client MUST
-derive the necessary secrets from the current epoch of the emulation group as
-described in Section {{generating-virtual-client-secrets}}. For a LeafNode in a
-KeyPackage, the creating emulator client MUST use the same per-KeyPackage seed
-secret used to derive the KeyPackage's `init_key_secret`. That seed is derived
-from the batch `key_package` operation secret and the KeyPackage's
-`key_package_index`. For other LeafNodes, the creating emulator client MUST use
-a `leaf_node` operation secret.
+When creating a LeafNode, either for group creation, a Commit with an update
+path, an Update proposal, an external commit, or a KeyPackage, the creating
+emulator client MUST derive the necessary secrets from the current epoch of the
+emulation group as described in {{generating-virtual-client-secrets}}.
+For a LeafNode whose `leaf_node_source` is `key_package`, the creating emulator
+client MUST use a per-KeyPackage seed secret, derived from a batch
+`key_package` operation secret and the LeafNode's `key_package_index`. For the
+LeafNode of a KeyPackage, this MUST be the same seed secret used to derive the
+KeyPackage's `init_key_secret`. For the creator LeafNode of a newly created
+higher-level group, the seed secret is derived from a dedicated `key_package`
+operation as described in {{creating-groups-with-the-virtual-client}}. For a
+LeafNode whose `leaf_node_source` is `update` or `commit`, the creating
+emulator client MUST use a `leaf_node` operation secret.
 
 Similarly, if an emulator client generates a Commit with an update path, it
 MUST use `path_generation_secret` as the `path_secret` for the first
@@ -841,7 +853,11 @@ DerivationInfo struct as the `virtual_clients` component data in the LeafNode.
 struct {
   opaque epoch_id<V>;
   opaque ciphertext<V>;
-} DerivationInfo
+} DerivationInfo;
+
+struct {
+  opaque init_secret<V>;
+} ExternalInitSecret;
 
 struct {
   uint32 leaf_index;
@@ -850,11 +866,17 @@ struct {
     case key_package:
       uint32 key_package_index;
     case update:
-    case commit:
       struct{};
+    case commit:
+      optional<ExternalInitSecret> external_init_secret;
   };
-} DerivationInfoTBE
+} DerivationInfoTBE;
 ~~~
+
+For a LeafNode in an external Commit, `external_init_secret` MUST contain the
+`init_secret` produced by external initialization as described in
+{{Section 8.3 of !RFC9420}}. For a LeafNode in any other Commit, the
+`external_init_secret` field MUST be absent.
 
 The `ciphertext` is the serialized DerivationInfoTBE encrypted with the AEAD
 scheme of the emulation group's ciphersuite, with the `epoch_id` as AAD. The
@@ -874,7 +896,14 @@ derivation_info_nonce = ExpandWithLabel(epoch_encryption_key, "nonce",
 Since every virtual-client operation produces a LeafNode with a fresh
 `encryption_key`, each distinct DerivationInfoTBE is encrypted under a
 distinct key-nonce pair. Re-encrypting the same DerivationInfoTBE for the same
-LeafNode yields an identical ciphertext, which is benign.
+LeafNode yields an identical ciphertext, which is benign. This only holds
+because a consumed operation-ratchet generation is never reused: for external
+Commit LeafNodes, the DerivationInfoTBE contains the `external_init_secret`,
+which changes with every encapsulation. Deriving a LeafNode for a retried
+external Commit from the same generation would therefore encrypt a different
+DerivationInfoTBE under the same key and nonce and compromise the AEAD.
+Instead, the retry MUST consume a fresh generation as described in
+{{generating-virtual-client-secrets}}.
 
 The operation type used to derive the LeafNode's `operation_secret` is
 determined by the LeafNode's `leaf_node_source`
@@ -889,6 +918,8 @@ derive the LeafNode's `operation_secret`. For KeyPackage LeafNodes,
 `generation` identifies the batch `key_package` operation generation and
 `key_package_index` identifies the individual KeyPackage within that batch. For
 `leaf_node` operations, the DerivationInfoTBE contains no `key_package_index`.
+For external Commit LeafNodes, the DerivationInfoTBE additionally carries the
+external init secret needed to process the Commit.
 
 When other emulator clients receive a LeafNode for the virtual client, they use
 the `epoch_id` to determine the epoch of the emulation group from which to
@@ -901,6 +932,21 @@ LeafNode, they then use `key_package_index` to derive the per-KeyPackage seed
 secret from the batch `key_package` operation secret and use that seed to
 re-create the LeafNode key material.
 
+When processing an external Commit sent by the virtual client, an emulator
+client uses the `external_init_secret` from the DerivationInfoTBE as the
+external init secret for the new epoch. If `external_init_secret` is absent,
+the emulator client MUST reject the Commit.
+
+The `external_init_secret` is carried in the DerivationInfo because the other
+emulator clients cannot always derive it themselves. If the external Commit
+resynchronizes the virtual client's membership in a group it is already a
+member of, the other emulator clients hold the previous epoch's
+`external_secret` and could recover the init secret from the `kem_output` in
+the ExternalInit proposal ({{Section 8.3 of !RFC9420}}). If the virtual client
+externally joins a group it was not previously a member of, however, they hold
+no prior epoch state for that group and cannot. Carrying the init secret in
+the DerivationInfo covers both cases uniformly.
+
 The `DerivationInfo` on the active virtual-client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
 epoch identified by `epoch_id`. Protocol steps that require per-epoch
@@ -908,6 +954,65 @@ emulation-group state for a higher-level group, such as computing the
 `reuse_guard` ({{reuse-guard}}) or a generation ID
 ({{coordinating-ratchet-generations-with-the-ds}}), MUST use the
 emulation-group epoch identified by the active virtual-client LeafNode.
+
+## Creating groups with the virtual client
+
+When an emulator client creates a higher-level group with the virtual client as
+the creator, it MUST create the initial LeafNode as described in
+{{creating-leafnodes-and-updatepaths}}. {{!RFC9420}} does not prescribe a
+`leaf_node_source` for the creator's LeafNode. The creator LeafNode of a
+virtual client MUST have `leaf_node_source` `key_package`. Since no KeyPackage
+is published for this LeafNode, the creating emulator client derives its key
+material from a dedicated `key_package` operation: it consumes a fresh
+`key_package` operation-ratchet generation and derives a single per-KeyPackage
+seed secret with `key_package_index` 0. No KeyPackageUpload is sent for this
+operation. The batch consists of only this derivation and is closed
+immediately, and the batch `operation_secret` is deleted after the seed secret
+has been derived.
+
+Like any other LeafNode with `leaf_node_source` `key_package`, the creator
+LeafNode carries a `lifetime` ({{Section 7.2 of !RFC9420}}), and members
+validating the ratchet tree, including members joining later, may reject a
+leaf whose lifetime has expired. The creating emulator client SHOULD choose
+the lifetime according to the application's LeafNode validity policy, and the
+virtual client's leaf SHOULD be updated before the lifetime expires.
+
+Instead of choosing the initial epoch secret of the new group randomly as
+described in {{Section 11 of !RFC9420}}, the creating emulator client MUST
+derive it from the creator LeafNode's per-KeyPackage seed secret:
+
+~~~
+epoch_secret = DeriveSecret(key_package_seed_secret, "Group Creation")
+~~~
+
+DeriveSecret is computed with the higher-level group's ciphersuite, so that
+`epoch_secret` has the size KDF.Nh required by that group's key schedule. This
+makes the initial epoch state of the higher-level group derivable by every
+emulator client from the DerivationInfo on the creator LeafNode alone, and it
+makes retried group creation attempts, each of which consumes a fresh
+generation (see {{generating-virtual-client-secrets}}), independent of one
+another.
+
+The application MUST fan out the initial group creation material to all current
+emulator clients before delivering any other content from that higher-level
+group to those emulator clients. The initial group creation material consists
+of the GroupInfo for the newly created group, the creator LeafNode or a
+ratchet_tree extension that contains it, and any application-defined context
+needed to associate the material with the higher-level group. An emulator
+client MUST process the initial group creation material before processing any
+other content from that higher-level group. This requirement parallels the one
+for external join material in
+{{externally-joining-groups-with-the-virtual-client}}.
+
+When processing initial group creation material, an emulator client verifies
+the GroupInfo as described in {{Section 12.4.3.1 of !RFC9420}} and the ratchet
+tree as described in {{Section 12.4.3.3 of !RFC9420}}, decrypts the
+DerivationInfo in the creator LeafNode, reconstructs the LeafNode's key
+material as described in {{creating-leafnodes-and-updatepaths}}, re-derives
+`epoch_secret` from the same per-KeyPackage seed secret, and uses it to
+initialize the higher-level group's epoch 0 state. If the GroupInfo cannot be
+verified using the resulting epoch state, the emulator client MUST reject the
+initial group creation material.
 
 ## Virtual client actions
 
@@ -978,14 +1083,14 @@ KeyPackages available to other parties.
 struct {
   KeyPackageRef key_package_ref;
   uint32 key_package_index;
-} KeyPackageInfo
+} KeyPackageInfo;
 
 struct {
   opaque epoch_id<V>;
   uint32 leaf_index;
   uint32 generation;
   KeyPackageInfo key_package_info<V>;
-} KeyPackageUpload
+} KeyPackageUpload;
 ~~~
 
 - `key_package_ref`: The hash reference of the generated KeyPackage computed as
@@ -1163,14 +1268,14 @@ enum {
   application(1),
   handshake(2),
   (255)
-} RatchetType
+} RatchetType;
 
 struct {
   opaque group_id<V>;
   uint64 epoch;
   uint32 generation;
   RatchetType ratchet_type;
-} PrivateMessageContext
+} PrivateMessageContext;
 
 generation_id = ExpandWithLabel(generation_id_secret, "generation id",
                       PrivateMessageContext, Kdf.Nh)
@@ -1221,6 +1326,19 @@ document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
 emulation-epoch state ({{adding-an-emulator-client}}) extend the window during
 which a compromise reveals previously transmitted data, and emulator clients
 SHOULD delete them as soon as they are no longer needed.
+
+Some of this state is reachable through the virtual client's LeafNodes. The
+DerivationInfo of an external Commit LeafNode embeds the `init_secret` of the
+epoch created by that Commit, encrypted under the emulation-group epoch's
+`epoch_encryption_key`. The LeafNode persists in the higher-level group's
+ratchet tree until the virtual client's leaf is next updated, and emulator
+clients retain the `epoch_encryption_key` for as long as the LeafNode is
+active. Similarly, the initial epoch secret of a higher-level group created by
+the virtual client remains derivable from the retained per-KeyPackage seed
+secret of the creator LeafNode
+({{creating-groups-with-the-virtual-client}}). Updating the virtual client's
+LeafNode soon after an external commit or a group creation allows emulator
+clients to delete this state and limits the exposure.
 
 ## Post-compromise security
 
@@ -1299,6 +1417,12 @@ The following residual metadata remains observable:
   {{adding-an-emulator-client}}, or {{joining-externally}}) is visible to all
   members of the higher-level group as the virtual client leaving and
   re-joining.
+- The DerivationInfo ciphertext of a LeafNode with `leaf_node_source` `commit`
+  is longer when it carries an `external_init_secret`. Parties with access to
+  the ratchet tree, including members who join after the external commit, can
+  therefore tell that the virtual client's current leaf was created by an
+  external commit rather than a regular Commit, for as long as that leaf
+  remains in the tree.
 
 # IANA Considerations
 
