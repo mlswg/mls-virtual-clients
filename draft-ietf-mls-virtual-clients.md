@@ -1033,6 +1033,30 @@ whether that external commit is accepted. When creating the Commit to join the
 group externally, it MUST generate the LeafNode and path as described in
 {{creating-leafnodes-and-updatepaths}}.
 
+An external Commit sent on behalf of the virtual client reaches the other
+emulator clients like any other virtual-client message (see
+{{delivery-service}}). If the virtual client was already a member of the
+group, the other emulator clients hold the group's state and process the
+external Commit like any other handshake message. If the virtual client
+externally joins a group it was not previously a member of, however, the
+other emulator clients hold no state for that group and cannot process the
+Commit by itself.
+
+For such groups, the application MUST make the external join material
+available to all current emulator clients before delivering any other content
+from that higher-level group to them. The external join material consists of
+the GroupInfo the joining emulator client used to create the external Commit,
+the ratchet tree of the corresponding epoch (unless it is carried in the
+GroupInfo's `ratchet_tree` extension), and any application-defined context
+needed to associate the material with the higher-level group. An emulator
+client MUST process the external join material together with the external
+Commit before processing any other content from that higher-level group.
+
+When processing external join material, an emulator client verifies the
+GroupInfo as described in {{Section 12.4.3.2 of !RFC9420}} and the ratchet
+tree as described in {{Section 12.4.3.3 of !RFC9420}} before applying the
+external Commit.
+
 ## Sending PrivateMessages
 
 Given that MLS generates the encryption keys and nonces for PrivateMessages
