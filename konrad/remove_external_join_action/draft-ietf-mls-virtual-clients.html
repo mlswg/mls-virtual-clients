@@ -1051,11 +1051,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">MVC</td>
-<td class="right">June 2026</td>
+<td class="right">July 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Alwen, et al.</td>
-<td class="center">Expires 28 December 2026</td>
+<td class="center">Expires 3 January 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1068,12 +1068,12 @@ svg {
 <dd class="internet-draft">draft-ietf-mls-virtual-clients-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-26" class="published">26 June 2026</time>
+<time datetime="2026-07-02" class="published">2 July 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-28">28 December 2026</time></dd>
+<dd class="expires"><time datetime="2027-01-03">3 January 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1125,7 +1125,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 28 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 3 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -2439,6 +2439,27 @@ client relies on the higher-level group's Commit sequencing rules to determine
 whether that external commit is accepted. When creating the Commit to join the
 group externally, it <span class="bcp14">MUST</span> generate the LeafNode and path as described in
 <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 6.3</a>.<a href="#section-6.4.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.4.2-2">An external Commit sent on behalf of the virtual client reaches the other
+emulator clients like any other virtual-client message (see
+<a href="#delivery-service" class="auto internal xref">Section 6.1</a>). If the virtual client was already a member of the
+group, the other emulator clients hold the group's state and process the
+external Commit like any other handshake message. If the virtual client
+externally joins a group it was not previously a member of, however, the
+other emulator clients hold no state for that group and cannot process the
+Commit by itself.<a href="#section-6.4.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.4.2-3">For such groups, the application <span class="bcp14">MUST</span> make the external join material
+available to all current emulator clients before delivering any other content
+from that higher-level group to them. The external join material consists of
+the GroupInfo the joining emulator client used to create the external Commit,
+the ratchet tree of the corresponding epoch (unless it is carried in the
+GroupInfo's <code>ratchet_tree</code> extension), and any application-defined context
+needed to associate the material with the higher-level group. An emulator
+client <span class="bcp14">MUST</span> process the external join material together with the external
+Commit before processing any other content from that higher-level group.<a href="#section-6.4.2-3" class="pilcrow">¶</a></p>
+<p id="section-6.4.2-4">When processing external join material, an emulator client verifies the
+GroupInfo as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.2" class="relref">Section 12.4.3.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> and the ratchet
+tree as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.3" class="relref">Section 12.4.3.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> before applying the
+external Commit.<a href="#section-6.4.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
