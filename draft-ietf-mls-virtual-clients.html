@@ -2121,12 +2121,21 @@ ratchet state for the selected <code>operation_type</code> to
 <code>next_operation_ratchet_secret</code> for <code>generation + 1</code>. The emulator client <span class="bcp14">MUST</span>
 retain enough secret material to reproduce all active key material derived from
 <code>operation_secret</code>. For <code>key_package</code> operations, the emulator client derives
-the per-KeyPackage material for every KeyPackage in the batch and <span class="bcp14">MUST</span> delete
-the batch <code>operation_secret</code> after all per-KeyPackage material needed for the
-batch has been derived. For other operations, the emulator client retains
-<code>operation_secret</code> as a RetainedOperationSecret. The emulator client <span class="bcp14">MUST</span>
-delete retained secret material after it is no longer active.<a href="#section-6.2-17" class="pilcrow">¶</a></p>
-<p id="section-6.2-18">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>generation</code>, <code>operation_context</code>, and
+the per-KeyPackage seed secrets for every KeyPackage in the batch and <span class="bcp14">MUST</span>
+delete the batch <code>operation_secret</code> after all per-KeyPackage material needed
+for the batch has been derived.<a href="#section-6.2-17" class="pilcrow">¶</a></p>
+<p id="section-6.2-18">Retaining <code>operation_secret</code>s and per-KeyPackage seed secrets beyond their
+immediate use is only necessary if the application intends to onboard new
+emulator clients through provisioning state transfer (Variant A,
+<a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>). If that is the case, the emulator client <span class="bcp14">MUST</span>
+retain them as RetainedOperationSecrets and RetainedKeyPackageMaterial until
+all key material derived from them is no longer active, and <span class="bcp14">MUST</span> delete them
+after that point. Otherwise, the emulator client <span class="bcp14">MUST</span> delete them as soon as
+it has derived the key material required for the operation. The derived key
+material that remains in use (such as the <code>init_key</code> private key of an
+outstanding KeyPackage) is retained independently of the secret it was
+derived from.<a href="#section-6.2-18" class="pilcrow">¶</a></p>
+<p id="section-6.2-19">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>generation</code>, <code>operation_context</code>, and
 the <code>leaf_index</code> of the emulator client performing the virtual client
 operation, other emulator clients can derive the <code>operation_secret</code>, advance the
 same operation-type ratchet, and use the <code>operation_secret</code> to perform the same
@@ -2138,31 +2147,31 @@ joined after the operation took place, the emulator client uses the
 corresponding RetainedOperationSecret transferred in NewEmulatorClientState.
 For KeyPackage-derived material, the emulator client uses the corresponding
 RetainedKeyPackageMaterial, identified either by DerivationInfo or by an
-<code>active_key_packages</code> entry.<a href="#section-6.2-18" class="pilcrow">¶</a></p>
-<p id="section-6.2-19">Depending on the operation, the acting emulator client will have to derive one
-or more secrets from the <code>operation_secret</code>.<a href="#section-6.2-19" class="pilcrow">¶</a></p>
-<p id="section-6.2-20">This document defines four types of MLS-related secrets derived from virtual
-client operations.<a href="#section-6.2-20" class="pilcrow">¶</a></p>
+<code>active_key_packages</code> entry.<a href="#section-6.2-19" class="pilcrow">¶</a></p>
+<p id="section-6.2-20">Depending on the operation, the acting emulator client will have to derive one
+or more secrets from the <code>operation_secret</code>.<a href="#section-6.2-20" class="pilcrow">¶</a></p>
+<p id="section-6.2-21">This document defines four types of MLS-related secrets derived from virtual
+client operations.<a href="#section-6.2-21" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.2-21.1">
-            <p id="section-6.2-21.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
-leaf<a href="#section-6.2-21.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-6.2-22.1">
+            <p id="section-6.2-22.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
+leaf<a href="#section-6.2-22.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-21.2">
-            <p id="section-6.2-21.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-6.2-21.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-22.2">
+            <p id="section-6.2-22.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-6.2-22.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-21.3">
-            <p id="section-6.2-21.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
-LeafNode of a virtual client<a href="#section-6.2-21.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-22.3">
+            <p id="section-6.2-22.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
+LeafNode of a virtual client<a href="#section-6.2-22.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.2-21.4">
-            <p id="section-6.2-21.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
-of a virtual client<a href="#section-6.2-21.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.2-22.4">
+            <p id="section-6.2-22.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
+of a virtual client<a href="#section-6.2-22.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-6.2-22">For operations that do not use a per-KeyPackage seed secret, the MLS-related
-secrets are derived directly from the <code>operation_secret</code>:<a href="#section-6.2-22" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.2-23">
+<p id="section-6.2-23">For operations that do not use a per-KeyPackage seed secret, the MLS-related
+secrets are derived directly from the <code>operation_secret</code>:<a href="#section-6.2-23" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.2-24">
 <pre>
 signature_key_secret =
   DeriveSecret(operation_secret, "Signature Key")
@@ -2175,30 +2184,30 @@ init_key_secret =
 
 path_generation_secret =
   DeriveSecret(operation_secret, "Path Generation")
-</pre><a href="#section-6.2-23" class="pilcrow">¶</a>
+</pre><a href="#section-6.2-24" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-24">For <code>key_package</code> operations, the KeyPackageUpload derives one batch
+<p id="section-6.2-25">For <code>key_package</code> operations, the KeyPackageUpload derives one batch
 <code>operation_secret</code>. For each KeyPackageInfo in the upload, the creating
 emulator client derives a per-KeyPackage seed secret from that batch
-<code>operation_secret</code> using the KeyPackage's <code>key_package_index</code> as KDF context:<a href="#section-6.2-24" class="pilcrow">¶</a></p>
-<div class="lang-tls sourcecode" id="section-6.2-25">
+<code>operation_secret</code> using the KeyPackage's <code>key_package_index</code> as KDF context:<a href="#section-6.2-25" class="pilcrow">¶</a></p>
+<div class="lang-tls sourcecode" id="section-6.2-26">
 <pre>
 struct {
   uint32 key_package_index;
 } KeyPackageSeedContext;
-</pre><a href="#section-6.2-25" class="pilcrow">¶</a>
+</pre><a href="#section-6.2-26" class="pilcrow">¶</a>
 </div>
-<div class="alignLeft art-text artwork" id="section-6.2-26">
+<div class="alignLeft art-text artwork" id="section-6.2-27">
 <pre>
 key_package_seed_secret =
   ExpandWithLabel(operation_secret, "key package seed",
                   KeyPackageSeedContext, Kdf.Nh)
-</pre><a href="#section-6.2-26" class="pilcrow">¶</a>
+</pre><a href="#section-6.2-27" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-27">The KeyPackage's <code>init_key_secret</code>, <code>signature_key_secret</code>, and
+<p id="section-6.2-28">The KeyPackage's <code>init_key_secret</code>, <code>signature_key_secret</code>, and
 <code>encryption_key_secret</code> are derived from <code>key_package_seed_secret</code>, not
-directly from the batch <code>operation_secret</code>:<a href="#section-6.2-27" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.2-28">
+directly from the batch <code>operation_secret</code>:<a href="#section-6.2-28" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.2-29">
 <pre>
 signature_key_secret =
   DeriveSecret(key_package_seed_secret, "Signature Key")
@@ -2208,16 +2217,16 @@ encryption_key_secret =
 
 init_key_secret =
   DeriveSecret(key_package_seed_secret, "Init Key")
-</pre><a href="#section-6.2-28" class="pilcrow">¶</a>
+</pre><a href="#section-6.2-29" class="pilcrow">¶</a>
 </div>
-<p id="section-6.2-29">The source of the virtual client's signature key is application-defined. An
+<p id="section-6.2-30">The source of the virtual client's signature key is application-defined. An
 application <span class="bcp14">MAY</span> use <code>signature_key_secret</code> to derive a fresh signing key per
 operation, or <span class="bcp14">MAY</span> provide signing-key material through other means, for
 example a per-group or global signing key issued by the Authentication
 Service, or a signing key derived from an emulation-group epoch secret.
 Whatever the choice, the <code>signing_key_material</code> field of
 NewEmulatorClientState (see <a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>) carries the
-state a new emulator client needs; its contents are application-defined.<a href="#section-6.2-29" class="pilcrow">¶</a></p>
+state a new emulator client needs; its contents are application-defined.<a href="#section-6.2-30" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-leafnodes-and-updatepaths">
@@ -2776,7 +2785,11 @@ and delete its keys. The same applies to the retained state defined in this
 document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
 emulation-epoch state (<a href="#adding-an-emulator-client" class="auto internal xref">Section 5.1</a>) extend the window during
 which a compromise reveals previously transmitted data, and emulator clients
-<span class="bcp14">SHOULD</span> delete them as soon as they are no longer needed.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<span class="bcp14">SHOULD</span> delete them as soon as they are no longer needed. Applications that do
+not onboard emulator clients through state transfer need not retain
+RetainedOperationSecrets or RetainedKeyPackageMaterial at all (see
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 6.2</a>) and can instead retain only the derived
+key material still in use, reducing this window.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
 <p id="section-7.2-2">Some of this state is reachable through the virtual client's LeafNodes. The
 DerivationInfo of an external Commit LeafNode embeds the <code>init_secret</code> of the
 epoch created by that Commit, encrypted under the emulation-group epoch's
