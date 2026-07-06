@@ -4,10 +4,10 @@
 
 This is the working area for the individual Internet-Draft, "MLS Virtual Clients".
 
-* [Editor's Copy](https://kkohbrok.github.io/mls-virtual-clients/#go.draft-kohbrok-mls-virtual-clients.html)
+* [Editor's Copy](https://messaginglayersecurity.rocks/mls-virtual-clients/#go.draft-kohbrok-mls-virtual-clients.html)
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-kohbrok-mls-virtual-clients)
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-kohbrok-mls-virtual-clients)
-* [Compare Editor's Copy to Individual Draft](https://kkohbrok.github.io/mls-virtual-clients/#go.draft-kohbrok-mls-virtual-clients.diff)
+* [Compare Editor's Copy to Individual Draft](https://messaginglayersecurity.rocks/mls-virtual-clients/#go.draft-kohbrok-mls-virtual-clients.diff)
 
 
 ## Contributing
