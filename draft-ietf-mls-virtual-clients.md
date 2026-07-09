@@ -1466,7 +1466,7 @@ object in which the component appears:
 
 The requested registration is:
 
-- Value: 0x0006 (suggested)
+- Value: 0x667A (temporary)
 - Name: virtual_clients
 - Where: GI, LN, AD, ES
 - Recommended: Y
