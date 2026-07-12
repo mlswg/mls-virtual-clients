@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-07-07T02:46:34.865772+00:00",
+  "timestamp": "2026-07-12T02:26:34.783473+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -1084,6 +1084,32 @@
       "mergeCommit": {
         "oid": "1c762e6d5fe6c071cf465fed5f90cf6dcd96e00e"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 28,
+      "id": "PR_kwDOKsv6Xc7vynV8",
+      "title": "use random value for temporary component ID",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/28",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "To avoid collisions during implementation testing we should choose a random ID. The current value collides with the component ID of the [APQMLS combiner](https://datatracker.ietf.org/doc/draft-ietf-mls-combiner/).",
+      "createdAt": "2026-07-09T15:16:09Z",
+      "updatedAt": "2026-07-09T15:16:09Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "7100af3b7a8f942b5f571159ad2ad309545828ce",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/change_component_id",
+      "headRefOid": "2f7e68ab6e4d06be3d3741b1428144bec74cca5c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
