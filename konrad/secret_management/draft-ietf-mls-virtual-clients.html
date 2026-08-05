@@ -28,7 +28,7 @@ application, virtual clients can help hide metadata and improve performance.
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.10.0
+    platformdirs 4.11.0
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
@@ -68,7 +68,6 @@ application, virtual clients can help hide metadata and improve performance.
   src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: italic;
@@ -117,7 +116,6 @@ application, virtual clients can help hide metadata and improve performance.
   src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: normal;
@@ -182,7 +180,6 @@ application, virtual clients can help hide metadata and improve performance.
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
 }
 
 @font-face {
@@ -1051,11 +1048,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">MVC</td>
-<td class="right">July 2026</td>
+<td class="right">August 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Alwen, et al.</td>
-<td class="center">Expires 7 January 2027</td>
+<td class="center">Expires 6 February 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1068,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-ietf-mls-virtual-clients-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-07-06" class="published">6 July 2026</time>
+<time datetime="2026-08-05" class="published">5 August 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-01-07">7 January 2027</time></dd>
+<dd class="expires"><time datetime="2027-02-06">6 February 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1125,7 +1122,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 7 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 6 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1231,21 +1228,24 @@ application, virtual clients can help hide metadata and improve performance.<a h
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-emulation-group-management" class="internal xref">Emulation group management</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
-                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-adding-an-emulator-client" class="internal xref">Adding an emulator client</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.1">
-                    <p id="section-toc.1-1.6.2.1.2.1.1"><a href="#section-6.1.1" class="auto internal xref">6.1.1</a>.  <a href="#name-trade-offs" class="internal xref">Trade-offs</a></p>
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-epoch-retention" class="internal xref">Epoch retention</a></p>
 </li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.2">
-                    <p id="section-toc.1-1.6.2.1.2.2.1"><a href="#section-6.1.2" class="auto internal xref">6.1.2</a>.  <a href="#name-state-transfer-protocol" class="internal xref">State transfer protocol</a></p>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-adding-an-emulator-client" class="internal xref">Adding an emulator client</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2.2.1">
+                    <p id="section-toc.1-1.6.2.2.2.1.1"><a href="#section-6.2.1" class="auto internal xref">6.2.1</a>.  <a href="#name-trade-offs" class="internal xref">Trade-offs</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2.2.2">
+                    <p id="section-toc.1-1.6.2.2.2.2.1"><a href="#section-6.2.2" class="auto internal xref">6.2.2</a>.  <a href="#name-state-transfer-protocol" class="internal xref">State transfer protocol</a></p>
 </li>
                 </ul>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
-                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-joining-externally" class="internal xref">Joining externally</a></p>
-</li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
-                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-removing-emulator-clients" class="internal xref">Removing emulator clients</a></p>
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-joining-externally" class="internal xref">Joining externally</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-removing-emulator-clients" class="internal xref">Removing emulator clients</a></p>
 </li>
             </ul>
 </li>
@@ -1256,19 +1256,22 @@ application, virtual clients can help hide metadata and improve performance.<a h
                 <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-trust-between-emulator-clie" class="internal xref">Trust between emulator clients</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
-                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-forward-secrecy" class="internal xref">Forward secrecy</a></p>
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-ciphersuite-strength" class="internal xref">Ciphersuite strength</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
-                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-compromise security</a></p>
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-forward-secrecy" class="internal xref">Forward secrecy</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4">
-                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-removing-emulator-clients-2" class="internal xref">Removing emulator clients</a></p>
+                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-compromise security</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5">
-                <p id="section-toc.1-1.7.2.5.1"><a href="#section-7.5" class="auto internal xref">7.5</a>.  <a href="#name-handling-of-newemulatorclie" class="internal xref">Handling of NewEmulatorClientState</a></p>
+                <p id="section-toc.1-1.7.2.5.1"><a href="#section-7.5" class="auto internal xref">7.5</a>.  <a href="#name-removing-emulator-clients-2" class="internal xref">Removing emulator clients</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6">
-                <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="auto internal xref">7.6</a>.  <a href="#name-reuse-guard-2" class="internal xref">Reuse guard</a></p>
+                <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="auto internal xref">7.6</a>.  <a href="#name-handling-of-newemulatorclie" class="internal xref">Handling of NewEmulatorClientState</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.7">
+                <p id="section-toc.1-1.7.2.7.1"><a href="#section-7.7" class="auto internal xref">7.7</a>.  <a href="#name-reuse-guard-2" class="internal xref">Reuse guard</a></p>
 </li>
             </ul>
 </li>
@@ -1332,14 +1335,20 @@ emulating a virtual client.<a href="#section-2-1.2.1" class="pilcrow">¶</a></p>
 virtual client.<a href="#section-2-1.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-1.4">
-          <p id="section-2-1.4.1">Higher-level group: A group that is not an emulation group and that may
-contain one or more virtual clients.<a href="#section-2-1.4.1" class="pilcrow">¶</a></p>
+          <p id="section-2-1.4.1">Virtual-client derivation epoch: An emulation-group epoch selected as a source
+of virtual-client key material. The short form "derivation epoch" is used
+where the virtual-client context is clear. Derivation epochs are ordered by
+their emulation-group epoch numbers, not by their opaque <code>epoch_id</code> values.<a href="#section-2-1.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-1.5">
-          <p id="section-2-1.5.1">Simple multi-client: A simple alternative to the concept of virtual clients,
+          <p id="section-2-1.5.1">Higher-level group: A group that is not an emulation group and that may
+contain one or more virtual clients.<a href="#section-2-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-1.6">
+          <p id="section-2-1.6.1">Simple multi-client: A simple alternative to the concept of virtual clients,
 where entities that are represented by more than one client (e.g. a user with
 multiple devices) are implemented by including all of the entities' clients in
-all groups the entity is participating in.<a href="#section-2-1.5.1" class="pilcrow">¶</a></p>
+all groups the entity is participating in.<a href="#section-2-1.6.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-2-2">TODO: Terminology is up for debate. We’ve sometimes called this “user trees”,
@@ -1485,20 +1494,56 @@ group.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
         <h3 id="name-generating-virtual-client-s">
 <a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-generating-virtual-client-s" class="section-name selfRef">Generating Virtual Client Secrets</a>
         </h3>
-<p id="section-5.2-1">Generally, secrets for virtual client operations are derived from the emulation
-group. To that end, emulator clients derive an <code>emulator_epoch_secret</code> with
-every new epoch of that group using the Safe Exporter API defined in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09#section-4.4" class="relref">Section 4.4</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>, where
+<p id="section-5.2-1">Generally, secrets for virtual client operations are derived from derivation
+epochs of the emulation group. The initial epoch of an emulation group is a
+derivation epoch. The output epoch of an emulation-group Commit is a derivation
+epoch if the Commit contains a <code>new_derivation_epoch</code> action
+(<a href="#virtual-client-actions" class="auto internal xref">Section 5.5</a>) or changes the membership of the emulation group.
+Applications <span class="bcp14">MAY</span> choose how often other emulation-group Commits carry the
+derivation-epoch action. A Commit that does not meet either condition does not
+create a derivation epoch, and processing it leaves the newest derivation epoch
+unchanged. More frequent derivation epochs refresh virtual-client secrets more
+often, but can increase retained state while an emulator client is inactive.
+Less frequent derivation epochs reduce the number of retained epochs, but
+continue using the same derivation-epoch secret state across ordinary
+emulation-group Commits.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-2">For every derivation epoch, emulator clients derive an
+<code>emulator_epoch_secret</code> using the Safe Exporter API defined in
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10#section-4.4" class="relref">Section 4.4</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>, where
 <code>virtual_clients_component_id</code> is the component ID registered for the
-<code>virtual_clients</code> component in <a href="#iana-considerations" class="auto internal xref">Section 9</a>.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-2">
+<code>virtual_clients</code> component in <a href="#iana-considerations" class="auto internal xref">Section 9</a>. Emulator clients do not
+invoke <code>SafeExportSecret</code> for this component in any other epoch.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-3">
 <pre>
 emulator_epoch_secret = SafeExportSecret(virtual_clients_component_id)
-</pre><a href="#section-5.2-2" class="pilcrow">¶</a>
+</pre><a href="#section-5.2-3" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-3">The <code>emulator_epoch_secret</code> is in turn used to derive five further secrets, after
-which it is deleted.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-4">
+<p id="section-5.2-4">Cryptographic operations in this document use either the emulation group's
+ciphersuite or a target ciphersuite. The target ciphersuite is determined by
+the MLS object for which key material is being derived:<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.2-5.1">
+            <p id="section-5.2-5.1.1">For a published KeyPackage, the target ciphersuite is the ciphersuite in the
+KeyPackage.<a href="#section-5.2-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.2-5.2">
+            <p id="section-5.2-5.2.1">For the creator LeafNode of a new higher-level group, the target ciphersuite
+is the ciphersuite selected for the new group.<a href="#section-5.2-5.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.2-5.3">
+            <p id="section-5.2-5.3.1">For a LeafNode or UpdatePath in an existing higher-level group, the target
+ciphersuite is that group's ciphersuite.<a href="#section-5.2-5.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.2-6">Unless otherwise specified, operations that derive or process shared
+emulation-group state use the emulation group's ciphersuite. This includes all
+derivations from <code>emulator_epoch_secret</code> through <code>operation_secret</code>, including
+the Virtual Client Operation Secret Tree and its operation ratchets. Material
+that is used in a KeyPackage or higher-level group is imported into the target
+ciphersuite as specified below before target-specific key material is derived.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
+<p id="section-5.2-7">The <code>emulator_epoch_secret</code> is in turn used to derive five further secrets, after
+which it is deleted.<a href="#section-5.2-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-8">
 <pre>
 epoch_id =
   DeriveSecret(emulator_epoch_secret, "Epoch ID")
@@ -1510,56 +1555,62 @@ generation_id_secret =
   DeriveSecret(emulator_epoch_secret, "Generation ID Secret")
 reuse_guard_secret =
   DeriveSecret(emulator_epoch_secret, "Reuse Guard")
-</pre><a href="#section-5.2-4" class="pilcrow">¶</a>
+</pre><a href="#section-5.2-8" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-5">The <code>epoch_base_secret</code> keys a Virtual Client Operation Secret Tree, a tree of
+<p id="section-5.2-9">The <code>epoch_base_secret</code> keys a Virtual Client Operation Secret Tree, a tree of
 secrets with the same structure as the Secret Tree defined in Section 9 of
-<span>[<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, with the following differences:<a href="#section-5.2-5" class="pilcrow">¶</a></p>
+<span>[<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>, with the following differences:<a href="#section-5.2-9" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-5.2-6.1">
-            <p id="section-5.2-6.1.1">Like the Secret Tree, the Virtual Client Operation Secret Tree has the same
+<li class="normal" id="section-5.2-10.1">
+            <p id="section-5.2-10.1.1">Like the Secret Tree, the Virtual Client Operation Secret Tree has the same
 set of nodes and edges as the emulation group's ratchet tree at the
 corresponding epoch. The <code>node_index</code> fields of the serialized
-<code>SecretTreeState</code> are interpreted relative to this tree.<a href="#section-5.2-6.1.1" class="pilcrow">¶</a></p>
+<code>SecretTreeState</code> are interpreted relative to this tree.<a href="#section-5.2-10.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-6.2">
-            <p id="section-5.2-6.2.1">The root of the tree is the <code>epoch_base_secret</code> rather than a secret derived
-from the <code>encryption_secret</code> of an MLS group epoch.<a href="#section-5.2-6.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-10.2">
+            <p id="section-5.2-10.2.1">The root of the tree is the <code>epoch_base_secret</code> rather than a secret derived
+from the <code>encryption_secret</code> of an MLS group epoch.<a href="#section-5.2-10.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-6.3">
-            <p id="section-5.2-6.3.1">Each leaf has one <code>operation</code> ratchet for each
-<code>VirtualClientOperationType</code>.<a href="#section-5.2-6.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-10.3">
+            <p id="section-5.2-10.3.1">Each leaf has one <code>operation</code> ratchet for each
+<code>VirtualClientOperationType</code>.<a href="#section-5.2-10.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-5.2-7">Emulator clients use the same ratchet advancement, skipping, and deletion
+<p id="section-5.2-11">Emulator clients use the same ratchet advancement, skipping, and deletion
 schedule for each operation ratchet as RFC 9420 uses for sender ratchets. An
 emulator client that learns of an operation with generation <code>n</code> of a ratchet
 whose current state is at generation <code>m &lt; n</code> derives and retains the operation
 secrets for the skipped generations <code>m, ..., n-1</code> in the same way RFC 9420
 handles out-of-order PrivateMessages. Implementations <span class="bcp14">SHOULD</span> bound the number
 of skipped generations they retain and the time for which they retain them.
-The serialized state of the Virtual Client Operation Secret Tree is
+These limits apply independently of the coordinated retention procedure in
+<a href="#epoch-retention" class="auto internal xref">Section 6.1</a>. Retaining a derivation epoch does not extend the lifetime
+of an unconsumed skipped generation beyond the application's time or count
+limits. An implementation <span class="bcp14">MAY</span> reject an operation that would exceed a supported
+generation gap and <span class="bcp14">MAY</span> delete a skipped generation according to application
+policy while retaining the remaining state for its derivation epoch.<a href="#section-5.2-11" class="pilcrow">¶</a></p>
+<p id="section-5.2-12">The serialized state of the Virtual Client Operation Secret Tree is
 represented by <code>SecretTreeState</code> with <code>SecretTreeRatchetState.ratchet_type</code>
 set to <code>operation</code> and <code>SecretTreeRatchetState.operation_type</code> set to the
-corresponding <code>VirtualClientOperationType</code>.<a href="#section-5.2-7" class="pilcrow">¶</a></p>
-<p id="section-5.2-8">When a leaf secret in the Virtual Client Operation Secret Tree is expanded, the
+corresponding <code>VirtualClientOperationType</code>.<a href="#section-5.2-12" class="pilcrow">¶</a></p>
+<p id="section-5.2-13">When a leaf secret in the Virtual Client Operation Secret Tree is expanded, the
 initial operation ratchet secret for each non-reserved
-<code>VirtualClientOperationType</code> defined in this document is derived as follows:<a href="#section-5.2-8" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-9">
+<code>VirtualClientOperationType</code> defined in this document is derived as follows:<a href="#section-5.2-13" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-14">
 <pre>
 operation_ratchet_secret[operation_type][0] =
   ExpandWithLabel(leaf_secret, "vc operation init",
-                  operation_type, Kdf.Nh)
-</pre><a href="#section-5.2-9" class="pilcrow">¶</a>
+                  operation_type, KDF.Nh)
+</pre><a href="#section-5.2-14" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-10">In this derivation, <code>operation_type</code> is the TLS-encoded
-<code>VirtualClientOperationType</code> value.<a href="#section-5.2-10" class="pilcrow">¶</a></p>
-<p id="section-5.2-11">The <code>leaf_secret</code> <span class="bcp14">MUST</span> be deleted immediately after the initial operation
+<p id="section-5.2-15">In this derivation, <code>operation_type</code> is the TLS-encoded
+<code>VirtualClientOperationType</code> value.<a href="#section-5.2-15" class="pilcrow">¶</a></p>
+<p id="section-5.2-16">The <code>leaf_secret</code> <span class="bcp14">MUST</span> be deleted immediately after the initial operation
 ratchet secrets for all operation types have been derived. As a consequence,
 operation types defined by future documents cannot be added to already
-expanded leaves; they are only usable from emulation-group epochs onward in
-which all emulator clients derive them at expansion time.<a href="#section-5.2-11" class="pilcrow">¶</a></p>
-<p id="section-5.2-12">Emulator clients <span class="bcp14">MUST</span> retain the <code>operation_secret_tree</code>, the <code>epoch_id</code>, the
+expanded leaves; they are only usable from derivation epochs onward in which
+all emulator clients derive them at expansion time.<a href="#section-5.2-16" class="pilcrow">¶</a></p>
+<p id="section-5.2-17">Emulator clients <span class="bcp14">MUST</span> retain the <code>operation_secret_tree</code>, the <code>epoch_id</code>, the
 <code>epoch_encryption_key</code>, the <code>generation_id_secret</code>, the <code>reuse_guard_secret</code>,
 and the number of leaf nodes the emulation group's ratchet tree had at the
 corresponding epoch (including blank leaves, see <a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>) until no key
@@ -1569,11 +1620,22 @@ epoch in which an emulator client was a member, it <span class="bcp14">MUST</spa
 leaf index at that epoch. The <code>operation_secret_tree</code>, <code>epoch_id</code>, and
 <code>epoch_encryption_key</code> are used for deriving and processing virtual-client key
 material, including DerivationInfos and state transferred to new clients
-(<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>); the <code>generation_id_secret</code> is used for
+(<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>); the <code>generation_id_secret</code> is used for
 computing generation IDs (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>);
 and the <code>reuse_guard_secret</code>, leaf count, and leaf index are used for
-computing the <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>).<a href="#section-5.2-12" class="pilcrow">¶</a></p>
-<p id="section-5.2-13">When deriving a secret for a virtual client, e.g. for use in a KeyPackage
+computing the <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>).<a href="#section-5.2-17" class="pilcrow">¶</a></p>
+<p id="section-5.2-18">The retained <code>operation_secret_tree</code> is the evolving Secret Tree state for the
+derivation epoch, not an immutable copy of its initial state. It
+includes any skipped operation-ratchet generations that have not been deleted
+under the application's skipped-generation policy. Consumed operation-ratchet
+secrets and expanded leaf secrets remain subject to the deletion requirements
+in this section. In particular, implementations <span class="bcp14">MUST NOT</span> retain an additional
+copy of <code>epoch_base_secret</code> or an earlier tree snapshot after advancing the tree
+if that state would allow them to recreate consumed operation-ratchet
+generations.<a href="#section-5.2-18" class="pilcrow">¶</a></p>
+<p id="section-5.2-19">New virtual-client operations <span class="bcp14">MUST</span> use the newest derivation epoch in the acting
+client's current emulation-group state.<a href="#section-5.2-19" class="pilcrow">¶</a></p>
+<p id="section-5.2-20">When deriving a secret for a virtual client, e.g. for use in a KeyPackage
 upload or LeafNode update, the deriving client chooses a
 <code>VirtualClientOperationType</code> and uses the next unused generation of its own
 operation ratchet for that operation type. The <code>operation_type</code> is
@@ -1588,8 +1650,8 @@ after a KeyPackageUpload has been sent, the same operation generation <span clas
 be used to derive additional KeyPackages. The <code>operation_type</code> is <code>leaf_node</code>
 when creating a LeafNode for an Update proposal, a Commit with an update path,
 or an external commit. Applications <span class="bcp14">MAY</span> use the operation type <code>application</code>
-to derive application-specific key material.<a href="#section-5.2-13" class="pilcrow">¶</a></p>
-<p id="section-5.2-14">Deriving an <code>operation_secret</code> consumes the corresponding operation-ratchet
+to derive application-specific key material.<a href="#section-5.2-20" class="pilcrow">¶</a></p>
+<p id="section-5.2-21">Deriving an <code>operation_secret</code> consumes the corresponding operation-ratchet
 generation, even if the virtual-client operation does not result in a
 higher-level MLS message that is accepted into the higher-level group's
 transcript. Once a generation has been consumed, an emulator client <span class="bcp14">MUST NOT</span> use
@@ -1599,14 +1661,14 @@ if, for example, a group creation or an external commit is rejected and
 attempted again, the retry <span class="bcp14">MUST</span> consume a fresh generation. If the operation
 fails, the emulator client <span class="bcp14">MUST</span> delete any retained secret material derived
 from the failed operation after the client determines that the operation will
-not be used.<a href="#section-5.2-14" class="pilcrow">¶</a></p>
-<p id="section-5.2-15">The operation context is a value bound into the derivation of the
+not be used.<a href="#section-5.2-21" class="pilcrow">¶</a></p>
+<p id="section-5.2-22">The operation context is a value bound into the derivation of the
 <code>operation_secret</code>. For <code>key_package</code> operations, <code>operation_context</code> is a
 zero-length octet string. For <code>leaf_node</code> operations, <code>operation_context</code> is the
 <code>group_id</code> of the higher-level group in which the LeafNode is used. For
 <code>application</code> operations, <code>operation_context</code> is application-defined and <span class="bcp14">MUST</span> be
-authenticated by the application together with the other derivation inputs.<a href="#section-5.2-15" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-16">
+authenticated by the application together with the other derivation inputs.<a href="#section-5.2-22" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-23">
 <pre>
 struct {
   opaque epoch_id&lt;V&gt;;
@@ -1624,10 +1686,10 @@ next_operation_ratchet_secret =
 
 operation_secret =
   ExpandWithLabel(operation_generation_secret, "vc operation",
-                  OperationContext, Kdf.Nh)
-</pre><a href="#section-5.2-16" class="pilcrow">¶</a>
+                  OperationContext, KDF.Nh)
+</pre><a href="#section-5.2-23" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-17"><code>operation_ratchet_secret</code> is the ratchet secret for <code>generation</code> in the
+<p id="section-5.2-24"><code>operation_ratchet_secret</code> is the ratchet secret for <code>generation</code> in the
 <code>operation_type</code> ratchet of <code>leaf_index</code>. After deriving <code>operation_secret</code> and
 <code>next_operation_ratchet_secret</code>, the emulator client <span class="bcp14">MUST</span> delete
 <code>operation_ratchet_secret</code> and <code>operation_generation_secret</code> and update the
@@ -1637,19 +1699,19 @@ retain enough secret material to reproduce all active key material derived from
 <code>operation_secret</code>. For <code>key_package</code> operations, the emulator client derives
 the per-KeyPackage seed secrets for every KeyPackage in the batch and <span class="bcp14">MUST</span>
 delete the batch <code>operation_secret</code> after all per-KeyPackage material needed
-for the batch has been derived.<a href="#section-5.2-17" class="pilcrow">¶</a></p>
-<p id="section-5.2-18">Retaining <code>operation_secret</code>s and per-KeyPackage seed secrets beyond their
+for the batch has been derived.<a href="#section-5.2-24" class="pilcrow">¶</a></p>
+<p id="section-5.2-25">Retaining <code>operation_secret</code>s and per-KeyPackage seed secrets beyond their
 immediate use is only necessary if the application intends to onboard new
 emulator clients through provisioning state transfer (Variant A,
-<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>). If that is the case, the emulator client <span class="bcp14">MUST</span>
+<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>). If that is the case, the emulator client <span class="bcp14">MUST</span>
 retain them as RetainedOperationSecrets and RetainedKeyPackageMaterial until
 all key material derived from them is no longer active, and <span class="bcp14">MUST</span> delete them
 after that point. Otherwise, the emulator client <span class="bcp14">MUST</span> delete them as soon as
 it has derived the key material required for the operation. The derived key
 material that remains in use (such as the <code>init_key</code> private key of an
 outstanding KeyPackage) is retained independently of the secret it was
-derived from.<a href="#section-5.2-18" class="pilcrow">¶</a></p>
-<p id="section-5.2-19">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>generation</code>, <code>operation_context</code>, and
+derived from.<a href="#section-5.2-25" class="pilcrow">¶</a></p>
+<p id="section-5.2-26">Given an <code>epoch_id</code>, <code>operation_type</code>, <code>generation</code>, <code>operation_context</code>, and
 the <code>leaf_index</code> of the emulator client performing the virtual client
 operation, other emulator clients can derive the <code>operation_secret</code>, advance the
 same operation-type ratchet, and use the <code>operation_secret</code> to perform the same
@@ -1661,67 +1723,114 @@ joined after the operation took place, the emulator client uses the
 corresponding RetainedOperationSecret transferred in NewEmulatorClientState.
 For KeyPackage-derived material, the emulator client uses the corresponding
 RetainedKeyPackageMaterial, identified either by DerivationInfo or by an
-<code>active_key_packages</code> entry.<a href="#section-5.2-19" class="pilcrow">¶</a></p>
-<p id="section-5.2-20">Depending on the operation, the acting emulator client will have to derive one
-or more secrets from the <code>operation_secret</code>.<a href="#section-5.2-20" class="pilcrow">¶</a></p>
-<p id="section-5.2-21">This document defines four types of MLS-related secrets derived from virtual
-client operations.<a href="#section-5.2-21" class="pilcrow">¶</a></p>
+<code>active_key_packages</code> entry.<a href="#section-5.2-26" class="pilcrow">¶</a></p>
+<p id="section-5.2-27">Depending on the operation, the acting emulator client will have to derive one
+or more secrets from the <code>operation_secret</code>.<a href="#section-5.2-27" class="pilcrow">¶</a></p>
+<p id="section-5.2-28">Before a secret derived with the emulation group's ciphersuite is used to
+derive material for a target ciphersuite, it <span class="bcp14">MUST</span> be imported into the target
+ciphersuite as follows:<a href="#section-5.2-28" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-29">
+<pre>
+target_prk =
+  KDF.Extract("", source_secret)
+
+target_secret =
+  ExpandWithLabel(target_prk, label, context, KDF.Nh)
+</pre><a href="#section-5.2-29" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2-30">This two-step computation is denoted
+<code>ImportSecret(source_secret, label, context)</code>. <code>KDF.Extract</code>,
+<code>ExpandWithLabel</code>, and <code>KDF.Nh</code> in this computation are from the target
+ciphersuite. The import <span class="bcp14">MUST</span> be performed even when the emulation group and
+target use the same ciphersuite. The context passed to <code>ImportSecret</code> <span class="bcp14">MUST</span>
+include the target ciphersuite. Importing a secret produces an input of the
+size and form expected by the target ciphersuite's KDF, but does not increase
+the entropy of <code>source_secret</code>. <code>target_prk</code> <span class="bcp14">MUST</span> be deleted immediately after
+<code>target_secret</code> has been derived.<a href="#section-5.2-30" class="pilcrow">¶</a></p>
+<p id="section-5.2-31">This document defines four types of MLS-related secrets derived from virtual
+client operations.<a href="#section-5.2-31" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-5.2-22.1">
-            <p id="section-5.2-22.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
-leaf<a href="#section-5.2-22.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-5.2-32.1">
+            <p id="section-5.2-32.1.1"><code>signature_key_secret</code>: Used to derive the signature key in a virtual client's
+leaf<a href="#section-5.2-32.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-22.2">
-            <p id="section-5.2-22.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-5.2-22.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-32.2">
+            <p id="section-5.2-32.2.1"><code>init_key_secret</code>: Used to derive the <code>init_key</code> HPKE key in a KeyPackage<a href="#section-5.2-32.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-22.3">
-            <p id="section-5.2-22.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
-LeafNode of a virtual client<a href="#section-5.2-22.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-32.3">
+            <p id="section-5.2-32.3.1"><code>encryption_key_secret</code>: Used to derive the <code>encryption_key</code> HPKE key in the
+LeafNode of a virtual client<a href="#section-5.2-32.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-5.2-22.4">
-            <p id="section-5.2-22.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
-of a virtual client<a href="#section-5.2-22.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-5.2-32.4">
+            <p id="section-5.2-32.4.1"><code>path_generation_secret</code>: Used to generate <code>path_secret</code>s for the UpdatePath
+of a virtual client<a href="#section-5.2-32.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-5.2-23">For operations that do not use a per-KeyPackage seed secret, the MLS-related
-secrets are derived directly from the <code>operation_secret</code>:<a href="#section-5.2-23" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-24">
-<pre>
-signature_key_secret =
-  DeriveSecret(operation_secret, "Signature Key")
-
-encryption_key_secret =
-  DeriveSecret(operation_secret, "Encryption Key")
-
-init_key_secret =
-  DeriveSecret(operation_secret, "Init Key")
-
-path_generation_secret =
-  DeriveSecret(operation_secret, "Path Generation")
-</pre><a href="#section-5.2-24" class="pilcrow">¶</a>
-</div>
-<p id="section-5.2-25">For <code>key_package</code> operations, the KeyPackageUpload derives one batch
-<code>operation_secret</code>. For each KeyPackageInfo in the upload, the creating
-emulator client derives a per-KeyPackage seed secret from that batch
-<code>operation_secret</code> using the KeyPackage's <code>key_package_index</code> as KDF context:<a href="#section-5.2-25" class="pilcrow">¶</a></p>
-<div class="lang-tls sourcecode" id="section-5.2-26">
+<p id="section-5.2-33">For <code>leaf_node</code> operations, the target ciphersuite and higher-level group are
+bound into the import of the <code>operation_secret</code>:<a href="#section-5.2-33" class="pilcrow">¶</a></p>
+<div class="lang-tls sourcecode" id="section-5.2-34">
 <pre>
 struct {
+  CipherSuite cipher_suite;
+  opaque group_id&lt;V&gt;;
+} TargetOperationContext;
+</pre><a href="#section-5.2-34" class="pilcrow">¶</a>
+</div>
+<div class="alignLeft art-text artwork" id="section-5.2-35">
+<pre>
+target_operation_secret =
+  ImportSecret(operation_secret, "vc target operation",
+               TargetOperationContext)
+</pre><a href="#section-5.2-35" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2-36">The <code>cipher_suite</code> field <span class="bcp14">MUST</span> be the target ciphersuite, and <code>group_id</code> <span class="bcp14">MUST</span> be
+the <code>group_id</code> of the higher-level group in which the operation is performed.
+The MLS-related secrets are then derived with the target ciphersuite:<a href="#section-5.2-36" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-37">
+<pre>
+signature_key_secret =
+  DeriveSecret(target_operation_secret, "Signature Key")
+
+encryption_key_secret =
+  DeriveSecret(target_operation_secret, "Encryption Key")
+
+init_key_secret =
+  DeriveSecret(target_operation_secret, "Init Key")
+
+path_generation_secret =
+  DeriveSecret(target_operation_secret, "Path Generation")
+</pre><a href="#section-5.2-37" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2-38">The <code>target_operation_secret</code> <span class="bcp14">MUST</span> be deleted immediately after these secrets
+have been derived.<a href="#section-5.2-38" class="pilcrow">¶</a></p>
+<p id="section-5.2-39">For <code>key_package</code> operations, the KeyPackageUpload derives one batch
+<code>operation_secret</code>. For each KeyPackageInfo in the upload, the creating
+emulator client derives a per-KeyPackage seed secret from that batch
+<code>operation_secret</code> using the KeyPackage's <code>key_package_index</code> as KDF context:<a href="#section-5.2-39" class="pilcrow">¶</a></p>
+<div class="lang-tls sourcecode" id="section-5.2-40">
+<pre>
+struct {
+  CipherSuite cipher_suite;
   uint32 key_package_index;
 } KeyPackageSeedContext;
-</pre><a href="#section-5.2-26" class="pilcrow">¶</a>
+</pre><a href="#section-5.2-40" class="pilcrow">¶</a>
 </div>
-<div class="alignLeft art-text artwork" id="section-5.2-27">
+<div class="alignLeft art-text artwork" id="section-5.2-41">
 <pre>
 key_package_seed_secret =
-  ExpandWithLabel(operation_secret, "key package seed",
-                  KeyPackageSeedContext, Kdf.Nh)
-</pre><a href="#section-5.2-27" class="pilcrow">¶</a>
+  ImportSecret(operation_secret, "vc key package seed",
+               KeyPackageSeedContext)
+</pre><a href="#section-5.2-41" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-28">The KeyPackage's <code>init_key_secret</code>, <code>signature_key_secret</code>, and
+<p id="section-5.2-42">The target ciphersuite used by <code>ImportSecret</code> and the <code>cipher_suite</code> field in
+<code>KeyPackageSeedContext</code> <span class="bcp14">MUST</span> both be the ciphersuite of the KeyPackage. For the
+creator LeafNode of a new higher-level group, they <span class="bcp14">MUST</span> both be the
+ciphersuite selected for the new group. The <code>key_package_index</code> field is the
+index assigned to this KeyPackage or creator LeafNode.<a href="#section-5.2-42" class="pilcrow">¶</a></p>
+<p id="section-5.2-43">The KeyPackage's <code>init_key_secret</code>, <code>signature_key_secret</code>, and
 <code>encryption_key_secret</code> are derived from <code>key_package_seed_secret</code>, not
-directly from the batch <code>operation_secret</code>:<a href="#section-5.2-28" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2-29">
+directly from the batch <code>operation_secret</code>:<a href="#section-5.2-43" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2-44">
 <pre>
 signature_key_secret =
   DeriveSecret(key_package_seed_secret, "Signature Key")
@@ -1731,16 +1840,24 @@ encryption_key_secret =
 
 init_key_secret =
   DeriveSecret(key_package_seed_secret, "Init Key")
-</pre><a href="#section-5.2-29" class="pilcrow">¶</a>
+</pre><a href="#section-5.2-44" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2-30">The source of the virtual client's signature key is application-defined. An
-application <span class="bcp14">MAY</span> use <code>signature_key_secret</code> to derive a fresh signing key per
-operation, or <span class="bcp14">MAY</span> provide signing-key material through other means, for
-example a per-group or global signing key issued by the Authentication
-Service, or a signing key derived from an emulation-group epoch secret.
+<p id="section-5.2-45">These <code>DeriveSecret</code> invocations use the target ciphersuite. The
+<code>init_key_secret</code> and <code>encryption_key_secret</code> are used with the target
+ciphersuite's KEM to derive the corresponding HPKE key pairs. The
+<code>path_generation_secret</code> is used as the first <code>path_secret</code> under the target
+ciphersuite. All subsequent MLS processing prescribed by <span>[<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> for the
+KeyPackage, LeafNode, UpdatePath, or higher-level group, including signatures
+and hash references, uses the target ciphersuite.<a href="#section-5.2-45" class="pilcrow">¶</a></p>
+<p id="section-5.2-46">The source of the virtual client's signature key is application-defined. An
+application <span class="bcp14">MAY</span> use <code>signature_key_secret</code> with the target ciphersuite's
+signature algorithm to derive a fresh signing key per operation, or <span class="bcp14">MAY</span> provide
+signing-key material through other means, for example a per-group or global
+signing key issued by the Authentication Service, or a signing key derived from
+an emulation-group epoch secret.
 Whatever the choice, the <code>signing_key_material</code> field of
-NewEmulatorClientState (see <a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>) carries the
-state a new emulator client needs; its contents are application-defined.<a href="#section-5.2-30" class="pilcrow">¶</a></p>
+NewEmulatorClientState (see <a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>) carries the
+state a new emulator client needs; its contents are application-defined.<a href="#section-5.2-46" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-leafnodes-and-updatepaths">
@@ -1750,8 +1867,9 @@ state a new emulator client needs; its contents are application-defined.<a href=
         </h3>
 <p id="section-5.3-1">When creating a LeafNode, either for group creation, a Commit with an update
 path, an Update proposal, an external commit, or a KeyPackage, the creating
-emulator client <span class="bcp14">MUST</span> derive the necessary secrets from the current epoch of the
-emulation group as described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.
+emulator client <span class="bcp14">MUST</span> derive the necessary secrets from the newest derivation
+epoch in its current emulation-group state, as described in
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.
 For a LeafNode whose <code>leaf_node_source</code> is <code>key_package</code>, the creating emulator
 client <span class="bcp14">MUST</span> use a per-KeyPackage seed secret, derived from a batch
 <code>key_package</code> operation secret and the LeafNode's <code>key_package_index</code>. For the
@@ -1802,7 +1920,8 @@ scheme of the emulation group's ciphersuite, with the <code>epoch_id</code> as A
 carrying the DerivationInfo. The AEAD key and nonce are derived from the
 epoch's <code>epoch_encryption_key</code>, using
 the serialized <code>encryption_key</code> field of the LeafNode carrying the component
-as context:<a href="#section-5.3-6" class="pilcrow">¶</a></p>
+as context. The <code>ExpandWithLabel</code> invocations and the <code>AEAD.Nk</code> and <code>AEAD.Nn</code>
+values in this derivation are from the emulation group's ciphersuite:<a href="#section-5.3-6" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-5.3-7">
 <pre>
 derivation_info_key = ExpandWithLabel(epoch_encryption_key, "key",
@@ -1845,8 +1964,11 @@ type determined from the LeafNode's <code>leaf_node_source</code>, together with
 <code>leaf_index</code> and <code>generation</code> fields, as inputs to the operation secret
 derivation described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>. For a KeyPackage
 LeafNode, they then use <code>key_package_index</code> to derive the per-KeyPackage seed
-secret from the batch <code>key_package</code> operation secret and use that seed to
-re-create the LeafNode key material.<a href="#section-5.3-10" class="pilcrow">¶</a></p>
+secret from the batch <code>key_package</code> operation secret, using the KeyPackage's
+ciphersuite as the target ciphersuite, and use that seed to re-create the
+LeafNode key material. For an <code>update</code> or <code>commit</code> LeafNode, they import the
+<code>operation_secret</code> into the higher-level group's ciphersuite before re-creating
+the LeafNode and UpdatePath key material.<a href="#section-5.3-10" class="pilcrow">¶</a></p>
 <p id="section-5.3-11">When processing an external Commit sent by the virtual client, an emulator
 client uses the <code>external_init_secret</code> from the DerivationInfoTBE as the
 external init secret for the new epoch. If <code>external_init_secret</code> is absent,
@@ -1936,20 +2058,24 @@ initial group creation material.<a href="#section-5.4-7" class="pilcrow">¶</a><
 <p id="section-5.5-1">Emulator clients sometimes need to communicate directly to operate the virtual
 client. The acting emulator client can attach such information to a Commit to
 the emulation group using the SafeAAD mechanism described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09#section-4.9" class="relref">Section 4.9</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>. The SafeAAD component data of the
-<code>virtual_clients</code> component is a VirtualClientAction struct.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10#section-4.9" class="relref">Section 4.9</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>. The SafeAAD component data of the
+<code>virtual_clients</code> component is a VirtualClientCommitData struct.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
 <p id="section-5.5-2">Sending an action as part of a Commit serves two purposes: First, the
 agreement on message ordering facilitated by the DS prevents concurrent
 conflicting actions by two or more emulator clients. Second, the action is
 authenticated as part of the Commit.<a href="#section-5.5-2" class="pilcrow">¶</a></p>
 <p id="section-5.5-3">The <code>key_package_upload</code> action is one way applications <span class="bcp14">MAY</span> use to communicate
 a KeyPackageUpload message (<a href="#creating-and-uploading-keypackages" class="auto internal xref">Section 5.5.1</a>) to the
-other emulator clients.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
+other emulator clients. The <code>new_derivation_epoch</code> action makes the Commit's
+output epoch a derivation epoch. The marker does not change the epoch used by
+any other action in the same Commit. Such actions use the newest derivation
+epoch in the Commit's input state.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
 <div class="lang-tls sourcecode" id="section-5.5-4">
 <pre>
 enum {
   reserved(0),
   key_package_upload(1),
+  new_derivation_epoch(2),
   (255)
 } ActionType;
 
@@ -1958,10 +2084,70 @@ struct {
   select (VirtualClientAction.action_type) {
     case key_package_upload:
       KeyPackageUpload key_package_upload;
+    case new_derivation_epoch:
+      struct{};
   };
 } VirtualClientAction;
+
+struct {
+  opaque epoch_id&lt;V&gt;;
+} VcEpochReference;
+
+struct {
+  VcEpochReference in_use_epochs&lt;V&gt;;
+} VcEpochUsage;
+
+struct {
+  optional&lt;VcEpochUsage&gt; epoch_usage;
+  VirtualClientAction actions&lt;V&gt;;
+} VirtualClientCommitData;
 </pre><a href="#section-5.5-4" class="pilcrow">¶</a>
 </div>
+<p id="section-5.5-5">When present, the <code>epoch_usage</code> field is the author's epoch-usage declaration,
+which is a complete snapshot of the epochs in use as described in
+<a href="#epoch-retention" class="auto internal xref">Section 6.1</a>. In every VcEpochUsage value, entries in
+<code>in_use_epochs</code> <span class="bcp14">MUST</span> be unique and sorted lexicographically by the TLS
+serialization of <code>epoch_id</code>. This sorting is only a canonical encoding rule and
+does not define derivation-epoch order. An empty vector explicitly replaces
+the author's previous declaration with an empty set. A Commit whose
+<code>epoch_usage</code> field is absent does not replace the author's declaration and does
+not advance the author's retention watermark. This also applies when the entire
+<code>virtual_clients</code> SafeAAD component is absent. An application policy shared by
+every emulator client <span class="bcp14">MAY</span> require every emulation-group Commit to carry an
+epoch-usage declaration and reject a Commit that omits it.<a href="#section-5.5-5" class="pilcrow">¶</a></p>
+<p id="section-5.5-6">An applied Commit is a validated Commit whose output has become the client's
+current emulation-group state.<a href="#section-5.5-6" class="pilcrow">¶</a></p>
+<p id="section-5.5-7">When coordinated retention is used, every <code>epoch_id</code> in an epoch-usage
+declaration <span class="bcp14">MUST</span> identify a derivation epoch that, immediately before the Commit
+is applied, meets at least one of these conditions:<a href="#section-5.5-7" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.5-8.1">
+            <p id="section-5.5-8.1.1">It is in the baseline retention window.<a href="#section-5.5-8.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-8.2">
+            <p id="section-5.5-8.2.1">It appears in the latest epoch-usage declaration carried by an applied Commit
+from a current emulator client.<a href="#section-5.5-8.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-8.3">
+            <p id="section-5.5-8.3.1">It is covered by a retention obligation from a removed emulator client.<a href="#section-5.5-8.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.5-9">A recipient using coordinated retention <span class="bcp14">MUST</span> reject the Commit if an entry does
+not meet one of these conditions. Validation uses the retention state for the
+Commit's input epoch, before replacing the author's declaration or advancing its
+retention watermark. This allows a Commit to preserve an epoch that is about to
+leave the baseline retention window or to transfer an existing retention
+obligation. A local protocol or application reference does not make an epoch
+valid in a declaration because such references are not shared by every emulator
+client.
+Applications not using coordinated retention apply only the canonical encoding
+rules above to <code>epoch_usage</code>.<a href="#section-5.5-9" class="pilcrow">¶</a></p>
+<p id="section-5.5-10">The <code>actions</code> vector allows retention metadata to coexist with zero or more
+virtual-client actions. It <span class="bcp14">MUST</span> contain at most one <code>new_derivation_epoch</code>
+action. The output of a membership-changing Commit is a derivation epoch even
+if the marker is absent. Rejected Commits and Commits superseded by another
+Commit do not create a derivation epoch, replace an epoch-usage declaration, or
+advance a retention watermark.<a href="#section-5.5-10" class="pilcrow">¶</a></p>
 <div id="creating-and-uploading-keypackages">
 <section id="section-5.5.1">
           <h4 id="name-creating-and-uploading-keyp">
@@ -1975,8 +2161,9 @@ in <a href="#generating-virtual-client-secrets" class="auto internal xref">Secti
 each KeyPackage, the creating emulator client chooses a <code>key_package_index</code> and
 derives the <code>init_key_secret</code>, <code>signature_key_secret</code>, and
 <code>encryption_key_secret</code> from the per-KeyPackage seed secret derived using that
-index. The <code>key_package_index</code> values in a KeyPackageUpload <span class="bcp14">MUST</span> be unique.
-Senders <span class="bcp14">SHOULD</span> use consecutive values starting at zero.<a href="#section-5.5.1-1" class="pilcrow">¶</a></p>
+index and the KeyPackage's ciphersuite. The <code>key_package_index</code> values in a
+KeyPackageUpload <span class="bcp14">MUST</span> be unique. Senders <span class="bcp14">SHOULD</span> use consecutive values starting
+at zero.<a href="#section-5.5.1-1" class="pilcrow">¶</a></p>
 <p id="section-5.5.1-2">The KeyPackage's LeafNode <span class="bcp14">MUST</span> contain a DerivationInfo as described in
 <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 5.3</a> whose encrypted DerivationInfoTBE
 contains the same <code>leaf_index</code>, <code>generation</code>, and <code>key_package_index</code> values
@@ -1997,6 +2184,7 @@ KeyPackages available to other parties.<a href="#section-5.5.1-4" class="pilcrow
 <pre>
 struct {
   KeyPackageRef key_package_ref;
+  CipherSuite cipher_suite;
   uint32 key_package_index;
 } KeyPackageInfo;
 
@@ -2014,25 +2202,30 @@ struct {
 described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-5.2" class="relref">Section 5.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>.<a href="#section-5.5.1-6.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.2">
-              <p id="section-5.5.1-6.2.1"><code>key_package_index</code>: A sender-chosen counter used as KDF context to
-domain-separate this KeyPackage from the other KeyPackages in the same
-KeyPackageUpload. It <span class="bcp14">MUST</span> be unique within the KeyPackageUpload.<a href="#section-5.5.1-6.2.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.2.1"><code>cipher_suite</code>: The ciphersuite of the generated KeyPackage. It determines
+the target ciphersuite used to derive the per-KeyPackage seed secret and key
+material.<a href="#section-5.5.1-6.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.3">
-              <p id="section-5.5.1-6.3.1"><code>epoch_id</code>: The epoch ID of the emulation group epoch used to derive the
-batch <code>key_package</code> operation secret<a href="#section-5.5.1-6.3.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.3.1"><code>key_package_index</code>: A sender-chosen counter used as KDF context to
+domain-separate this KeyPackage from the other KeyPackages in the same
+KeyPackageUpload. It <span class="bcp14">MUST</span> be unique within the KeyPackageUpload.<a href="#section-5.5.1-6.3.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.4">
-              <p id="section-5.5.1-6.4.1"><code>leaf_index</code>: The leaf index of the emulator client in the emulation group
-that created the KeyPackages<a href="#section-5.5.1-6.4.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.4.1"><code>epoch_id</code>: The epoch ID of the emulation group epoch used to derive the
+batch <code>key_package</code> operation secret<a href="#section-5.5.1-6.4.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.5">
-              <p id="section-5.5.1-6.5.1"><code>generation</code>: The single <code>key_package</code> operation-ratchet generation used to
-derive the batch operation secret for this KeyPackageUpload<a href="#section-5.5.1-6.5.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.5.1"><code>leaf_index</code>: The leaf index of the emulator client in the emulation group
+that created the KeyPackages<a href="#section-5.5.1-6.5.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.6">
-              <p id="section-5.5.1-6.6.1"><code>key_package_info</code>: The information required to re-derive the
-<code>init_key_secret</code> for each individual KeyPackage<a href="#section-5.5.1-6.6.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.6.1"><code>generation</code>: The single <code>key_package</code> operation-ratchet generation used to
+derive the batch operation secret for this KeyPackageUpload<a href="#section-5.5.1-6.6.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.5.1-6.7">
+              <p id="section-5.5.1-6.7.1"><code>key_package_info</code>: The information required to re-derive the
+<code>init_key_secret</code> for each individual KeyPackage<a href="#section-5.5.1-6.7.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 <p id="section-5.5.1-7">Any emulator client that receives a KeyPackageUpload message <span class="bcp14">MUST</span> verify that
@@ -2040,10 +2233,13 @@ the <code>key_package_index</code> values are unique within the upload and <span
 upload otherwise. The recipient uses <code>epoch_id</code>, <code>leaf_index</code>, <code>generation</code>,
 <code>operation_type</code> <code>key_package</code>, and the zero-length <code>operation_context</code> to
 derive the batch <code>operation_secret</code>. For each KeyPackageInfo, the recipient
-uses <code>key_package_index</code> to derive the per-KeyPackage seed secret, then derives
-the KeyPackage's <code>init_key</code> and LeafNode key material from that seed. If the
-recipient receives a Welcome, it can then check which <code>init_key</code> to use based
-on the KeyPackageRef.<a href="#section-5.5.1-7" class="pilcrow">¶</a></p>
+uses <code>cipher_suite</code> as the target ciphersuite and uses <code>cipher_suite</code> and
+<code>key_package_index</code> in <code>KeyPackageSeedContext</code> to derive the per-KeyPackage
+seed secret, then derives the KeyPackage's <code>init_key</code> and LeafNode key material
+from that seed. The sender <span class="bcp14">MUST</span> set <code>cipher_suite</code> to the ciphersuite in the
+corresponding KeyPackage. If a recipient obtains the KeyPackage, it <span class="bcp14">MUST</span> verify
+that the two values match. If the recipient receives a Welcome, it can then
+check which <code>init_key</code> to use based on the KeyPackageRef.<a href="#section-5.5.1-7" class="pilcrow">¶</a></p>
 <p id="section-5.5.1-8">To preserve outstanding KeyPackage semantics, recipients <span class="bcp14">MUST</span> process the
 KeyPackageUpload at receipt time and retain per-KeyPackage material sufficient
 to process any Welcome for each listed KeyPackageRef. After deriving the
@@ -2223,7 +2419,7 @@ struct {
 } PrivateMessageContext;
 
 generation_id = ExpandWithLabel(generation_id_secret, "generation id",
-                      PrivateMessageContext, Kdf.Nh)
+                      PrivateMessageContext, KDF.Nh)
 </pre><a href="#section-5.6.3-3" class="pilcrow">¶</a>
 </div>
 <ul class="normal">
@@ -2250,7 +2446,7 @@ PrivateMessage is sent<a href="#section-5.6.3-4.2.1" class="pilcrow">¶</a></p>
 by the active virtual-client LeafNode in the higher-level group<a href="#section-5.6.3-4.6.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.6.3-4.7">
-              <p id="section-5.6.3-4.7.1"><code>Kdf.Nh</code> is from the emulation group's ciphersuite<a href="#section-5.6.3-4.7.1" class="pilcrow">¶</a></p>
+              <p id="section-5.6.3-4.7.1"><code>KDF.Nh</code> is from the emulation group's ciphersuite<a href="#section-5.6.3-4.7.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 <p id="section-5.6.3-5">Attaching the generation ID to the PrivateMessage allows the DS to detect
@@ -2278,46 +2474,156 @@ state that need to be synchronized before the new emulator client can start
 using the virtual client. The emulator client can either get this state from
 another emulator client, or if all other emulator clients are offline, the
 emulator client can use a series of external joins to onboard itself.<a href="#section-6-2" class="pilcrow">¶</a></p>
-<div id="adding-an-emulator-client">
+<div id="epoch-retention">
 <section id="section-6.1">
-        <h3 id="name-adding-an-emulator-client">
-<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-adding-an-emulator-client" class="section-name selfRef">Adding an emulator client</a>
+        <h3 id="name-epoch-retention">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-epoch-retention" class="section-name selfRef">Epoch retention</a>
         </h3>
-<p id="section-6.1-1">A joining emulator client is added to the emulation group by a provisioning
+<p id="section-6.1-1">Applications <span class="bcp14">MAY</span> use the procedure in this section to coordinate retention and
+deletion of derivation-epoch state.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">Each emulator client tracks <code>retention_watermark[c]</code> for every current emulator
+client <code>c</code>. This is the newest derivation epoch for which <code>c</code> has committed not
+to start new work from an older epoch. For an initial member, the watermark is
+initialized to the initial emulation-group epoch. For a member that joins later,
+it is initialized to the output derivation epoch of the Commit by which it joins.
+The initial epoch-usage declaration is empty.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">An applied Commit with an epoch-usage declaration advances its author's
+watermark to the newest derivation epoch in the input state, or to the output
+epoch if the Commit creates a derivation epoch. A Commit without a declaration
+does not advance the watermark. Receiving a Commit that creates a derivation
+epoch does not advance the recipient's watermark. Existing work from an older
+epoch <span class="bcp14">MUST</span> appear in the declaration that advances the watermark.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">The retention floor is the oldest retention watermark among all current
+emulator clients. The baseline retention window contains every derivation epoch
+from that floor through the newest derivation epoch, inclusive.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-5">An offline client can prevent the retention floor from advancing. An application
+can bound retention by removing stale emulator clients according to its
+membership policy, but a timer alone does not prove that an old derivation epoch
+is safe to delete.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
+<p id="section-6.1-6">The <code>epoch_usage</code> field lists epochs from which another current emulator client
+may still need to process the author's work or work whose retention obligation
+the author has assumed. This includes pending or unreconciled higher-level group
+operations, group creation and external-join material, outstanding KeyPackage
+uploads, application-specific derivations, and externally visible operations
+that could arrive later.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
+<p id="section-6.1-7">The declaration <span class="bcp14">MUST</span> include the complete in-use set, including epochs in the
+baseline retention window. The author <span class="bcp14">MUST</span> keep an epoch in its declaration until
+a delivery confirmation, reconciliation result, or equivalent ordering guarantee
+establishes that no delayed operation can require another emulator client to
+process work from it. The complete set is necessary because applying the
+declaration-carrying Commit can also change the baseline.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
+<p id="section-6.1-8">An epoch-usage declaration preserves the remaining state for an epoch but does
+not guarantee that every delayed operation from that epoch remains processable.
+Deleting a skipped generation according to application policy can make a
+delayed operation that requires it unprocessable.<a href="#section-6.1-8" class="pilcrow">¶</a></p>
+<p id="section-6.1-9">An emulator client <span class="bcp14">MUST</span> persist its local in-use state before the corresponding
+operation becomes externally visible. It <span class="bcp14">MUST</span> serialize creation of
+virtual-client work with construction of a Commit that advances its watermark,
+so that earlier work appears in the replacement declaration.<a href="#section-6.1-9" class="pilcrow">¶</a></p>
+<p id="section-6.1-10">Each emulator client computes an effective retention set as the union of:<a href="#section-6.1-10" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.1-11.1">
+            <p id="section-6.1-11.1.1">The derivation epochs in the baseline retention window.<a href="#section-6.1-11.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-11.2">
+            <p id="section-6.1-11.2.1">The latest epoch-usage declaration carried by an applied Commit from every
+current emulator client.<a href="#section-6.1-11.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-11.3">
+            <p id="section-6.1-11.3.1">Retention obligations preserved from removed emulator clients.<a href="#section-6.1-11.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-11.4">
+            <p id="section-6.1-11.4.1">Local protocol and application references.<a href="#section-6.1-11.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.1-12">Local protocol references include the newest derivation epoch, active
+virtual-client LeafNodes, past LeafNodes retained for delayed processing,
+outstanding KeyPackages, RetainedOperationSecrets, RetainedKeyPackageMaterial,
+and pending or staged operations. Applications <span class="bcp14">MUST</span> include in the effective
+retention set any epochs referenced by persisted work not visible to the MLS
+implementation.<a href="#section-6.1-12" class="pilcrow">¶</a></p>
+<p id="section-6.1-13">For every epoch in the effective retention set, an emulator client <span class="bcp14">MUST</span> retain
+the state listed in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>, including the current
+Virtual Client Operation Secret Tree. Individual skipped generations remain
+subject to application policy. State absent from the effective retention set
+<span class="bcp14">SHOULD</span> be deleted promptly.<a href="#section-6.1-13" class="pilcrow">¶</a></p>
+<p id="section-6.1-14">When applying a Commit, an implementation <span class="bcp14">MUST</span> atomically store any new
+derivation-epoch material and, when a declaration is present, update the
+author's watermark and replace its previous declaration. It <span class="bcp14">MUST</span> ensure that a
+crash cannot advance the watermark without installing that declaration. The
+implementation <span class="bcp14">MUST</span> serialize deletion of derivation-epoch state with creation
+of local references to the same epoch.<a href="#section-6.1-14" class="pilcrow">¶</a></p>
+<p id="section-6.1-15">Removing a client excludes it from the retention floor. Its latest declaration
+and every derivation epoch from its watermark through the newest derivation
+epoch in the removal Commit's input state <span class="bcp14">MUST</span> become a removed-client retention
+obligation until at least one of these conditions holds:<a href="#section-6.1-15" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.1-16.1">
+            <p id="section-6.1-16.1.1">Every operation covered by the obligation has been processed or rejected.<a href="#section-6.1-16.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-16.2">
+            <p id="section-6.1-16.2.1">The removal establishes a delivery cutoff under which delayed operations
+from the removed client will be rejected.<a href="#section-6.1-16.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-16.3">
+            <p id="section-6.1-16.3.1">A remaining client takes ownership of the corresponding epochs in its own
+epoch-usage declaration until reconciliation completes.<a href="#section-6.1-16.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.1-17">To transfer ownership in the removal Commit, its author <span class="bcp14">MUST</span> include the
+obligated epochs in its declaration. A later transfer takes effect only when
+established by an applied Commit. Until then, the removed-client obligation
+remains.<a href="#section-6.1-17" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="adding-an-emulator-client">
+<section id="section-6.2">
+        <h3 id="name-adding-an-emulator-client">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-adding-an-emulator-client" class="section-name selfRef">Adding an emulator client</a>
+        </h3>
+<p id="section-6.2-1">A joining emulator client is added to the emulation group by a provisioning
 emulator client via the usual MLS Add + Welcome. The GroupInfo in that
 Welcome carries the <code>virtual_clients</code> component (<a href="#iana-considerations" class="auto internal xref">Section 9</a>),
 whose component data is a NewEmulatorClientState struct that provides the
 state the joining emulator client needs to act as the virtual client going
-forward.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
-<p id="section-6.1-2">The NewEmulatorClientState struct contains the complete secret state of the
+forward.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">The Commit adding the emulator client makes its output a derivation epoch. The
+new client's retention watermark is initialized to this epoch. The new
+client <span class="bcp14">MUST NOT</span> perform virtual-client operations until it has processed the
+Welcome and the associated state transfer. The provisioning client <span class="bcp14">MUST</span>
+transfer every older derivation epoch referenced by the virtual-client artifacts
+or application state being transferred. When using coordinated retention, it
+<span class="bcp14">MUST</span> also transfer every older epoch in its effective retention set and the
+metadata needed to preserve that set.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.2-3">The NewEmulatorClientState struct contains the complete secret state of the
 virtual client. Emulator clients <span class="bcp14">MUST</span> include it only in GroupInfo objects that
 are encrypted as part of a Welcome message for the emulation group. In
 particular, a GroupInfo object published to enable external commits into the
-emulation group <span class="bcp14">MUST NOT</span> contain a <code>virtual_clients</code> component.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
-<p id="section-6.1-3">How the joining emulator client subsequently becomes an active participant in
+emulation group <span class="bcp14">MUST NOT</span> contain a <code>virtual_clients</code> component.<a href="#section-6.2-3" class="pilcrow">¶</a></p>
+<p id="section-6.2-4">How the joining emulator client subsequently becomes an active participant in
 each higher-level group is application-defined. This document specifies two
-variants that the provisioning emulator client <span class="bcp14">MAY</span> use on a per-group basis:<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+variants that the provisioning emulator client <span class="bcp14">MAY</span> use on a per-group basis:<a href="#section-6.2-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.1-4.1">
-            <p id="section-6.1-4.1.1"><strong>Variant A (provisioning state transfer).</strong> The provisioning emulator client
+<li class="normal" id="section-6.2-5.1">
+            <p id="section-6.2-5.1.1"><strong>Variant A (provisioning state transfer).</strong> The provisioning emulator client
 includes, for each higher-level group, the key-schedule outputs of the current
 epoch together with the HPKE private keys on the virtual client's direct path.
 The joining emulator obtains the RatchetTree and the GroupContext from an
-application-defined source.<a href="#section-6.1-4.1.1" class="pilcrow">¶</a></p>
+application-defined source.<a href="#section-6.2-5.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.1-4.2">
-            <p id="section-6.1-4.2.1"><strong>Variant B (external commit).</strong> The provisioning emulator client need only
+          <li class="normal" id="section-6.2-5.2">
+            <p id="section-6.2-5.2.1"><strong>Variant B (external commit).</strong> The provisioning emulator client need only
 convey (or otherwise let the joining emulator client learn) which higher-level
 groups the virtual client is in. The joining
 emulator client acquires each group's current GroupInfo (from the DS or some
 other application-defined source) and performs an external commit into the
 group, evicting the virtual client's prior membership with a "resync" Remove
-proposal as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.2" class="relref">Section 12.4.3.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>.<a href="#section-6.1-4.2.1" class="pilcrow">¶</a></p>
+proposal as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.2" class="relref">Section 12.4.3.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>.<a href="#section-6.2-5.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-6.1-5">Applications <span class="bcp14">MAY</span> mix the two variants across groups, for example using
-Variant A for groups where metadata hiding matters and Variant B elsewhere.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
-<p id="section-6.1-6">Regardless of the variant chosen, a new emulator client <span class="bcp14">MUST NOT</span> send
+<p id="section-6.2-6">Applications <span class="bcp14">MAY</span> mix the two variants across groups, for example using
+Variant A for groups where metadata hiding matters and Variant B elsewhere.<a href="#section-6.2-6" class="pilcrow">¶</a></p>
+<p id="section-6.2-7">Regardless of the variant chosen, a new emulator client <span class="bcp14">MUST NOT</span> send
 PrivateMessages in a higher-level group while the DerivationInfo of
 the active virtual-client LeafNode identifies an emulation-group epoch in which
 the new emulator client was not a member. The new emulator client has no leaf
@@ -2325,51 +2631,51 @@ index at that epoch and therefore cannot compute the <code>reuse_guard</code> as
 in <a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>. Before the new emulator client can send messages in such a
 higher-level group, the virtual-client LeafNode <span class="bcp14">MUST</span> be rotated (e.g., by a
 Commit with an update path or an Update proposal followed by a Commit) to a
-more recent emulation-group epoch in which the new emulator client is a member.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
-<p id="section-6.1-7">Note that in higher-level groups where handshake messages are sent as
+more recent emulation-group epoch in which the new emulator client is a member.<a href="#section-6.2-7" class="pilcrow">¶</a></p>
+<p id="section-6.2-8">Note that in higher-level groups where handshake messages are sent as
 PrivateMessages, the new emulator client cannot send this rotating Commit
 itself. In such groups, the rotation has to be performed by an existing
 emulator client, unless the application permits handshake messages framed as
 PublicMessages or external commits (Variant B), in which case the new emulator
-client can rotate the LeafNode itself.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
+client can rotate the LeafNode itself.<a href="#section-6.2-8" class="pilcrow">¶</a></p>
 <div id="trade-offs">
-<section id="section-6.1.1">
+<section id="section-6.2.1">
           <h4 id="name-trade-offs">
-<a href="#section-6.1.1" class="section-number selfRef">6.1.1. </a><a href="#name-trade-offs" class="section-name selfRef">Trade-offs</a>
+<a href="#section-6.2.1" class="section-number selfRef">6.2.1. </a><a href="#name-trade-offs" class="section-name selfRef">Trade-offs</a>
           </h4>
 <ul class="normal">
-<li class="normal" id="section-6.1.1-1.1">
-              <p id="section-6.1.1-1.1.1"><strong>Observability.</strong> Variant A produces an ordinary Commit that looks like
+<li class="normal" id="section-6.2.1-1.1">
+              <p id="section-6.2.1-1.1.1"><strong>Observability.</strong> Variant A produces an ordinary Commit that looks like
 any other key rotation to the rest of the higher-level group. Variant B
 appears as the virtual client leaving and re-joining, which is visible to
-every member and may undermine metadata-hiding goals.<a href="#section-6.1.1-1.1.1" class="pilcrow">¶</a></p>
+every member and may undermine metadata-hiding goals.<a href="#section-6.2.1-1.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.1-1.2">
-              <p id="section-6.1.1-1.2.1"><strong>Forward secrecy.</strong> Variant A chains the new epoch from the previous epoch's
+            <li class="normal" id="section-6.2.1-1.2">
+              <p id="section-6.2.1-1.2.1"><strong>Forward secrecy.</strong> Variant A chains the new epoch from the previous epoch's
 <code>init_secret</code>. Variant B breaks the commit chain resulting in weaker forward
-secrecy at the point of onboarding.<a href="#section-6.1.1-1.2.1" class="pilcrow">¶</a></p>
+secrecy at the point of onboarding.<a href="#section-6.2.1-1.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.1-1.3">
-              <p id="section-6.1.1-1.3.1"><strong>Policy.</strong> Some applications may restrict external commits by policy leaving
-Variant A as the only option.<a href="#section-6.1.1-1.3.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.1-1.3">
+              <p id="section-6.2.1-1.3.1"><strong>Policy.</strong> Some applications may restrict external commits by policy leaving
+Variant A as the only option.<a href="#section-6.2.1-1.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.1-1.4">
-              <p id="section-6.1.1-1.4.1"><strong>State transfer cost.</strong> Variant A requires O(log N) HPKE private keys and the
+            <li class="normal" id="section-6.2.1-1.4">
+              <p id="section-6.2.1-1.4.1"><strong>State transfer cost.</strong> Variant A requires O(log N) HPKE private keys and the
 current epoch's key-schedule state per higher-level group. Depending on group
 size and the group's ciphersuite, this may exceed the application's
-performance constraints. Variant B's overhead is constant per group.<a href="#section-6.1.1-1.4.1" class="pilcrow">¶</a></p>
+performance constraints. Variant B's overhead is constant per group.<a href="#section-6.2.1-1.4.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </section>
 </div>
 <div id="state-transfer-protocol">
-<section id="section-6.1.2">
+<section id="section-6.2.2">
           <h4 id="name-state-transfer-protocol">
-<a href="#section-6.1.2" class="section-number selfRef">6.1.2. </a><a href="#name-state-transfer-protocol" class="section-name selfRef">State transfer protocol</a>
+<a href="#section-6.2.2" class="section-number selfRef">6.2.2. </a><a href="#name-state-transfer-protocol" class="section-name selfRef">State transfer protocol</a>
           </h4>
-<p id="section-6.1.2-1">Applications <span class="bcp14">MAY</span> use the following structs to transfer group data to the newly
-added emulator client.<a href="#section-6.1.2-1" class="pilcrow">¶</a></p>
-<div class="breakable lang-tls sourcecode" id="section-6.1.2-2">
+<p id="section-6.2.2-1">Applications <span class="bcp14">MAY</span> use the following structs to transfer group data to the newly
+added emulator client.<a href="#section-6.2.2-1" class="pilcrow">¶</a></p>
+<div class="breakable lang-tls sourcecode" id="section-6.2.2-2">
 <pre>
 opaque HPKEPrivateKey&lt;V&gt;;
 
@@ -2435,6 +2741,7 @@ struct {
 
 struct {
   KeyPackageRef key_package_ref;
+  CipherSuite cipher_suite;
   opaque epoch_id&lt;V&gt;;
   uint32 leaf_index;
   uint32 generation;
@@ -2442,6 +2749,7 @@ struct {
 } KeyPackageDerivationInfo;
 
 struct {
+  CipherSuite cipher_suite;
   opaque epoch_id&lt;V&gt;;
   uint32 leaf_index;
   uint32 generation;
@@ -2455,7 +2763,24 @@ struct {
   opaque epoch_encryption_key&lt;V&gt;;
   opaque generation_id_secret&lt;V&gt;;
   opaque reuse_guard_secret&lt;V&gt;;
-} EmulationEpochState;
+  uint64 leaf_count;
+} VcDerivationEpochState;
+
+struct {
+  uint64 emulation_group_epoch;
+  VcDerivationEpochState state;
+} RetainedVcEpoch;
+
+struct {
+  uint32 leaf_index;
+  VcEpochReference retention_watermark;
+  VcEpochUsage epoch_usage;
+} VcClientRetentionState;
+
+struct {
+  VcClientRetentionState client_states&lt;V&gt;;
+  VcEpochUsage removed_client_usage;
+} VcRetentionMetadata;
 
 enum {
   reserved(0),
@@ -2487,42 +2812,45 @@ struct {
 
 struct {
   opaque signing_key_material&lt;V&gt;;
+  VcRetentionMetadata retention_metadata;
   KeyPackageDerivationInfo active_key_packages&lt;V&gt;;
   RetainedKeyPackageMaterial retained_key_package_material&lt;V&gt;;
   RetainedOperationSecret retained_operation_secrets&lt;V&gt;;
-  EmulationEpochState past_emulation_epochs&lt;V&gt;;
+  RetainedVcEpoch retained_vc_epochs&lt;V&gt;;
   HigherLevelGroupState higher_level_groups&lt;V&gt;;
 } NewEmulatorClientState;
-</pre><a href="#section-6.1.2-2" class="pilcrow">¶</a>
+</pre><a href="#section-6.2.2-2" class="pilcrow">¶</a>
 </div>
 <ul class="normal">
-<li class="normal" id="section-6.1.2-3.1">
-              <p id="section-6.1.2-3.1.1"><code>HPKEPrivateKey</code> contains the serialized HPKE KEM private key for the
-ciphersuite used by the higher-level group.<a href="#section-6.1.2-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-6.2.2-3.1">
+              <p id="section-6.2.2-3.1.1"><code>HPKEPrivateKey</code> contains the serialized HPKE KEM private key for the
+ciphersuite used by the higher-level group.<a href="#section-6.2.2-3.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.2">
-              <p id="section-6.1.2-3.2.1"><code>PPRFState</code> serializes a punctured binary-tree PRF as the set of retained
+            <li class="normal" id="section-6.2.2-3.2">
+              <p id="section-6.2.2-3.2.1"><code>PPRFState</code> serializes a punctured binary-tree PRF as the set of retained
 subtree roots. The root of an unpunctured tree is represented by a
 <code>PPRFNode</code> with <code>prefix_length</code> 0 and a zero-length <code>prefix</code>. For other
 nodes, <code>prefix</code> contains the first <code>prefix_length</code> bits of the node's path,
 packed from most-significant bit to least-significant bit in each octet. Any
 unused low-order bits in the final octet <span class="bcp14">MUST</span> be zero. The entries in
-<code>nodes</code> <span class="bcp14">MUST</span> be prefix-free and sorted lexicographically by prefix.<a href="#section-6.1.2-3.2.1" class="pilcrow">¶</a></p>
+<code>nodes</code> <span class="bcp14">MUST</span> be prefix-free and sorted lexicographically by prefix.<a href="#section-6.2.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.3">
-              <p id="section-6.1.2-3.3.1"><code>RetainedOperationSecret</code> carries an <code>operation_secret</code> whose operation
+            <li class="normal" id="section-6.2.2-3.3">
+              <p id="section-6.2.2-3.3.1"><code>RetainedOperationSecret</code> carries an <code>operation_secret</code> whose operation
 ratchet generation has been deleted, but whose derived key material is still
 live. Entries are identified by <code>(epoch_id, operation_type, leaf_index,
-generation, operation_context)</code>.<a href="#section-6.1.2-3.3.1" class="pilcrow">¶</a></p>
+generation, operation_context)</code>.<a href="#section-6.2.2-3.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.4">
-              <p id="section-6.1.2-3.4.1"><code>RetainedKeyPackageMaterial</code> carries a <code>key_package_seed_secret</code> derived from
+            <li class="normal" id="section-6.2.2-3.4">
+              <p id="section-6.2.2-3.4.1"><code>RetainedKeyPackageMaterial</code> carries a <code>key_package_seed_secret</code> derived from
 a batch <code>key_package</code> operation secret whose operation-ratchet generation has
-been deleted. Entries are identified by <code>(epoch_id, leaf_index, generation,
-key_package_index)</code>.<a href="#section-6.1.2-3.4.1" class="pilcrow">¶</a></p>
+been deleted. <code>cipher_suite</code> identifies the target ciphersuite with which the
+seed secret was imported and from which its key material is derived. Entries
+are identified by <code>(cipher_suite, epoch_id, leaf_index, generation,
+key_package_index)</code>.<a href="#section-6.2.2-3.4.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.5">
-              <p id="section-6.1.2-3.5.1"><code>SecretTreeState</code> serializes the retained state of an RFC 9420 Secret Tree.
+            <li class="normal" id="section-6.2.2-3.5">
+              <p id="section-6.2.2-3.5.1"><code>SecretTreeState</code> serializes the retained state of an RFC 9420 Secret Tree.
 Each <code>SecretTreeNodeState</code> contains an unexpanded tree node secret and its
 RFC 9420 tree node index. Each <code>SecretTreeRatchetState</code> contains the current
 state of a derived per-leaf hash ratchet; <code>next_secret</code> is the ratchet secret
@@ -2532,34 +2860,59 @@ deletion schedule from the sender's current state and <span class="bcp14">MUST N
 secrets that have already been deleted. The <code>application</code> and <code>handshake</code>
 ratchet types are used for higher-level MLS Secret Trees. The <code>operation</code>
 ratchet type is used for virtual-client operation secrets and includes an
-<code>operation_type</code> field that identifies the per-leaf operation-type ratchet.<a href="#section-6.1.2-3.5.1" class="pilcrow">¶</a></p>
+<code>operation_type</code> field that identifies the per-leaf operation-type ratchet.<a href="#section-6.2.2-3.5.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.6">
-              <p id="section-6.1.2-3.6.1"><code>signing_key_material</code> is an application-defined blob that conveys whatever
+            <li class="normal" id="section-6.2.2-3.6">
+              <p id="section-6.2.2-3.6.1"><code>VcDerivationEpochState</code> contains the per-epoch state listed in
+<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.<a href="#section-6.2.2-3.6.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.2.2-3.7">
+              <p id="section-6.2.2-3.7.1"><code>retention_metadata</code> carries the metadata needed to reconstruct the
+coordinated effective retention set from <a href="#epoch-retention" class="auto internal xref">Section 6.1</a>. <code>client_states</code>
+contains one entry for every existing emulator client, identified by its leaf
+index in the Welcome's output epoch, together with that client's retention
+watermark and latest epoch-usage declaration carried by an applied Commit.
+<code>removed_client_usage</code> is the union of retention obligations from removed
+clients. Because the union does not preserve client attribution, the joining
+client <span class="bcp14">MUST</span> retain each listed epoch until the application establishes that
+all removed-client obligations represented by that epoch have been discharged
+or transferred. The joining client adds the Welcome's output epoch as the
+newest derivation epoch and initializes its own retention watermark to that
+epoch.
+<code>client_states</code> <span class="bcp14">MUST</span> contain unique leaf indices and be sorted by <code>leaf_index</code>.
+Every ID referenced by <code>client_states</code> or <code>removed_client_usage</code> <span class="bcp14">MUST</span> identify
+either the Welcome's output epoch or an entry in <code>retained_vc_epochs</code>. The
+joining client <span class="bcp14">MUST</span> reject the transferred state if these requirements are
+not met.
+Applications not using coordinated retention set <code>client_states</code> and
+<code>removed_client_usage.in_use_epochs</code> to zero length.<a href="#section-6.2.2-3.7.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.2.2-3.8">
+              <p id="section-6.2.2-3.8.1"><code>signing_key_material</code> is an application-defined blob that conveys whatever
 signing-key state the joining emulator client needs. For configurations
 where signing keys are derived from emulation-group secrets, it <span class="bcp14">MAY</span> be
-zero-length. See <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.<a href="#section-6.1.2-3.6.1" class="pilcrow">¶</a></p>
+zero-length. See <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.<a href="#section-6.2.2-3.8.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.7">
-              <p id="section-6.1.2-3.7.1"><code>active_key_packages</code> lists every KeyPackage the virtual client has
-outstanding. Each entry carries the KeyPackageRef together with the
-identifiers needed to find the corresponding per-KeyPackage material. When a
-Welcome arrives encrypted to one of these KeyPackages, the joining emulator
-client identifies the entry by KeyPackageRef, then finds the
-<code>RetainedKeyPackageMaterial</code> matching <code>(epoch_id, leaf_index, generation,
-key_package_index)</code>.<a href="#section-6.1.2-3.7.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-3.9">
+              <p id="section-6.2.2-3.9.1"><code>active_key_packages</code> lists every KeyPackage the virtual client has
+outstanding. Each entry carries the KeyPackageRef and its <code>cipher_suite</code>
+together with the identifiers needed to find the corresponding
+per-KeyPackage material. When a Welcome arrives encrypted to one of these
+KeyPackages, the joining emulator client identifies the entry by
+KeyPackageRef, then finds the <code>RetainedKeyPackageMaterial</code> matching
+<code>(cipher_suite, epoch_id, leaf_index, generation, key_package_index)</code>.<a href="#section-6.2.2-3.9.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.8">
-              <p id="section-6.1.2-3.8.1"><code>retained_key_package_material</code> contains per-KeyPackage seed secrets whose
+            <li class="normal" id="section-6.2.2-3.10">
+              <p id="section-6.2.2-3.10.1"><code>retained_key_package_material</code> contains per-KeyPackage seed secrets whose
 derived key material is still live, for example because the corresponding
 KeyPackage is outstanding or because the current LeafNode of a higher-level
 group was created from that seed secret. This includes the seed secret of
 the creator LeafNode of a higher-level group created by the virtual client
 (<a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 5.4</a>), for which no KeyPackage
-exists.<a href="#section-6.1.2-3.8.1" class="pilcrow">¶</a></p>
+exists.<a href="#section-6.2.2-3.10.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.9">
-              <p id="section-6.1.2-3.9.1"><code>retained_operation_secrets</code> contains retained <code>operation_secret</code> values
+            <li class="normal" id="section-6.2.2-3.11">
+              <p id="section-6.2.2-3.11.1"><code>retained_operation_secrets</code> contains retained <code>operation_secret</code> values
 whose derived key material is still live. This includes operation secrets for
 the current LeafNode of each higher-level group and operation secrets for
 sent but uncommitted LeafNodes or UpdatePaths. It <span class="bcp14">MUST NOT</span> include a
@@ -2573,126 +2926,129 @@ been deleted. The <code>external_commit</code> onboarding variant does not requi
 retained operation secrets or retained KeyPackage material if it replaces
 every still-live virtual-client artifact derived from an earlier
 emulation-group epoch, including outstanding KeyPackages and active LeafNodes
-in higher-level groups.<a href="#section-6.1.2-3.9.1" class="pilcrow">¶</a></p>
+in higher-level groups.<a href="#section-6.2.2-3.11.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.10">
-              <p id="section-6.1.2-3.10.1"><code>past_emulation_epochs</code> carries, for every emulation-group epoch still
-referenced by an active LeafNode, outstanding KeyPackage, or retained
-operation secret or retained KeyPackage material and not equal to the current
-epoch, the retained <code>operation_secret_tree</code> state, the
-<code>epoch_encryption_key</code>, the <code>generation_id_secret</code>, and the
-<code>reuse_guard_secret</code>. State for the current emulation-group epoch is not
-included here because the joining emulator client derives it from the
-emulation group's Welcome.<a href="#section-6.1.2-3.10.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-3.12">
+              <p id="section-6.2.2-3.12.1"><code>retained_vc_epochs</code> carries every derivation epoch other than the Welcome's
+output epoch that is referenced by virtual-client artifacts or application
+state being transferred. For applications using coordinated retention, it
+also carries every older epoch in the effective retention set. This includes
+epochs referenced by active LeafNodes, outstanding KeyPackages, retained
+operation secrets, or retained KeyPackage material. For each epoch,
+RetainedVcEpoch contains its emulation-group epoch number and
+VcDerivationEpochState. Entries <span class="bcp14">MUST</span> have unique epoch numbers and <code>epoch_id</code>
+values and be sorted by <code>emulation_group_epoch</code>. State for the Welcome's output
+epoch is not included because the joining emulator client derives it from the
+emulation group's Welcome.<a href="#section-6.2.2-3.12.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-3.11">
-              <p id="section-6.1.2-3.11.1"><code>higher_level_groups</code> contains one entry per active higher-level group.
+            <li class="normal" id="section-6.2.2-3.13">
+              <p id="section-6.2.2-3.13.1"><code>higher_level_groups</code> contains one entry per active higher-level group.
 Each entry carries the <code>group_id</code> and a <code>state_type</code> identifying which
-variant applies.<a href="#section-6.1.2-3.11.1" class="pilcrow">¶</a></p>
+variant applies.<a href="#section-6.2.2-3.13.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<p id="section-6.1.2-4">For <code>state_transfer</code> entries, the provisioning emulator client transfers the
-current epoch's key-schedule outputs and the retained per-epoch state:<a href="#section-6.1.2-4" class="pilcrow">¶</a></p>
+<p id="section-6.2.2-4">For <code>state_transfer</code> entries, the provisioning emulator client transfers the
+current epoch's key-schedule outputs and the retained per-epoch state:<a href="#section-6.2.2-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.1.2-5.1">
-              <p id="section-6.1.2-5.1.1"><code>init_secret</code> chains the joining emulator client's subsequent Commit
+<li class="normal" id="section-6.2.2-5.1">
+              <p id="section-6.2.2-5.1.1"><code>init_secret</code> chains the joining emulator client's subsequent Commit
 into the next epoch (<code>init_secret[n-1]</code> combines with the new
-<code>commit_secret</code> to produce <code>joiner_secret[n]</code>).<a href="#section-6.1.2-5.1.1" class="pilcrow">¶</a></p>
+<code>commit_secret</code> to produce <code>joiner_secret[n]</code>).<a href="#section-6.2.2-5.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.2">
-              <p id="section-6.1.2-5.2.1"><code>sender_data_secret</code> lets the joining emulator client decrypt sender
-data on incoming PrivateMessages.<a href="#section-6.1.2-5.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.2">
+              <p id="section-6.2.2-5.2.1"><code>sender_data_secret</code> lets the joining emulator client decrypt sender
+data on incoming PrivateMessages.<a href="#section-6.2.2-5.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.3">
-              <p id="section-6.1.2-5.3.1"><code>exporter_secret</code> lets the joining emulator client produce
-application-level exports from this epoch.<a href="#section-6.1.2-5.3.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.3">
+              <p id="section-6.2.2-5.3.1"><code>exporter_secret</code> lets the joining emulator client produce
+application-level exports from this epoch.<a href="#section-6.2.2-5.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.4">
-              <p id="section-6.1.2-5.4.1"><code>external_secret</code> lets other parties perform further external
-commits from this epoch.<a href="#section-6.1.2-5.4.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.4">
+              <p id="section-6.2.2-5.4.1"><code>external_secret</code> lets other parties perform further external
+commits from this epoch.<a href="#section-6.2.2-5.4.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.5">
-              <p id="section-6.1.2-5.5.1"><code>confirmation_key</code> lets the joining emulator client verify the
-<code>confirmation_tag</code> on any incoming Commit.<a href="#section-6.1.2-5.5.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.5">
+              <p id="section-6.2.2-5.5.1"><code>confirmation_key</code> lets the joining emulator client verify the
+<code>confirmation_tag</code> on any incoming Commit.<a href="#section-6.2.2-5.5.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.6">
-              <p id="section-6.1.2-5.6.1"><code>membership_key</code> lets the joining emulator client produce a valid
-<code>membership_tag</code> on its own Commit sent as PublicMessage.<a href="#section-6.1.2-5.6.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.6">
+              <p id="section-6.2.2-5.6.1"><code>membership_key</code> lets the joining emulator client produce a valid
+<code>membership_tag</code> on its own Commit sent as PublicMessage.<a href="#section-6.2.2-5.6.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.7">
-              <p id="section-6.1.2-5.7.1"><code>resumption_psk</code> lets the joining emulator client participate as an
-origin for resumption PSKs in this epoch, if the application uses them.<a href="#section-6.1.2-5.7.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.7">
+              <p id="section-6.2.2-5.7.1"><code>resumption_psk</code> lets the joining emulator client participate as an
+origin for resumption PSKs in this epoch, if the application uses them.<a href="#section-6.2.2-5.7.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.8">
-              <p id="section-6.1.2-5.8.1"><code>epoch_authenticator</code> authenticates the current group state.<a href="#section-6.1.2-5.8.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-6.2.2-5.8">
+              <p id="section-6.2.2-5.8.1"><code>epoch_authenticator</code> authenticates the current group state.<a href="#section-6.2.2-5.8.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.9">
-              <p id="section-6.1.2-5.9.1"><code>secret_tree</code> is the current state of the group's Secret Tree, from
+            <li class="normal" id="section-6.2.2-5.9">
+              <p id="section-6.2.2-5.9.1"><code>secret_tree</code> is the current state of the group's Secret Tree, from
 which the joining emulator client derives per-member handshake- and
-application-ratchet keys needed to decrypt in-flight PrivateMessages.<a href="#section-6.1.2-5.9.1" class="pilcrow">¶</a></p>
+application-ratchet keys needed to decrypt in-flight PrivateMessages.<a href="#section-6.2.2-5.9.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.10">
-              <p id="section-6.1.2-5.10.1"><code>safe_exporter_tree</code> is the current punctured state of the Safe Exporter API's
+            <li class="normal" id="section-6.2.2-5.10">
+              <p id="section-6.2.2-5.10.1"><code>safe_exporter_tree</code> is the current punctured state of the Safe Exporter API's
 Exporter Tree if the higher-level group uses that API. If the group does not
 use the Safe Exporter API, <code>nodes</code> is zero-length. When used for a Safe
-Exporter Tree, <code>PPRFState</code> paths are 16-bit paths indexed by <code>ComponentID</code>.<a href="#section-6.1.2-5.10.1" class="pilcrow">¶</a></p>
+Exporter Tree, <code>PPRFState</code> paths are 16-bit paths indexed by <code>ComponentID</code>.<a href="#section-6.2.2-5.10.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-6.1.2-5.11">
-              <p id="section-6.1.2-5.11.1"><code>direct_path_private_keys</code> is the list of HPKE private keys for each non-blank
+            <li class="normal" id="section-6.2.2-5.11">
+              <p id="section-6.2.2-5.11.1"><code>direct_path_private_keys</code> is the list of HPKE private keys for each non-blank
 node in the virtual client's filtered direct path. The first entry is the
 private key for the parent of the virtual client's leaf, if that node is
 non-blank. Subsequent entries correspond to the next non-blank nodes on the
 direct path toward the root, in order. The virtual client's leaf private key
 itself is derivable from the retained operation secret or retained
 per-KeyPackage material identified by the DerivationInfo on the current
-LeafNode and is therefore not transferred explicitly.<a href="#section-6.1.2-5.11.1" class="pilcrow">¶</a></p>
+LeafNode and is therefore not transferred explicitly.<a href="#section-6.2.2-5.11.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<p id="section-6.1.2-6">For <code>external_commit</code> entries, no additional per-group fields are included. The
+<p id="section-6.2.2-6">For <code>external_commit</code> entries, no additional per-group fields are included. The
 joining emulator client external-commits into the group — fetching the current
 GroupInfo from the DS or another application-defined source — and includes a
-Remove proposal for the virtual client's prior leaf to evict the old membership.<a href="#section-6.1.2-6" class="pilcrow">¶</a></p>
+Remove proposal for the virtual client's prior leaf to evict the old membership.<a href="#section-6.2.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="joining-externally">
-<section id="section-6.2">
+<section id="section-6.3">
         <h3 id="name-joining-externally">
-<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-joining-externally" class="section-name selfRef">Joining externally</a>
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-joining-externally" class="section-name selfRef">Joining externally</a>
         </h3>
-<p id="section-6.2-1">Without another online emulator client to bootstrap from, a new emulator can
+<p id="section-6.3-1">Without another online emulator client to bootstrap from, a new emulator can
 join the emulation group externally. A prerequisite for this external join is
 that the new client has the ability to learn which groups the virtual client is
-in and to externally join those groups.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
-<p id="section-6.2-2">If those prerequisites are met, the new client needs to follow these steps:<a href="#section-6.2-2" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-6.2-3">
-<li id="section-6.2-3.1">
-            <p id="section-6.2-3.1.1">Obtain a fresh credential that other emulation clients will accept.<a href="#section-6.2-3.1.1" class="pilcrow">¶</a></p>
+in and to externally join those groups.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">If those prerequisites are met, the new client needs to follow these steps:<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-6.3-3">
+<li id="section-6.3-3.1">
+            <p id="section-6.3-3.1.1">Obtain a fresh credential that other emulation clients will accept.<a href="#section-6.3-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-6.2-3.2">
-            <p id="section-6.2-3.2.1">Perform an external join to the emulation group.<a href="#section-6.2-3.2.1" class="pilcrow">¶</a></p>
+          <li id="section-6.3-3.2">
+            <p id="section-6.3-3.2.1">Perform an external join to the emulation group.<a href="#section-6.3-3.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-6.2-3.3">
-            <p id="section-6.2-3.3.1">Replace the virtual client's active key material by performing the following
+          <li id="section-6.3-3.3">
+            <p id="section-6.3-3.3.1">Replace the virtual client's active key material by performing the following
 steps. Before each step, generate, derive or otherwise obtain the necessary
 credential and private signature key material. Ensure that other emulation
 clients can obtain the private key material. Details on credential and
 signature key generation and distribution are left to the application. The
 application <span class="bcp14">MAY</span> derive signature key material based on the new emulation
-group epoch as described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.<a href="#section-6.2-3.3.1" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-6.2-3.3.2">
-<li id="section-6.2-3.3.2.1">
-                <p id="section-6.2-3.3.2.1.1">Replace all active KeyPackages with new KeyPackages, generated from the
-new emulation group epoch.<a href="#section-6.2-3.3.2.1.1" class="pilcrow">¶</a></p>
+group epoch as described in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>.<a href="#section-6.3-3.3.1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-6.3-3.3.2">
+<li id="section-6.3-3.3.2.1">
+                <p id="section-6.3-3.3.2.1.1">Replace all active KeyPackages with new KeyPackages, generated from the
+new derivation epoch.<a href="#section-6.3-3.3.2.1.1" class="pilcrow">¶</a></p>
 </li>
-              <li id="section-6.2-3.3.2.2">
-                <p id="section-6.2-3.3.2.2.1">Perform an external join to all of the groups that the virtual client is a
-member of, using LeafNodes generated from the new emulation group epoch
+              <li id="section-6.3-3.3.2.2">
+                <p id="section-6.3-3.3.2.2.1">Perform an external join to all of the groups that the virtual client is a
+member of, using LeafNodes generated from the new derivation epoch
 (see <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>). Welcome messages which were
 unprocessed by the offline devices are discarded, and these groups are
 joined externally instead (potentially being queued for user approval
-first).<a href="#section-6.2-3.3.2.2.1" class="pilcrow">¶</a></p>
+first).<a href="#section-6.3-3.3.2.2.1" class="pilcrow">¶</a></p>
 </li>
             </ol>
 </li>
@@ -2700,55 +3056,57 @@ first).<a href="#section-6.2-3.3.2.2.1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="removing-emulator-clients">
-<section id="section-6.3">
+<section id="section-6.4">
         <h3 id="name-removing-emulator-clients">
-<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-removing-emulator-clients" class="section-name selfRef">Removing emulator clients</a>
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-removing-emulator-clients" class="section-name selfRef">Removing emulator clients</a>
         </h3>
-<p id="section-6.3-1">Since all emulator clients hold all key material of the virtual client, removing
+<p id="section-6.4-1">Since all emulator clients hold all key material of the virtual client, removing
 the emulator client entails its removal from the emulation group, as well as
-rotating or revoking any other virtual-client specific key material.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
-<p id="section-6.3-2">To effectively remove an emulator client, the emulator client committing the
-proposal that removes the target client <span class="bcp14">MUST</span> take the following steps in order:<a href="#section-6.3-2" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-6.3-3">
-<li id="section-6.3-3.1">
-            <p id="section-6.3-3.1.1">Effect the deletion of outstanding KeyPackages of the virtual client from the
+rotating or revoking any other virtual-client specific key material.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">To effectively remove an emulator client, the emulator client committing the
+proposal that removes the target client <span class="bcp14">MUST</span> take the following steps in order:<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-6.4-3">
+<li id="section-6.4-3.1">
+            <p id="section-6.4-3.1.1">Effect the deletion of outstanding KeyPackages of the virtual client from the
 DS. The set of outstanding KeyPackages can be determined from the
 <code>KeyPackageUpload</code> messages previously sent to the emulation group (see
-<a href="#creating-and-uploading-keypackages" class="auto internal xref">Section 5.5.1</a>).<a href="#section-6.3-3.1.1" class="pilcrow">¶</a></p>
+<a href="#creating-and-uploading-keypackages" class="auto internal xref">Section 5.5.1</a>).<a href="#section-6.4-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-6.3-3.2">
-            <p id="section-6.3-3.2.1">Commit a Remove proposal for the emulation client to be removed in the
-emulation group, advancing it to a new epoch from which new virtual client
-secrets will be derived (see <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>).<a href="#section-6.3-3.2.1" class="pilcrow">¶</a></p>
+          <li id="section-6.4-3.2">
+            <p id="section-6.4-3.2.1">Commit a Remove proposal for the emulation client to be removed in the
+emulation group. The output is a derivation epoch even if the Commit does not
+contain a <code>new_derivation_epoch</code> action
+(see <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>).<a href="#section-6.4-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-6.3-4">Next, the application <span class="bcp14">MUST</span> provide new credentials and authentication key
+<p id="section-6.4-4">The removal's retention obligations are specified in <a href="#epoch-retention" class="auto internal xref">Section 6.1</a>.<a href="#section-6.4-4" class="pilcrow">¶</a></p>
+<p id="section-6.4-5">Next, the application <span class="bcp14">MUST</span> provide new credentials and authentication key
 material for the virtual client that can be used to replace existing credentials
 and authentication key material in the next steps. The application <span class="bcp14">MAY</span> use the
 <code>signature_key_secret</code> derived from any of the <code>operation_secret</code>s during the
 next steps to derive group-specific key material. The application <span class="bcp14">SHOULD</span> take
 steps to revoke any valid long lived credentials associated with the virtual
-client that the removed emulator client had access to.<a href="#section-6.3-4" class="pilcrow">¶</a></p>
-<p id="section-6.3-5">Using the new emulation-group epoch, any combination of remaining emulator
-clients <span class="bcp14">MUST</span> do the following steps (in any order):<a href="#section-6.3-5" class="pilcrow">¶</a></p>
+client that the removed emulator client had access to.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
+<p id="section-6.4-6">Using the new derivation epoch, any combination of remaining
+emulator clients <span class="bcp14">MUST</span> do the following steps (in any order):<a href="#section-6.4-6" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.3-6.1">
-            <p id="section-6.3-6.1.1">Effect an update of the key material in every higher-level group in which the
+<li class="normal" id="section-6.4-7.1">
+            <p id="section-6.4-7.1.1">Effect an update of the key material in every higher-level group in which the
 virtual client is a member, using the new credential and authentication key
 material provided by the application. This <span class="bcp14">MAY</span> be done by creating a commit
-with an update path or sending an update proposal.<a href="#section-6.3-6.1.1" class="pilcrow">¶</a></p>
+with an update path or sending an update proposal.<a href="#section-6.4-7.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.3-6.2">
-            <p id="section-6.3-6.2.1">Upload a fresh set of KeyPackages derived from the new emulation-group epoch
-to replace those deleted in step 1.<a href="#section-6.3-6.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.4-7.2">
+            <p id="section-6.4-7.2.1">Upload a fresh set of KeyPackages derived from the new derivation epoch to
+replace those deleted in step 1.<a href="#section-6.4-7.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-6.3-7">A corollary of this removal procedure is that in most scenarios another emulator
+<p id="section-6.4-8">A corollary of this removal procedure is that in most scenarios another emulator
 client is required to be online and perform the necessary updates. The DS must
 also support deletion of previously uploaded KeyPackages. This is in contrast to
 the simple multi-client setup, where an external sender can effectively remove
 individual clients and there are no additional functional requirements for the
-DS.<a href="#section-6.3-7" class="pilcrow">¶</a></p>
+DS.<a href="#section-6.4-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2772,26 +3130,51 @@ have to trust each other fully; the emulation group does not provide any
 isolation between them.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="forward-secrecy">
+<div id="ciphersuite-strength">
 <section id="section-7.2">
-        <h3 id="name-forward-secrecy">
-<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-forward-secrecy" class="section-name selfRef">Forward secrecy</a>
+        <h3 id="name-ciphersuite-strength">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-ciphersuite-strength" class="section-name selfRef">Ciphersuite strength</a>
         </h3>
-<p id="section-7.2-1">Forward secrecy for messages in higher-level groups depends on every emulator
+<p id="section-7.2-1">All target-specific key material derived by this document ultimately depends
+on a secret produced by the emulation group's ciphersuite. Importing that
+secret into a target ciphersuite adapts it to the target KDF and provides
+domain separation, but does not increase its entropy. The effective security
+strength of the resulting key material is therefore bounded by the weaker of
+the emulation-group and target ciphersuites. Applications <span class="bcp14">SHOULD</span> choose an
+emulation-group ciphersuite whose security strength is at least that of every
+target ciphersuite used by the virtual client.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="forward-secrecy">
+<section id="section-7.3">
+        <h3 id="name-forward-secrecy">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-forward-secrecy" class="section-name selfRef">Forward secrecy</a>
+        </h3>
+<p id="section-7.3-1">Forward secrecy for messages in higher-level groups depends on every emulator
 client deleting consumed key material according to the deletion schedule of
 <span><a href="https://rfc-editor.org/rfc/rfc9420#section-9.2" class="relref">Section 9.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>. Since every emulator client processes every
 message sent to a higher-level group, the effective forward secrecy of such a
 group is bounded by the emulator client that is slowest to advance its ratchets
 and delete its keys. The same applies to the retained state defined in this
 document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
-emulation-epoch state (<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>) extend the window during
+emulation-epoch state (<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>) extend the window during
 which a compromise reveals previously transmitted data, and emulator clients
 <span class="bcp14">SHOULD</span> delete them as soon as they are no longer needed. Applications that do
 not onboard emulator clients through state transfer need not retain
 RetainedOperationSecrets or RetainedKeyPackageMaterial at all (see
 <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>) and can instead retain only the derived
-key material still in use, reducing this window.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
-<p id="section-7.2-2">Some of this state is reachable through the virtual client's LeafNodes. The
+key material still in use, reducing this window.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">The coordinated retention procedure in <a href="#epoch-retention" class="auto internal xref">Section 6.1</a> also extends this
+window. In particular, all clients retain every derivation epoch in the baseline
+retention window. Skipped operation-ratchet generations remain subject to the
+application's ordinary time and count limits even when their derivation epoch is
+retained. An offline client can therefore delay deletion of per-epoch state for
+every other emulator client. Applications <span class="bcp14">SHOULD</span> choose a derivation-epoch
+cadence that bounds retained state while meeting their post-compromise security
+requirements, and <span class="bcp14">SHOULD</span> remove clients that remain inactive beyond the
+application's membership policy. Removal does not permit the application to
+discard unresolved retention obligations from that client.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.3-3">Some of this state is reachable through the virtual client's LeafNodes. The
 DerivationInfo of an external Commit LeafNode embeds the <code>init_secret</code> of the
 epoch created by that Commit, encrypted under the emulation-group epoch's
 <code>epoch_encryption_key</code>. The LeafNode persists in the higher-level group's
@@ -2802,27 +3185,33 @@ the virtual client remains derivable from the retained per-KeyPackage seed
 secret of the creator LeafNode
 (<a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 5.4</a>). Updating the virtual client's
 LeafNode soon after an external commit or a group creation allows emulator
-clients to delete this state and limits the exposure.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+clients to delete this state and limits the exposure.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-compromise-security">
-<section id="section-7.3">
+<section id="section-7.4">
         <h3 id="name-post-compromise-security">
-<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-compromise security</a>
+<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-compromise security</a>
         </h3>
-<p id="section-7.3-1">Some of the performance benefits of this scheme depend on the fact that one can
+<p id="section-7.4-1">Some of the performance benefits of this scheme depend on the fact that one can
 update once in the emulation group and "re-use" the new randomness for updates
 in multiple higher-level groups. At that point, clients only really recover when
 they update the emulation group, i.e. re-using somewhat old randomness of the
-emulation group won't provide real PCS in higher-level groups.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+emulation group won't provide real PCS in higher-level groups.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.4-2">An emulation-group update refreshes virtual-client secret material only if its
+output is a derivation epoch. An application that
+relies on an emulation-group Commit to provide post-compromise security for
+subsequent virtual-client operations <span class="bcp14">MUST</span> include the
+<code>new_derivation_epoch</code> action in that Commit. The outputs of
+membership-changing Commits are derivation epochs automatically.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="removing-emulator-clients-1">
-<section id="section-7.4">
+<section id="section-7.5">
         <h3 id="name-removing-emulator-clients-2">
-<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-removing-emulator-clients-2" class="section-name selfRef">Removing emulator clients</a>
+<a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-removing-emulator-clients-2" class="section-name selfRef">Removing emulator clients</a>
         </h3>
-<p id="section-7.4-1">The removal procedure in <a href="#removing-emulator-clients" class="auto internal xref">Section 6.3</a> is not atomic. Between
+<p id="section-7.5-1">The removal procedure in <a href="#removing-emulator-clients" class="auto internal xref">Section 6.4</a> is not atomic. Between
 the Commit that removes an emulator client from the emulation group and the
 completion of the key rotations in all higher-level groups, the removed client
 still holds valid key material for those groups and can read traffic in them
@@ -2832,38 +3221,38 @@ since a removed client that retains a valid virtual-client signing key and
 credential can otherwise re-join a higher-level group via an external commit.
 The procedure also depends on the DS actually deleting outstanding KeyPackages;
 a KeyPackage that escapes deletion allows the removed client to process
-Welcome messages addressed to the virtual client.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+Welcome messages addressed to the virtual client.<a href="#section-7.5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="handling-of-newemulatorclientstate">
-<section id="section-7.5">
+<section id="section-7.6">
         <h3 id="name-handling-of-newemulatorclie">
-<a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-handling-of-newemulatorclie" class="section-name selfRef">Handling of NewEmulatorClientState</a>
+<a href="#section-7.6" class="section-number selfRef">7.6. </a><a href="#name-handling-of-newemulatorclie" class="section-name selfRef">Handling of NewEmulatorClientState</a>
         </h3>
-<p id="section-7.5-1">The NewEmulatorClientState struct contains the complete secret state of the
+<p id="section-7.6-1">The NewEmulatorClientState struct contains the complete secret state of the
 virtual client and <span class="bcp14">MUST</span> only appear in GroupInfo objects encrypted within
-Welcome messages, as specified in <a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>. Publishing a
+Welcome messages, as specified in <a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>. Publishing a
 GroupInfo containing the <code>virtual_clients</code> component, for example to enable
 external commits, discloses the secrets of all higher-level groups the virtual
-client is a member of.<a href="#section-7.5-1" class="pilcrow">¶</a></p>
+client is a member of.<a href="#section-7.6-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="reuse-guard-1">
-<section id="section-7.6">
+<section id="section-7.7">
         <h3 id="name-reuse-guard-2">
-<a href="#section-7.6" class="section-number selfRef">7.6. </a><a href="#name-reuse-guard-2" class="section-name selfRef">Reuse guard</a>
+<a href="#section-7.7" class="section-number selfRef">7.7. </a><a href="#name-reuse-guard-2" class="section-name selfRef">Reuse guard</a>
         </h3>
-<p id="section-7.6-1">The guarantee that no two emulator clients select colliding nonces
+<p id="section-7.7-1">The guarantee that no two emulator clients select colliding nonces
 (<a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>) relies on all emulator clients agreeing on <code>N_e</code>, on their
 leaf indices at epoch <code>e</code>, and on the exact PRP instantiation described in
 <a href="#small-space-prp" class="auto internal xref">Section 5.6.1</a>. The PRP key is 128 bits regardless of the ciphersuites in
 use; this bounds the sender-attribution and unlinkability properties of the
-reuse guard but does not affect the confidentiality of MLS messages.<a href="#section-7.6-1" class="pilcrow">¶</a></p>
-<p id="section-7.6-2">Since <code>reuse_guard_secret</code> is shared across all higher-level groups for a
+reuse guard but does not affect the confidentiality of MLS messages.<a href="#section-7.7-1" class="pilcrow">¶</a></p>
+<p id="section-7.7-2">Since <code>reuse_guard_secret</code> is shared across all higher-level groups for a
 given emulation-group epoch, two messages in different higher-level groups
 that happen to use the same <code>key_schedule_nonce</code> will use the same <code>prp_key</code>.
 This does not endanger nonce uniqueness, because the two messages are
-encrypted under independent keys.<a href="#section-7.6-2" class="pilcrow">¶</a></p>
+encrypted under independent keys.<a href="#section-7.7-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2895,27 +3284,34 @@ include indistinguishable components.<a href="#section-8-3.1.1" class="pilcrow">
 LeafNodes and KeyPackages that the virtual client produces from the same
 emulation-group epoch. Parties with access to the ratchet trees of multiple
 higher-level groups can use it to link the virtual client's leaves across
-those groups, and can observe how often the emulation group commits.<a href="#section-8-3.2.1" class="pilcrow">¶</a></p>
+those groups, and can observe how often the application changes derivation
+epochs.<a href="#section-8-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-8-3.3">
-          <p id="section-8-3.3.1">Generation IDs (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>) are only
-attached by virtual-client senders and therefore identify virtual-client
-traffic to the DS, in addition to revealing how many distinct ratchet
-generations are in use.<a href="#section-8-3.3.1" class="pilcrow">¶</a></p>
+          <p id="section-8-3.3.1">VirtualClientCommitData is carried in authenticated data and is visible to
+the DS. Derivation-epoch actions reveal which Commits refresh virtual-client
+secrets. Repeated <code>epoch_id</code> values in epoch-usage declarations allow the DS
+to observe how long the application retains particular derivation epochs.<a href="#section-8-3.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-8-3.4">
-          <p id="section-8-3.4.1">An external commit by a virtual client (Variant B of
-<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>, or <a href="#joining-externally" class="auto internal xref">Section 6.2</a>) is visible to all
-members of the higher-level group as the virtual client leaving and
-re-joining.<a href="#section-8-3.4.1" class="pilcrow">¶</a></p>
+          <p id="section-8-3.4.1">Generation IDs (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>) are only
+attached by virtual-client senders and therefore identify virtual-client
+traffic to the DS, in addition to revealing how many distinct ratchet
+generations are in use.<a href="#section-8-3.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-8-3.5">
-          <p id="section-8-3.5.1">The DerivationInfo ciphertext of a LeafNode with <code>leaf_node_source</code> <code>commit</code>
+          <p id="section-8-3.5.1">An external commit by a virtual client (Variant B of
+<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>, or <a href="#joining-externally" class="auto internal xref">Section 6.3</a>) is visible to all
+members of the higher-level group as the virtual client leaving and
+re-joining.<a href="#section-8-3.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.6">
+          <p id="section-8-3.6.1">The DerivationInfo ciphertext of a LeafNode with <code>leaf_node_source</code> <code>commit</code>
 is longer when it carries an <code>external_init_secret</code>. Parties with access to
 the ratchet tree, including members who join after the external commit, can
 therefore tell that the virtual client's current leaf was created by an
 external commit rather than a regular Commit, for as long as that leaf
-remains in the tree.<a href="#section-8-3.5.1" class="pilcrow">¶</a></p>
+remains in the tree.<a href="#section-8-3.6.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
@@ -2940,7 +3336,7 @@ object in which the component appears:<a href="#section-9.1-1" class="pilcrow">�
             <p id="section-9.1-2.1.1">In GroupInfo objects of the emulation group, the component data is a
 NewEmulatorClientState struct carrying the state a newly added emulator
 client needs to act as the virtual client
-(<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>).<a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
+(<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.2</a>).<a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-9.1-2.2">
             <p id="section-9.1-2.2.1">In LeafNode objects of a virtual client, the component data is a
@@ -2949,8 +3345,9 @@ material (<a href="#creating-leafnodes-and-updatepaths" class="auto internal xre
 </li>
           <li class="normal" id="section-9.1-2.3">
             <p id="section-9.1-2.3.1">In SafeAAD objects of Commits in the emulation group, the component data is
-a VirtualClientAction struct communicating which virtual client action is
-taken in conjunction with the Commit (<a href="#virtual-client-actions" class="auto internal xref">Section 5.5</a>).<a href="#section-9.1-2.3.1" class="pilcrow">¶</a></p>
+a VirtualClientCommitData struct carrying an optional epoch-usage declaration
+and zero or more virtual-client actions associated with the Commit
+(<a href="#virtual-client-actions" class="auto internal xref">Section 5.5</a>).<a href="#section-9.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-9.1-2.4">
             <p id="section-9.1-2.4.1">The component ID is additionally used with the Safe Exporter API to export
@@ -2995,7 +3392,7 @@ the per-epoch <code>emulator_epoch_secret</code> from the emulation group
 <dd class="break"></dd>
 <dt id="I-D.ietf-mls-extensions">[I-D.ietf-mls-extensions]</dt>
       <dd>
-<span class="refAuthor">Robert, R.</span>, <span class="refTitle">"The Messaging Layer Security (MLS) Extensions"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-mls-extensions-09</span>, <time datetime="2026-03-02" class="refDate">2 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09">https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09</a>&gt;</span>. </dd>
+<span class="refAuthor">Robert, R.</span>, <span class="refTitle">"The Messaging Layer Security (MLS) Extensions"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-mls-extensions-10</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10">https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="NIST">[NIST]</dt>
       <dd>
