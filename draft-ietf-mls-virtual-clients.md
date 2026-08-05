@@ -76,6 +76,10 @@ MLS groups.
   emulating a virtual client.
 - Emulation group: Group used by emulator clients to coordinate emulation of a
   virtual client.
+- Virtual-client derivation epoch: An emulation-group epoch selected as a source
+  of virtual-client key material. The short form "derivation epoch" is used
+  where the virtual-client context is clear. Derivation epochs are ordered by
+  their emulation-group epoch numbers, not by their opaque `epoch_id` values.
 - Higher-level group: A group that is not an emulation group and that may
   contain one or more virtual clients.
 - Simple multi-client: A simple alternative to the concept of virtual clients,
@@ -192,12 +196,26 @@ group.
 
 ## Generating Virtual Client Secrets
 
-Generally, secrets for virtual client operations are derived from the emulation
-group. To that end, emulator clients derive an `emulator_epoch_secret` with
-every new epoch of that group using the Safe Exporter API defined in
+Generally, secrets for virtual client operations are derived from derivation
+epochs of the emulation group. The initial epoch of an emulation group is a
+derivation epoch. The output epoch of an emulation-group Commit is a derivation
+epoch if the Commit contains a `new_derivation_epoch` action
+({{virtual-client-actions}}) or changes the membership of the emulation group.
+Applications MAY choose how often other emulation-group Commits carry the
+derivation-epoch action. A Commit that does not meet either condition does not
+create a derivation epoch, and processing it leaves the newest derivation epoch
+unchanged. More frequent derivation epochs refresh virtual-client secrets more
+often, but can increase retained state while an emulator client is inactive.
+Less frequent derivation epochs reduce the number of retained epochs, but
+continue using the same derivation-epoch secret state across ordinary
+emulation-group Commits.
+
+For every derivation epoch, emulator clients derive an
+`emulator_epoch_secret` using the Safe Exporter API defined in
 {{Section 4.4 of !I-D.ietf-mls-extensions}}, where
 `virtual_clients_component_id` is the component ID registered for the
-`virtual_clients` component in {{iana-considerations}}.
+`virtual_clients` component in {{iana-considerations}}. Emulator clients do not
+invoke `SafeExportSecret` for this component in any other epoch.
 
 ~~~
 emulator_epoch_secret = SafeExportSecret(virtual_clients_component_id)
@@ -257,6 +275,13 @@ whose current state is at generation `m < n` derives and retains the operation
 secrets for the skipped generations `m, ..., n-1` in the same way RFC 9420
 handles out-of-order PrivateMessages. Implementations SHOULD bound the number
 of skipped generations they retain and the time for which they retain them.
+These limits apply independently of the coordinated retention procedure in
+{{epoch-retention}}. Retaining a derivation epoch does not extend the lifetime
+of an unconsumed skipped generation beyond the application's time or count
+limits. An implementation MAY reject an operation that would exceed a supported
+generation gap and MAY delete a skipped generation according to application
+policy while retaining the remaining state for its derivation epoch.
+
 The serialized state of the Virtual Client Operation Secret Tree is
 represented by `SecretTreeState` with `SecretTreeRatchetState.ratchet_type`
 set to `operation` and `SecretTreeRatchetState.operation_type` set to the
@@ -278,8 +303,8 @@ In this derivation, `operation_type` is the TLS-encoded
 The `leaf_secret` MUST be deleted immediately after the initial operation
 ratchet secrets for all operation types have been derived. As a consequence,
 operation types defined by future documents cannot be added to already
-expanded leaves; they are only usable from emulation-group epochs onward in
-which all emulator clients derive them at expansion time.
+expanded leaves; they are only usable from derivation epochs onward in which
+all emulator clients derive them at expansion time.
 
 Emulator clients MUST retain the `operation_secret_tree`, the `epoch_id`, the
 `epoch_encryption_key`, the `generation_id_secret`, the `reuse_guard_secret`,
@@ -295,6 +320,19 @@ material, including DerivationInfos and state transferred to new clients
 computing generation IDs ({{coordinating-ratchet-generations-with-the-ds}});
 and the `reuse_guard_secret`, leaf count, and leaf index are used for
 computing the `reuse_guard` ({{reuse-guard}}).
+
+The retained `operation_secret_tree` is the evolving Secret Tree state for the
+derivation epoch, not an immutable copy of its initial state. It
+includes any skipped operation-ratchet generations that have not been deleted
+under the application's skipped-generation policy. Consumed operation-ratchet
+secrets and expanded leaf secrets remain subject to the deletion requirements
+in this section. In particular, implementations MUST NOT retain an additional
+copy of `epoch_base_secret` or an earlier tree snapshot after advancing the tree
+if that state would allow them to recreate consumed operation-ratchet
+generations.
+
+New virtual-client operations MUST use the newest derivation epoch in the acting
+client's current emulation-group state.
 
 When deriving a secret for a virtual client, e.g. for use in a KeyPackage
 upload or LeafNode update, the deriving client chooses a
@@ -524,8 +562,9 @@ state a new emulator client needs; its contents are application-defined.
 
 When creating a LeafNode, either for group creation, a Commit with an update
 path, an Update proposal, an external commit, or a KeyPackage, the creating
-emulator client MUST derive the necessary secrets from the current epoch of the
-emulation group as described in {{generating-virtual-client-secrets}}.
+emulator client MUST derive the necessary secrets from the newest derivation
+epoch in its current emulation-group state, as described in
+{{generating-virtual-client-secrets}}.
 For a LeafNode whose `leaf_node_source` is `key_package`, the creating emulator
 client MUST use a per-KeyPackage seed secret, derived from a batch
 `key_package` operation secret and the LeafNode's `key_package_index`. For the
@@ -719,7 +758,7 @@ Emulator clients sometimes need to communicate directly to operate the virtual
 client. The acting emulator client can attach such information to a Commit to
 the emulation group using the SafeAAD mechanism described in
 {{Section 4.9 of !I-D.ietf-mls-extensions}}. The SafeAAD component data of the
-`virtual_clients` component is a VirtualClientAction struct.
+`virtual_clients` component is a VirtualClientCommitData struct.
 
 Sending an action as part of a Commit serves two purposes: First, the
 agreement on message ordering facilitated by the DS prevents concurrent
@@ -728,12 +767,16 @@ authenticated as part of the Commit.
 
 The `key_package_upload` action is one way applications MAY use to communicate
 a KeyPackageUpload message ({{creating-and-uploading-keypackages}}) to the
-other emulator clients.
+other emulator clients. The `new_derivation_epoch` action makes the Commit's
+output epoch a derivation epoch. The marker does not change the epoch used by
+any other action in the same Commit. Such actions use the newest derivation
+epoch in the Commit's input state.
 
 ~~~ tls
 enum {
   reserved(0),
   key_package_upload(1),
+  new_derivation_epoch(2),
   (255)
 } ActionType;
 
@@ -742,9 +785,67 @@ struct {
   select (VirtualClientAction.action_type) {
     case key_package_upload:
       KeyPackageUpload key_package_upload;
+    case new_derivation_epoch:
+      struct{};
   };
 } VirtualClientAction;
+
+struct {
+  opaque epoch_id<V>;
+} VcEpochReference;
+
+struct {
+  VcEpochReference in_use_epochs<V>;
+} VcEpochUsage;
+
+struct {
+  optional<VcEpochUsage> epoch_usage;
+  VirtualClientAction actions<V>;
+} VirtualClientCommitData;
 ~~~
+
+When present, the `epoch_usage` field is the author's epoch-usage declaration,
+which is a complete snapshot of the epochs in use as described in
+{{epoch-retention}}. In every VcEpochUsage value, entries in
+`in_use_epochs` MUST be unique and sorted lexicographically by the TLS
+serialization of `epoch_id`. This sorting is only a canonical encoding rule and
+does not define derivation-epoch order. An empty vector explicitly replaces
+the author's previous declaration with an empty set. A Commit whose
+`epoch_usage` field is absent does not replace the author's declaration and does
+not advance the author's retention watermark. This also applies when the entire
+`virtual_clients` SafeAAD component is absent. An application policy shared by
+every emulator client MAY require every emulation-group Commit to carry an
+epoch-usage declaration and reject a Commit that omits it.
+
+An applied Commit is a validated Commit whose output has become the client's
+current emulation-group state.
+
+When coordinated retention is used, every `epoch_id` in an epoch-usage
+declaration MUST identify a derivation epoch that, immediately before the Commit
+is applied, meets at least one of these conditions:
+
+- It is in the baseline retention window.
+- It appears in the latest epoch-usage declaration carried by an applied Commit
+  from a current emulator client.
+- It is covered by a retention obligation from a removed emulator client.
+
+A recipient using coordinated retention MUST reject the Commit if an entry does
+not meet one of these conditions. Validation uses the retention state for the
+Commit's input epoch, before replacing the author's declaration or advancing its
+retention watermark. This allows a Commit to preserve an epoch that is about to
+leave the baseline retention window or to transfer an existing retention
+obligation. A local protocol or application reference does not make an epoch
+valid in a declaration because such references are not shared by every emulator
+client.
+Applications not using coordinated retention apply only the canonical encoding
+rules above to `epoch_usage`.
+
+The `actions` vector allows retention metadata to coexist with zero or more
+virtual-client actions. It MUST contain at most one `new_derivation_epoch`
+action. The output of a membership-changing Commit is a derivation epoch even
+if the marker is absent. Rejected Commits and Commits superseded by another
+Commit do not create a derivation epoch, replace an epoch-usage declaration, or
+advance a retention watermark.
 
 ### Creating and uploading KeyPackages
 
@@ -1020,6 +1121,102 @@ using the virtual client. The emulator client can either get this state from
 another emulator client, or if all other emulator clients are offline, the
 emulator client can use a series of external joins to onboard itself.
 
+## Epoch retention
+
+Applications MAY use the procedure in this section to coordinate retention and
+deletion of derivation-epoch state.
+
+Each emulator client tracks `retention_watermark[c]` for every current emulator
+client `c`. This is the newest derivation epoch for which `c` has committed not
+to start new work from an older epoch. For an initial member, the watermark is
+initialized to the initial emulation-group epoch. For a member that joins later,
+it is initialized to the output derivation epoch of the Commit by which it joins.
+The initial epoch-usage declaration is empty.
+
+An applied Commit with an epoch-usage declaration advances its author's
+watermark to the newest derivation epoch in the input state, or to the output
+epoch if the Commit creates a derivation epoch. A Commit without a declaration
+does not advance the watermark. Receiving a Commit that creates a derivation
+epoch does not advance the recipient's watermark. Existing work from an older
+epoch MUST appear in the declaration that advances the watermark.
+
+The retention floor is the oldest retention watermark among all current
+emulator clients. The baseline retention window contains every derivation epoch
+from that floor through the newest derivation epoch, inclusive.
+
+An offline client can prevent the retention floor from advancing. An application
+can bound retention by removing stale emulator clients according to its
+membership policy, but a timer alone does not prove that an old derivation epoch
+is safe to delete.
+
+The `epoch_usage` field lists epochs from which another current emulator client
+may still need to process the author's work or work whose retention obligation
+the author has assumed. This includes pending or unreconciled higher-level group
+operations, group creation and external-join material, outstanding KeyPackage
+uploads, application-specific derivations, and externally visible operations
+that could arrive later.
+
+The declaration MUST include the complete in-use set, including epochs in the
+baseline retention window. The author MUST keep an epoch in its declaration until
+a delivery confirmation, reconciliation result, or equivalent ordering guarantee
+establishes that no delayed operation can require another emulator client to
+process work from it. The complete set is necessary because applying the
+declaration-carrying Commit can also change the baseline.
+
+An epoch-usage declaration preserves the remaining state for an epoch but does
+not guarantee that every delayed operation from that epoch remains processable.
+Deleting a skipped generation according to application policy can make a
+delayed operation that requires it unprocessable.
+
+An emulator client MUST persist its local in-use state before the corresponding
+operation becomes externally visible. It MUST serialize creation of
+virtual-client work with construction of a Commit that advances its watermark,
+so that earlier work appears in the replacement declaration.
+
+Each emulator client computes an effective retention set as the union of:
+
+- The derivation epochs in the baseline retention window.
+- The latest epoch-usage declaration carried by an applied Commit from every
+  current emulator client.
+- Retention obligations preserved from removed emulator clients.
+- Local protocol and application references.
+
+Local protocol references include the newest derivation epoch, active
+virtual-client LeafNodes, past LeafNodes retained for delayed processing,
+outstanding KeyPackages, RetainedOperationSecrets, RetainedKeyPackageMaterial,
+and pending or staged operations. Applications MUST include in the effective
+retention set any epochs referenced by persisted work not visible to the MLS
+implementation.
+
+For every epoch in the effective retention set, an emulator client MUST retain
+the state listed in {{generating-virtual-client-secrets}}, including the current
+Virtual Client Operation Secret Tree. Individual skipped generations remain
+subject to application policy. State absent from the effective retention set
+SHOULD be deleted promptly.
+
+When applying a Commit, an implementation MUST atomically store any new
+derivation-epoch material and, when a declaration is present, update the
+author's watermark and replace its previous declaration. It MUST ensure that a
+crash cannot advance the watermark without installing that declaration. The
+implementation MUST serialize deletion of derivation-epoch state with creation
+of local references to the same epoch.
+
+Removing a client excludes it from the retention floor. Its latest declaration
+and every derivation epoch from its watermark through the newest derivation
+epoch in the removal Commit's input state MUST become a removed-client retention
+obligation until at least one of these conditions holds:
+
+- Every operation covered by the obligation has been processed or rejected.
+- The removal establishes a delivery cutoff under which delayed operations
+  from the removed client will be rejected.
+- A remaining client takes ownership of the corresponding epochs in its own
+  epoch-usage declaration until reconciliation completes.
+
+To transfer ownership in the removal Commit, its author MUST include the
+obligated epochs in its declaration. A later transfer takes effect only when
+established by an applied Commit. Until then, the removed-client obligation
+remains.
+
 ## Adding an emulator client
 
 A joining emulator client is added to the emulation group by a provisioning
@@ -1028,6 +1225,15 @@ Welcome carries the `virtual_clients` component ({{iana-considerations}}),
 whose component data is a NewEmulatorClientState struct that provides the
 state the joining emulator client needs to act as the virtual client going
 forward.
+
+The Commit adding the emulator client makes its output a derivation epoch. The
+new client's retention watermark is initialized to this epoch. The new
+client MUST NOT perform virtual-client operations until it has processed the
+Welcome and the associated state transfer. The provisioning client MUST
+transfer every older derivation epoch referenced by the virtual-client artifacts
+or application state being transferred. When using coordinated retention, it
+MUST also transfer every older epoch in its effective retention set and the
+metadata needed to preserve that set.
 
 The NewEmulatorClientState struct contains the complete secret state of the
 virtual client. Emulator clients MUST include it only in GroupInfo objects that
@@ -1180,7 +1386,24 @@ struct {
   opaque epoch_encryption_key<V>;
   opaque generation_id_secret<V>;
   opaque reuse_guard_secret<V>;
-} EmulationEpochState;
+  uint64 leaf_count;
+} VcDerivationEpochState;
+
+struct {
+  uint64 emulation_group_epoch;
+  VcDerivationEpochState state;
+} RetainedVcEpoch;
+
+struct {
+  uint32 leaf_index;
+  VcEpochReference retention_watermark;
+  VcEpochUsage epoch_usage;
+} VcClientRetentionState;
+
+struct {
+  VcClientRetentionState client_states<V>;
+  VcEpochUsage removed_client_usage;
+} VcRetentionMetadata;
 
 enum {
   reserved(0),
@@ -1212,10 +1435,11 @@ struct {
 
 struct {
   opaque signing_key_material<V>;
+  VcRetentionMetadata retention_metadata;
   KeyPackageDerivationInfo active_key_packages<V>;
   RetainedKeyPackageMaterial retained_key_package_material<V>;
   RetainedOperationSecret retained_operation_secrets<V>;
-  EmulationEpochState past_emulation_epochs<V>;
+  RetainedVcEpoch retained_vc_epochs<V>;
   HigherLevelGroupState higher_level_groups<V>;
 } NewEmulatorClientState;
 ~~~
@@ -1250,6 +1474,27 @@ struct {
   ratchet types are used for higher-level MLS Secret Trees. The `operation`
   ratchet type is used for virtual-client operation secrets and includes an
   `operation_type` field that identifies the per-leaf operation-type ratchet.
+- `VcDerivationEpochState` contains the per-epoch state listed in
+  {{generating-virtual-client-secrets}}.
+- `retention_metadata` carries the metadata needed to reconstruct the
+  coordinated effective retention set from {{epoch-retention}}. `client_states`
+  contains one entry for every existing emulator client, identified by its leaf
+  index in the Welcome's output epoch, together with that client's retention
+  watermark and latest epoch-usage declaration carried by an applied Commit.
+  `removed_client_usage` is the union of retention obligations from removed
+  clients. Because the union does not preserve client attribution, the joining
+  client MUST retain each listed epoch until the application establishes that
+  all removed-client obligations represented by that epoch have been discharged
+  or transferred. The joining client adds the Welcome's output epoch as the
+  newest derivation epoch and initializes its own retention watermark to that
+  epoch.
+  `client_states` MUST contain unique leaf indices and be sorted by `leaf_index`.
+  Every ID referenced by `client_states` or `removed_client_usage` MUST identify
+  either the Welcome's output epoch or an entry in `retained_vc_epochs`. The
+  joining client MUST reject the transferred state if these requirements are
+  not met.
+  Applications not using coordinated retention set `client_states` and
+  `removed_client_usage.in_use_epochs` to zero length.
 - `signing_key_material` is an application-defined blob that conveys whatever
   signing-key state the joining emulator client needs. For configurations
   where signing keys are derived from emulation-group secrets, it MAY be
@@ -1283,13 +1528,16 @@ struct {
   every still-live virtual-client artifact derived from an earlier
   emulation-group epoch, including outstanding KeyPackages and active LeafNodes
   in higher-level groups.
-- `past_emulation_epochs` carries, for every emulation-group epoch still
-  referenced by an active LeafNode, outstanding KeyPackage, or retained
-  operation secret or retained KeyPackage material and not equal to the current
-  epoch, the retained `operation_secret_tree` state, the
-  `epoch_encryption_key`, the `generation_id_secret`, and the
-  `reuse_guard_secret`. State for the current emulation-group epoch is not
-  included here because the joining emulator client derives it from the
+- `retained_vc_epochs` carries every derivation epoch other than the Welcome's
+  output epoch that is referenced by virtual-client artifacts or application
+  state being transferred. For applications using coordinated retention, it
+  also carries every older epoch in the effective retention set. This includes
+  epochs referenced by active LeafNodes, outstanding KeyPackages, retained
+  operation secrets, or retained KeyPackage material. For each epoch,
+  RetainedVcEpoch contains its emulation-group epoch number and
+  VcDerivationEpochState. Entries MUST have unique epoch numbers and `epoch_id`
+  values and be sorted by `emulation_group_epoch`. State for the Welcome's output
+  epoch is not included because the joining emulator client derives it from the
   emulation group's Welcome.
 - `higher_level_groups` contains one entry per active higher-level group.
   Each entry carries the `group_id` and a `state_type` identifying which
@@ -1355,9 +1603,9 @@ If those prerequisites are met, the new client needs to follow these steps:
    group epoch as described in {{generating-virtual-client-secrets}}.
 
    1. Replace all active KeyPackages with new KeyPackages, generated from the
-      new emulation group epoch.
+      new derivation epoch.
    2. Perform an external join to all of the groups that the virtual client is a
-      member of, using LeafNodes generated from the new emulation group epoch
+      member of, using LeafNodes generated from the new derivation epoch
       (see {{generating-virtual-client-secrets}}). Welcome messages which were
       unprocessed by the offline devices are discarded, and these groups are
       joined externally instead (potentially being queued for user approval
@@ -1377,8 +1625,11 @@ proposal that removes the target client MUST take the following steps in order:
    `KeyPackageUpload` messages previously sent to the emulation group (see
    {{creating-and-uploading-keypackages}}).
 2. Commit a Remove proposal for the emulation client to be removed in the
-   emulation group, advancing it to a new epoch from which new virtual client
-   secrets will be derived (see {{generating-virtual-client-secrets}}).
+   emulation group. The output is a derivation epoch even if the Commit does not
+   contain a `new_derivation_epoch` action
+   (see {{generating-virtual-client-secrets}}).
+
+The removal's retention obligations are specified in {{epoch-retention}}.
 
 Next, the application MUST provide new credentials and authentication key
 material for the virtual client that can be used to replace existing credentials
@@ -1388,15 +1639,15 @@ next steps to derive group-specific key material. The application SHOULD take
 steps to revoke any valid long lived credentials associated with the virtual
 client that the removed emulator client had access to.
 
-Using the new emulation-group epoch, any combination of remaining emulator
-clients MUST do the following steps (in any order):
+Using the new derivation epoch, any combination of remaining
+emulator clients MUST do the following steps (in any order):
 
 - Effect an update of the key material in every higher-level group in which the
   virtual client is a member, using the new credential and authentication key
   material provided by the application. This MAY be done by creating a commit
   with an update path or sending an update proposal.
-- Upload a fresh set of KeyPackages derived from the new emulation-group epoch
-  to replace those deleted in step 1.
+- Upload a fresh set of KeyPackages derived from the new derivation epoch to
+  replace those deleted in step 1.
 
 A corollary of this removal procedure is that in most scenarios another emulator
 client is required to be online and perform the necessary updates. The DS must
@@ -1445,6 +1696,17 @@ RetainedOperationSecrets or RetainedKeyPackageMaterial at all (see
 {{generating-virtual-client-secrets}}) and can instead retain only the derived
 key material still in use, reducing this window.
 
+The coordinated retention procedure in {{epoch-retention}} also extends this
+window. In particular, all clients retain every derivation epoch in the baseline
+retention window. Skipped operation-ratchet generations remain subject to the
+application's ordinary time and count limits even when their derivation epoch is
+retained. An offline client can therefore delay deletion of per-epoch state for
+every other emulator client. Applications SHOULD choose a derivation-epoch
+cadence that bounds retained state while meeting their post-compromise security
+requirements, and SHOULD remove clients that remain inactive beyond the
+application's membership policy. Removal does not permit the application to
+discard unresolved retention obligations from that client.
+
 Some of this state is reachable through the virtual client's LeafNodes. The
 DerivationInfo of an external Commit LeafNode embeds the `init_secret` of the
 epoch created by that Commit, encrypted under the emulation-group epoch's
@@ -1465,6 +1727,13 @@ update once in the emulation group and "re-use" the new randomness for updates
 in multiple higher-level groups. At that point, clients only really recover when
 they update the emulation group, i.e. re-using somewhat old randomness of the
 emulation group won't provide real PCS in higher-level groups.
+
+An emulation-group update refreshes virtual-client secret material only if its
+output is a derivation epoch. An application that
+relies on an emulation-group Commit to provide post-compromise security for
+subsequent virtual-client operations MUST include the
+`new_derivation_epoch` action in that Commit. The outputs of
+membership-changing Commits are derivation epochs automatically.
 
 ## Removing emulator clients
 
@@ -1526,7 +1795,12 @@ The following residual metadata remains observable:
   LeafNodes and KeyPackages that the virtual client produces from the same
   emulation-group epoch. Parties with access to the ratchet trees of multiple
   higher-level groups can use it to link the virtual client's leaves across
-  those groups, and can observe how often the emulation group commits.
+  those groups, and can observe how often the application changes derivation
+  epochs.
+- VirtualClientCommitData is carried in authenticated data and is visible to
+  the DS. Derivation-epoch actions reveal which Commits refresh virtual-client
+  secrets. Repeated `epoch_id` values in epoch-usage declarations allow the DS
+  to observe how long the application retains particular derivation epochs.
 - Generation IDs ({{coordinating-ratchet-generations-with-the-ds}}) are only
   attached by virtual-client senders and therefore identify virtual-client
   traffic to the DS, in addition to revealing how many distinct ratchet
@@ -1561,8 +1835,9 @@ object in which the component appears:
   DerivationInfo struct communicating how to derive the LeafNode's key
   material ({{creating-leafnodes-and-updatepaths}}).
 - In SafeAAD objects of Commits in the emulation group, the component data is
-  a VirtualClientAction struct communicating which virtual client action is
-  taken in conjunction with the Commit ({{virtual-client-actions}}).
+  a VirtualClientCommitData struct carrying an optional epoch-usage declaration
+  and zero or more virtual-client actions associated with the Commit
+  ({{virtual-client-actions}}).
 - The component ID is additionally used with the Safe Exporter API to export
   the per-epoch `emulator_epoch_secret` from the emulation group
   ({{generating-virtual-client-secrets}}).
