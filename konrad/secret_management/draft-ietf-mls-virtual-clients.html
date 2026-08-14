@@ -1052,7 +1052,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Alwen, et al.</td>
-<td class="center">Expires 6 February 2027</td>
+<td class="center">Expires 15 February 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1065,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-ietf-mls-virtual-clients-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-08-05" class="published">5 August 2026</time>
+<time datetime="2026-08-14" class="published">14 August 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-02-06">6 February 2027</time></dd>
+<dd class="expires"><time datetime="2027-02-15">15 February 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1122,7 +1122,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 6 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 15 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -2104,8 +2104,9 @@ struct {
 </pre><a href="#section-5.5-4" class="pilcrow">¶</a>
 </div>
 <p id="section-5.5-5">When present, the <code>epoch_usage</code> field is the author's epoch-usage declaration,
-which is a complete snapshot of the epochs in use as described in
-<a href="#epoch-retention" class="auto internal xref">Section 6.1</a>. In every VcEpochUsage value, entries in
+which is a complete snapshot of the epochs that require retention in addition
+to the baseline retention window, as described in <a href="#epoch-retention" class="auto internal xref">Section 6.1</a>. In every
+VcEpochUsage value, entries in
 <code>in_use_epochs</code> <span class="bcp14">MUST</span> be unique and sorted lexicographically by the TLS
 serialization of <code>epoch_id</code>. This sorting is only a canonical encoding rule and
 does not define derivation-epoch order. An empty vector explicitly replaces
@@ -2492,88 +2493,94 @@ watermark to the newest derivation epoch in the input state, or to the output
 epoch if the Commit creates a derivation epoch. A Commit without a declaration
 does not advance the watermark. Receiving a Commit that creates a derivation
 epoch does not advance the recipient's watermark. Existing work from an older
-epoch <span class="bcp14">MUST</span> appear in the declaration that advances the watermark.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+epoch that will not be covered by the resulting baseline retention window <span class="bcp14">MUST</span>
+appear in the declaration that advances the watermark.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 <p id="section-6.1-4">The retention floor is the oldest retention watermark among all current
 emulator clients. The baseline retention window contains every derivation epoch
 from that floor through the newest derivation epoch, inclusive.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
-<p id="section-6.1-5">An offline client can prevent the retention floor from advancing. An application
+<p id="section-6.1-5">The baseline retention window is implicit in every epoch-usage declaration. An
+epoch in the baseline retention window need not be listed in a declaration. A
+declaration <span class="bcp14">MUST</span> list every additional in-use epoch that is not covered by the
+baseline retention window.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
+<p id="section-6.1-6">An offline client can prevent the retention floor from advancing. An application
 can bound retention by removing stale emulator clients according to its
 membership policy, but a timer alone does not prove that an old derivation epoch
-is safe to delete.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
-<p id="section-6.1-6">The <code>epoch_usage</code> field lists epochs from which another current emulator client
+is safe to delete.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
+<p id="section-6.1-7">The <code>epoch_usage</code> field lists epochs from which another current emulator client
 may still need to process the author's work or work whose retention obligation
-the author has assumed. This includes pending or unreconciled higher-level group
-operations, group creation and external-join material, outstanding KeyPackage
-uploads, application-specific derivations, and externally visible operations
-that could arrive later.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
-<p id="section-6.1-7">The declaration <span class="bcp14">MUST</span> include the complete in-use set, including epochs in the
-baseline retention window. The author <span class="bcp14">MUST</span> keep an epoch in its declaration until
-a delivery confirmation, reconciliation result, or equivalent ordering guarantee
-establishes that no delayed operation can require another emulator client to
-process work from it. The complete set is necessary because applying the
-declaration-carrying Commit can also change the baseline.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
-<p id="section-6.1-8">An epoch-usage declaration preserves the remaining state for an epoch but does
+the author has assumed, in addition to the baseline retention window. This
+includes pending or unreconciled higher-level group operations, group creation
+and external-join material, outstanding KeyPackage uploads, application-specific
+derivations, and externally visible operations that could arrive later.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
+<p id="section-6.1-8">The author <span class="bcp14">MUST</span> ensure that an in-use epoch remains either in the baseline
+retention window or in its declaration until a delivery confirmation,
+reconciliation result, or equivalent ordering guarantee establishes that no
+delayed operation can require another emulator client to process work from it.
+The author <span class="bcp14">MUST</span> include an epoch in the declaration if applying the
+declaration-carrying Commit can cause that epoch to leave the baseline retention
+window while it remains in use.<a href="#section-6.1-8" class="pilcrow">¶</a></p>
+<p id="section-6.1-9">An epoch-usage declaration preserves the remaining state for an epoch but does
 not guarantee that every delayed operation from that epoch remains processable.
 Deleting a skipped generation according to application policy can make a
-delayed operation that requires it unprocessable.<a href="#section-6.1-8" class="pilcrow">¶</a></p>
-<p id="section-6.1-9">An emulator client <span class="bcp14">MUST</span> persist its local in-use state before the corresponding
+delayed operation that requires it unprocessable.<a href="#section-6.1-9" class="pilcrow">¶</a></p>
+<p id="section-6.1-10">An emulator client <span class="bcp14">MUST</span> persist its local in-use state before the corresponding
 operation becomes externally visible. It <span class="bcp14">MUST</span> serialize creation of
 virtual-client work with construction of a Commit that advances its watermark,
-so that earlier work appears in the replacement declaration.<a href="#section-6.1-9" class="pilcrow">¶</a></p>
-<p id="section-6.1-10">Each emulator client computes an effective retention set as the union of:<a href="#section-6.1-10" class="pilcrow">¶</a></p>
+so that earlier work appears in the replacement declaration.<a href="#section-6.1-10" class="pilcrow">¶</a></p>
+<p id="section-6.1-11">Each emulator client computes an effective retention set as the union of:<a href="#section-6.1-11" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.1-11.1">
-            <p id="section-6.1-11.1.1">The derivation epochs in the baseline retention window.<a href="#section-6.1-11.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-6.1-12.1">
+            <p id="section-6.1-12.1.1">The derivation epochs in the baseline retention window.<a href="#section-6.1-12.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.1-11.2">
-            <p id="section-6.1-11.2.1">The latest epoch-usage declaration carried by an applied Commit from every
-current emulator client.<a href="#section-6.1-11.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.1-12.2">
+            <p id="section-6.1-12.2.1">The latest epoch-usage declaration carried by an applied Commit from every
+current emulator client.<a href="#section-6.1-12.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.1-11.3">
-            <p id="section-6.1-11.3.1">Retention obligations preserved from removed emulator clients.<a href="#section-6.1-11.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.1-12.3">
+            <p id="section-6.1-12.3.1">Retention obligations preserved from removed emulator clients.<a href="#section-6.1-12.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.1-11.4">
-            <p id="section-6.1-11.4.1">Local protocol and application references.<a href="#section-6.1-11.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.1-12.4">
+            <p id="section-6.1-12.4.1">Local protocol and application references.<a href="#section-6.1-12.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-6.1-12">Local protocol references include the newest derivation epoch, active
+<p id="section-6.1-13">Local protocol references include the newest derivation epoch, active
 virtual-client LeafNodes, past LeafNodes retained for delayed processing,
 outstanding KeyPackages, RetainedOperationSecrets, RetainedKeyPackageMaterial,
 and pending or staged operations. Applications <span class="bcp14">MUST</span> include in the effective
 retention set any epochs referenced by persisted work not visible to the MLS
-implementation.<a href="#section-6.1-12" class="pilcrow">¶</a></p>
-<p id="section-6.1-13">For every epoch in the effective retention set, an emulator client <span class="bcp14">MUST</span> retain
+implementation.<a href="#section-6.1-13" class="pilcrow">¶</a></p>
+<p id="section-6.1-14">For every epoch in the effective retention set, an emulator client <span class="bcp14">MUST</span> retain
 the state listed in <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>, including the current
 Virtual Client Operation Secret Tree. Individual skipped generations remain
 subject to application policy. State absent from the effective retention set
-<span class="bcp14">SHOULD</span> be deleted promptly.<a href="#section-6.1-13" class="pilcrow">¶</a></p>
-<p id="section-6.1-14">When applying a Commit, an implementation <span class="bcp14">MUST</span> atomically store any new
+<span class="bcp14">SHOULD</span> be deleted promptly.<a href="#section-6.1-14" class="pilcrow">¶</a></p>
+<p id="section-6.1-15">When applying a Commit, an implementation <span class="bcp14">MUST</span> atomically store any new
 derivation-epoch material and, when a declaration is present, update the
 author's watermark and replace its previous declaration. It <span class="bcp14">MUST</span> ensure that a
 crash cannot advance the watermark without installing that declaration. The
 implementation <span class="bcp14">MUST</span> serialize deletion of derivation-epoch state with creation
-of local references to the same epoch.<a href="#section-6.1-14" class="pilcrow">¶</a></p>
-<p id="section-6.1-15">Removing a client excludes it from the retention floor. Its latest declaration
+of local references to the same epoch.<a href="#section-6.1-15" class="pilcrow">¶</a></p>
+<p id="section-6.1-16">Removing a client excludes it from the retention floor. Its latest declaration
 and every derivation epoch from its watermark through the newest derivation
 epoch in the removal Commit's input state <span class="bcp14">MUST</span> become a removed-client retention
-obligation until at least one of these conditions holds:<a href="#section-6.1-15" class="pilcrow">¶</a></p>
+obligation until at least one of these conditions holds:<a href="#section-6.1-16" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6.1-16.1">
-            <p id="section-6.1-16.1.1">Every operation covered by the obligation has been processed or rejected.<a href="#section-6.1-16.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-6.1-17.1">
+            <p id="section-6.1-17.1.1">Every operation covered by the obligation has been processed or rejected.<a href="#section-6.1-17.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.1-16.2">
-            <p id="section-6.1-16.2.1">The removal establishes a delivery cutoff under which delayed operations
-from the removed client will be rejected.<a href="#section-6.1-16.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.1-17.2">
+            <p id="section-6.1-17.2.1">The removal establishes a delivery cutoff under which delayed operations
+from the removed client will be rejected.<a href="#section-6.1-17.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-6.1-16.3">
-            <p id="section-6.1-16.3.1">A remaining client takes ownership of the corresponding epochs in its own
-epoch-usage declaration until reconciliation completes.<a href="#section-6.1-16.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-6.1-17.3">
+            <p id="section-6.1-17.3.1">A remaining client takes ownership of the corresponding epochs in its own
+epoch-usage declaration until reconciliation completes.<a href="#section-6.1-17.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-6.1-17">To transfer ownership in the removal Commit, its author <span class="bcp14">MUST</span> include the
+<p id="section-6.1-18">To transfer ownership in the removal Commit, its author <span class="bcp14">MUST</span> include the
 obligated epochs in its declaration. A later transfer takes effect only when
 established by an applied Commit. Until then, the removed-client obligation
-remains.<a href="#section-6.1-17" class="pilcrow">¶</a></p>
+remains.<a href="#section-6.1-18" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="adding-an-emulator-client">

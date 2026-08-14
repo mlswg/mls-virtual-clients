@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 6 February 2027                                     Phoenix R&D
+Expires: 15 February 2027                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                           5 August 2026
+                                                          14 August 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 6 February 2027.
+   This Internet-Draft will expire on 15 February 2027.
 
 Copyright Notice
 
@@ -885,8 +885,9 @@ Table of Contents
    } VirtualClientCommitData;
 
    When present, the epoch_usage field is the author's epoch-usage
-   declaration, which is a complete snapshot of the epochs in use as
-   described in Section 6.1.  In every VcEpochUsage value, entries in
+   declaration, which is a complete snapshot of the epochs that require
+   retention in addition to the baseline retention window, as described
+   in Section 6.1.  In every VcEpochUsage value, entries in
    in_use_epochs MUST be unique and sorted lexicographically by the TLS
    serialization of epoch_id.  This sorting is only a canonical encoding
    rule and does not define derivation-epoch order.  An empty vector
@@ -1246,13 +1247,19 @@ Table of Contents
    or to the output epoch if the Commit creates a derivation epoch.  A
    Commit without a declaration does not advance the watermark.
    Receiving a Commit that creates a derivation epoch does not advance
-   the recipient's watermark.  Existing work from an older epoch MUST
+   the recipient's watermark.  Existing work from an older epoch that
+   will not be covered by the resulting baseline retention window MUST
    appear in the declaration that advances the watermark.
 
    The retention floor is the oldest retention watermark among all
    current emulator clients.  The baseline retention window contains
    every derivation epoch from that floor through the newest derivation
    epoch, inclusive.
+
+   The baseline retention window is implicit in every epoch-usage
+   declaration.  An epoch in the baseline retention window need not be
+   listed in a declaration.  A declaration MUST list every additional
+   in-use epoch that is not covered by the baseline retention window.
 
    An offline client can prevent the retention floor from advancing.  An
    application can bound retention by removing stale emulator clients
@@ -1261,19 +1268,21 @@ Table of Contents
 
    The epoch_usage field lists epochs from which another current
    emulator client may still need to process the author's work or work
-   whose retention obligation the author has assumed.  This includes
-   pending or unreconciled higher-level group operations, group creation
-   and external-join material, outstanding KeyPackage uploads,
-   application-specific derivations, and externally visible operations
-   that could arrive later.
+   whose retention obligation the author has assumed, in addition to the
+   baseline retention window.  This includes pending or unreconciled
+   higher-level group operations, group creation and external-join
+   material, outstanding KeyPackage uploads, application-specific
+   derivations, and externally visible operations that could arrive
+   later.
 
-   The declaration MUST include the complete in-use set, including
-   epochs in the baseline retention window.  The author MUST keep an
-   epoch in its declaration until a delivery confirmation,
-   reconciliation result, or equivalent ordering guarantee establishes
-   that no delayed operation can require another emulator client to
-   process work from it.  The complete set is necessary because applying
-   the declaration-carrying Commit can also change the baseline.
+   The author MUST ensure that an in-use epoch remains either in the
+   baseline retention window or in its declaration until a delivery
+   confirmation, reconciliation result, or equivalent ordering guarantee
+   establishes that no delayed operation can require another emulator
+   client to process work from it.  The author MUST include an epoch in
+   the declaration if applying the declaration-carrying Commit can cause
+   that epoch to leave the baseline retention window while it remains in
+   use.
 
    An epoch-usage declaration preserves the remaining state for an epoch
    but does not guarantee that every delayed operation from that epoch
