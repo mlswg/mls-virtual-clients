@@ -805,8 +805,9 @@ struct {
 ~~~
 
 When present, the `epoch_usage` field is the author's epoch-usage declaration,
-which is a complete snapshot of the epochs in use as described in
-{{epoch-retention}}. In every VcEpochUsage value, entries in
+which is a complete snapshot of the epochs that require retention in addition
+to the baseline retention window, as described in {{epoch-retention}}. In every
+VcEpochUsage value, entries in
 `in_use_epochs` MUST be unique and sorted lexicographically by the TLS
 serialization of `epoch_id`. This sorting is only a canonical encoding rule and
 does not define derivation-epoch order. An empty vector explicitly replaces
@@ -1138,11 +1139,17 @@ watermark to the newest derivation epoch in the input state, or to the output
 epoch if the Commit creates a derivation epoch. A Commit without a declaration
 does not advance the watermark. Receiving a Commit that creates a derivation
 epoch does not advance the recipient's watermark. Existing work from an older
-epoch MUST appear in the declaration that advances the watermark.
+epoch that will not be covered by the resulting baseline retention window MUST
+appear in the declaration that advances the watermark.
 
 The retention floor is the oldest retention watermark among all current
 emulator clients. The baseline retention window contains every derivation epoch
 from that floor through the newest derivation epoch, inclusive.
+
+The baseline retention window is implicit in every epoch-usage declaration. An
+epoch in the baseline retention window need not be listed in a declaration. A
+declaration MUST list every additional in-use epoch that is not covered by the
+baseline retention window.
 
 An offline client can prevent the retention floor from advancing. An application
 can bound retention by removing stale emulator clients according to its
@@ -1151,17 +1158,18 @@ is safe to delete.
 
 The `epoch_usage` field lists epochs from which another current emulator client
 may still need to process the author's work or work whose retention obligation
-the author has assumed. This includes pending or unreconciled higher-level group
-operations, group creation and external-join material, outstanding KeyPackage
-uploads, application-specific derivations, and externally visible operations
-that could arrive later.
+the author has assumed, in addition to the baseline retention window. This
+includes pending or unreconciled higher-level group operations, group creation
+and external-join material, outstanding KeyPackage uploads, application-specific
+derivations, and externally visible operations that could arrive later.
 
-The declaration MUST include the complete in-use set, including epochs in the
-baseline retention window. The author MUST keep an epoch in its declaration until
-a delivery confirmation, reconciliation result, or equivalent ordering guarantee
-establishes that no delayed operation can require another emulator client to
-process work from it. The complete set is necessary because applying the
-declaration-carrying Commit can also change the baseline.
+The author MUST ensure that an in-use epoch remains either in the baseline
+retention window or in its declaration until a delivery confirmation,
+reconciliation result, or equivalent ordering guarantee establishes that no
+delayed operation can require another emulator client to process work from it.
+The author MUST include an epoch in the declaration if applying the
+declaration-carrying Commit can cause that epoch to leave the baseline retention
+window while it remains in use.
 
 An epoch-usage declaration preserves the remaining state for an epoch but does
 not guarantee that every delayed operation from that epoch remains processable.
