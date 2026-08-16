@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-09T01:22:10.746589+00:00",
+  "timestamp": "2026-08-16T01:04:34.366794+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -1151,13 +1151,13 @@
       "labels": [],
       "body": "Stacked on top of #29 ",
       "createdAt": "2026-08-05T14:58:04Z",
-      "updatedAt": "2026-08-06T06:22:03Z",
+      "updatedAt": "2026-08-14T12:56:46Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "konrad/ciphersuite_specifics",
       "baseRefOid": "46ba0b46be4b4912de133f83c350dac07de2e597",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/secret_management",
-      "headRefOid": "9eaf68f0406e66c90bc3af27d63b741c4515f9cd",
+      "headRefOid": "8176296e7153735941ede5fe415cfa45b2a3013e",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
