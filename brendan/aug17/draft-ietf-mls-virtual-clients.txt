@@ -200,7 +200,7 @@ Table of Contents
    leaf of the virtual client (or indeed any node in the virtual
    client's direct path) to be blanked, except if it is the last
    remaining emulator client.  As a result, fluctuations in the number
-   of emulator clients does not necessarily lead to blanks the higher-
+   of emulator clients do not necessarily lead to blanks the higher-
    level groups, resulting in fewer overall blanks and better
    performance for all group members.
 
