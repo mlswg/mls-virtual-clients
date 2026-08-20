@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-16T01:04:34.366794+00:00",
+  "timestamp": "2026-08-20T01:01:05.783080+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -113,6 +113,30 @@
           "body": "This was solved by the switch to a SecretTree-style PPRF with a tree size corresponding to the RatchetTree of the emulation group.",
           "createdAt": "2026-07-06T06:16:02Z",
           "updatedAt": "2026-07-06T06:16:02Z"
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "id": "I_kwDOKsv6Xc8AAAABNJfYWw",
+      "title": "What are generation IDs?",
+      "url": "https://github.com/mlswg/mls-virtual-clients/issues/33",
+      "state": "OPEN",
+      "author": "Bren2010",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "I'm confused about the purpose of this feature. It requires passing the group ID, epoch, generation, and ratchet type into a PRF with a secret key. But everything going into the PRF (except the secret key) is all public information. So what purpose does the PRF serve?\n\n/cc @kkohbrok ",
+      "createdAt": "2026-08-18T02:20:19Z",
+      "updatedAt": "2026-08-19T07:15:14Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "body": "TL;DR: It's to allow the DS to avoid storing the actual generation because that leaks activity metadata in the state-snapshot adversary model.\n\nThe DS has to persist some sort of information to detect duplicate use of individual ratchet generations of any virtual client. The emulator client sending a private message through a virtual client could just send the actual ratchet generation, but that would leak the number of messages sent by the virtual client in that particular epoch. Using pseudorandom generation IDs prevents that.\n\nOf course the DS can always observe and count the number of messages. What this is trying to prevent is leakage in the threat model where an adversary only has access to state snapshots, but doesn't otherwise have visibility into network traffic.",
+          "createdAt": "2026-08-19T07:15:14Z",
+          "updatedAt": "2026-08-19T07:15:14Z"
         }
       ]
     }
@@ -1164,6 +1188,53 @@
       "mergeCommit": null,
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 32,
+      "id": "PR_kwDOKsv6Xc8AAAABAFl8bQ",
+      "title": "Editorial",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/32",
+      "state": "OPEN",
+      "author": "Bren2010",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-08-18T02:17:54Z",
+      "updatedAt": "2026-08-19T07:04:40Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "7100af3b7a8f942b5f571159ad2ad309545828ce",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "brendan/aug17",
+      "headRefOid": "585f0690449193e857ff01bcd557ebafd2acc616",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABKDGYPg",
+          "commit": {
+            "abbreviatedOid": "585f069"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks! Just one question.",
+          "createdAt": "2026-08-19T07:04:13Z",
+          "updatedAt": "2026-08-19T07:04:40Z",
+          "comments": [
+            {
+              "originalPosition": 82,
+              "body": "Why is \"by\" emphasised here?",
+              "createdAt": "2026-08-19T07:04:13Z",
+              "updatedAt": "2026-08-19T07:04:40Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
