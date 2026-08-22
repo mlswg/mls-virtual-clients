@@ -21,14 +21,14 @@ application, virtual clients can help hide metadata and improve performance.
 <meta content="draft-ietf-mls-virtual-clients-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.0
-    Python 3.14.5
+    Python 3.14.7
     ConfigArgParse 1.7.5
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.10.0
+    platformdirs 4.11.3
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
@@ -68,7 +68,6 @@ application, virtual clients can help hide metadata and improve performance.
   src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: italic;
@@ -117,7 +116,6 @@ application, virtual clients can help hide metadata and improve performance.
   src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: normal;
@@ -182,7 +180,6 @@ application, virtual clients can help hide metadata and improve performance.
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
 }
 
 @font-face {
@@ -1051,11 +1048,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">MVC</td>
-<td class="right">July 2026</td>
+<td class="right">August 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Alwen, et al.</td>
-<td class="center">Expires 7 January 2027</td>
+<td class="center">Expires 23 February 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1068,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-ietf-mls-virtual-clients-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-07-06" class="published">6 July 2026</time>
+<time datetime="2026-08-22" class="published">22 August 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-01-07">7 January 2027</time></dd>
+<dd class="expires"><time datetime="2027-02-23">23 February 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1125,7 +1122,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 7 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 23 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1377,13 +1374,13 @@ comes to emulation group management (see <a href="#emulation-group-management" c
         </h3>
 <p id="section-4.1-1">If a group of emulator clients emulate a virtual client in more than one group,
 the overhead caused by the emulation process can be outweighed by two
-performance benefits.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.1-2">On the one hand, the use of virtual clients makes the higher-level groups (in
+performance benefits:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">First, the use of virtual clients makes the higher-level groups (in
 which the virtual client is a member) smaller. Instead of one leaf for each
-emulator client, it only has a single leaf for the virtual client. As the
+emulator client, there would be only a single leaf for the virtual client. As the
 complexity of most MLS operations depends on the number of group members, this
 increases performance for all members of that group.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
-<p id="section-4.1-3">At the same time, the virtual client emulation process (see
+<p id="section-4.1-3">Second, the virtual client emulation process (see
 <a href="#client-emulation" class="auto internal xref">Section 5</a>) allows emulator clients to carry the benefit of a single
 operation in the emulation group to all higher-level groups in which the
 virtual client is a member.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
@@ -1409,8 +1406,8 @@ the application requires high update frequencies.<a href="#section-4.1.1-1" clas
 clients, the removal of an emulator client will not cause the leaf of the
 virtual client (or indeed any node in the virtual client's direct path) to be
 blanked, except if it is the last remaining emulator client. As a result,
-fluctuation in emulator clients does not necessarily lead to blanks in the group
-of the corresponding virtual clients, resulting in fewer overall blanks and
+fluctuations in the number of emulator clients do not necessarily lead to
+blanks the higher-level groups, resulting in fewer overall blanks and
 better performance for all group members.<a href="#section-4.1.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1432,28 +1429,25 @@ place.<a href="#section-4.1.3-1" class="pilcrow">¶</a></p>
         <h3 id="name-metadata-hiding">
 <a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-metadata-hiding" class="section-name selfRef">Metadata hiding</a>
         </h3>
-<p id="section-4.2-1">Virtual clients can be used to hide the emulator clients from other members of
+<p id="section-4.2-1">Virtual clients can hide which emulator clients exist from the other members of
 higher-level groups. For example, removing group members of the emulation group
 will only be visible in the higher-level group as a regular group update.
 Similarly, when an emulator client wants to send a message in a higher-level
 group, recipients will see the virtual client as the sender and won't be able to
-discern which emulator client sent the message, or indeed the fact that the
-sender is a virtual client at all.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+discern which emulator client sent the message.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 <p id="section-4.2-2">Hiding emulator clients behind their virtual client(s) can, for example, hide
 the number of devices a human user has, or which device the user is sending
 messages from.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
-<p id="section-4.2-3">As hiding of emulator clients by design obfuscates the membership in
-higher-level groups, it also means that other higher-level group members can't
-identify the actual senders and recipients of messages. From the point of view
-of other group members, the "end" of the end-to-end encryption and
+<p id="section-4.2-3">From the point of view
+of other higher-level group members, the "end" of the end-to-end encryption and
 authentication provided by MLS ends with the virtual client. The relevance of
 this fact largely depends on the security goals of the application and the
 design of the authentication service.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
-<p id="section-4.2-4">If the virtual client is used to hide the emulator clients, the delivery service and
-other higher-level group members also lose the ability to enforce policies to
-evict stale clients. For example, an emulator client could become stale (i.e.
-inactive), while another keeps sending updates. From the point of view of the
-higher-level group, the virtual client would remain active.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">One way this could be an issue is if the use of virtual clients prevents the
+delivery service or other higher-level group members from detecting or evicting
+stale clients. If one emulator client becomes stale (i.e. inactive) while
+another keeps sending updates, the virtual client would appear active overall,
+and the stale client may not be evicted in a timely manner.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1474,10 +1468,15 @@ higher-level group.<a href="#section-5-2" class="pilcrow">¶</a></p>
         <h3 id="name-delivery-service">
 <a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-delivery-service" class="section-name selfRef">Delivery Service</a>
         </h3>
-<p id="section-5.1-1">Client emulation requires that any message sent by an emulator client on behalf
-of a virtual client be delivered not just to the rest of the higher-level group
-to which the message is sent, but also to all other clients in the emulation
-group.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-1">Any PrivateMessage received by a virtual client (because that message was sent
+in a group where the virtual client is a member) can be decrypted by all of the
+emulator clients equally. Similarly, any PrivateMessage sent by a virtual
+client to a group can be decrypted by all emulator clients except the one that
+sent it.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">For this to work, if a higher-level group contains a virtual client, the
+Delivery Service has to deliver messages sent by other group members to all
+emulator clients, and messages sent by one emulator client to all other emulator
+clients.<a href="#section-5.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="generating-virtual-client-secrets">
@@ -1488,7 +1487,7 @@ group.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
 <p id="section-5.2-1">Generally, secrets for virtual client operations are derived from the emulation
 group. To that end, emulator clients derive an <code>emulator_epoch_secret</code> with
 every new epoch of that group using the Safe Exporter API defined in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09#section-4.4" class="relref">Section 4.4</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>, where
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10#section-4.4" class="relref">Section 4.4</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>, where
 <code>virtual_clients_component_id</code> is the component ID registered for the
 <code>virtual_clients</code> component in <a href="#iana-considerations" class="auto internal xref">Section 9</a>.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-5.2-2">
@@ -1567,7 +1566,7 @@ material associated with that epoch is actively used anymore and no generation
 IDs or reuse guards need to be computed for that epoch. For each retained
 epoch in which an emulator client was a member, it <span class="bcp14">MUST</span> also retain its own
 leaf index at that epoch. The <code>operation_secret_tree</code>, <code>epoch_id</code>, and
-<code>epoch_encryption_key</code> are used for deriving and processing virtual-client key
+<code>epoch_encryption_key</code> are used for deriving and processing virtual client key
 material, including DerivationInfos and state transferred to new clients
 (<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>); the <code>generation_id_secret</code> is used for
 computing generation IDs (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>);
@@ -1590,11 +1589,11 @@ when creating a LeafNode for an Update proposal, a Commit with an update path,
 or an external commit. Applications <span class="bcp14">MAY</span> use the operation type <code>application</code>
 to derive application-specific key material.<a href="#section-5.2-13" class="pilcrow">¶</a></p>
 <p id="section-5.2-14">Deriving an <code>operation_secret</code> consumes the corresponding operation-ratchet
-generation, even if the virtual-client operation does not result in a
+generation, even if the virtual client operation does not result in a
 higher-level MLS message that is accepted into the higher-level group's
 transcript. Once a generation has been consumed, an emulator client <span class="bcp14">MUST NOT</span> use
-the same generation of the same operation-type ratchet for another virtual-client
-operation. A retry of a failed operation is another virtual-client operation:
+the same generation of the same operation-type ratchet for another virtual client
+operation. A retry of a failed operation is another virtual client operation:
 if, for example, a group creation or an external commit is rejected and
 attempted again, the retry <span class="bcp14">MUST</span> consume a fresh generation. If the operation
 fails, the emulator client <span class="bcp14">MUST</span> delete any retained secret material derived
@@ -1811,7 +1810,7 @@ derivation_info_nonce = ExpandWithLabel(epoch_encryption_key, "nonce",
                                         encryption_key, AEAD.Nn)
 </pre><a href="#section-5.3-7" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3-8">Since every virtual-client operation produces a LeafNode with a fresh
+<p id="section-5.3-8">Since every virtual client operation produces a LeafNode with a fresh
 <code>encryption_key</code>, each distinct DerivationInfoTBE is encrypted under a
 distinct key-nonce pair. Re-encrypting the same DerivationInfoTBE for the same
 LeafNode yields an identical ciphertext, which is benign. This only holds
@@ -1936,7 +1935,7 @@ initial group creation material.<a href="#section-5.4-7" class="pilcrow">¶</a><
 <p id="section-5.5-1">Emulator clients sometimes need to communicate directly to operate the virtual
 client. The acting emulator client can attach such information to a Commit to
 the emulation group using the SafeAAD mechanism described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09#section-4.9" class="relref">Section 4.9</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>. The SafeAAD component data of the
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10#section-4.9" class="relref">Section 4.9</a> of [<a href="#I-D.ietf-mls-extensions" class="cite xref">I-D.ietf-mls-extensions</a>]</span>. The SafeAAD component data of the
 <code>virtual_clients</code> component is a VirtualClientAction struct.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
 <p id="section-5.5-2">Sending an action as part of a Commit serves two purposes: First, the
 agreement on message ordering facilitated by the DS prevents concurrent
@@ -2995,7 +2994,7 @@ the per-epoch <code>emulator_epoch_secret</code> from the emulation group
 <dd class="break"></dd>
 <dt id="I-D.ietf-mls-extensions">[I-D.ietf-mls-extensions]</dt>
       <dd>
-<span class="refAuthor">Robert, R.</span>, <span class="refTitle">"The Messaging Layer Security (MLS) Extensions"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-mls-extensions-09</span>, <time datetime="2026-03-02" class="refDate">2 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09">https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-09</a>&gt;</span>. </dd>
+<span class="refAuthor">Robert, R.</span>, <span class="refTitle">"The Messaging Layer Security (MLS) Extensions"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-mls-extensions-10</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10">https://datatracker.ietf.org/doc/html/draft-ietf-mls-extensions-10</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="NIST">[NIST]</dt>
       <dd>
