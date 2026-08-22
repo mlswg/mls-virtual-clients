@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 19 February 2027                                    Phoenix R&D
+Expires: 23 February 2027                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                          18 August 2026
+                                                          22 August 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 19 February 2027.
+   This Internet-Draft will expire on 23 February 2027.
 
 Copyright Notice
 
@@ -253,7 +253,7 @@ Table of Contents
    Any PrivateMessage received by a virtual client (because that message
    was sent in a group where the virtual client is a member) can be
    decrypted by all of the emulator clients equally.  Similarly, any
-   PrivateMessage sent _by_ a virtual client to a group can be decrypted
+   PrivateMessage sent by a virtual client to a group can be decrypted
    by all emulator clients except the one that sent it.
 
    For this to work, if a higher-level group contains a virtual client,
