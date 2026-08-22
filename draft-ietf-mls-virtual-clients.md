@@ -184,7 +184,7 @@ higher-level group.
 
 Any PrivateMessage received by a virtual client (because that message was sent
 in a group where the virtual client is a member) can be decrypted by all of the
-emulator clients equally. Similarly, any PrivateMessage sent *by* a virtual
+emulator clients equally. Similarly, any PrivateMessage sent by a virtual
 client to a group can be decrypted by all emulator clients except the one that
 sent it.
 
