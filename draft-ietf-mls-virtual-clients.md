@@ -206,6 +206,24 @@ every new epoch of that group using the Safe Exporter API defined in
 emulator_epoch_secret = SafeExportSecret(virtual_clients_component_id)
 ~~~
 
+Cryptographic operations in this document use either the emulation group's
+ciphersuite or a target ciphersuite. The target ciphersuite is determined by
+the MLS object for which key material is being derived:
+
+- For a published KeyPackage, the target ciphersuite is the ciphersuite in the
+  KeyPackage.
+- For the creator LeafNode of a new higher-level group, the target ciphersuite
+  is the ciphersuite selected for the new group.
+- For a LeafNode or UpdatePath in an existing higher-level group, the target
+  ciphersuite is that group's ciphersuite.
+
+Unless otherwise specified, operations that derive or process shared
+emulation-group state use the emulation group's ciphersuite. This includes all
+derivations from `emulator_epoch_secret` through `operation_secret`, including
+the Virtual Client Operation Secret Tree and its operation ratchets. Material
+that is used in a KeyPackage or higher-level group is imported into the target
+ciphersuite as specified below before target-specific key material is derived.
+
 The `emulator_epoch_secret` is in turn used to derive five further secrets, after
 which it is deleted.
 
@@ -254,7 +272,7 @@ initial operation ratchet secret for each non-reserved
 ~~~
 operation_ratchet_secret[operation_type][0] =
   ExpandWithLabel(leaf_secret, "vc operation init",
-                  operation_type, Kdf.Nh)
+                  operation_type, KDF.Nh)
 ~~~
 
 In this derivation, `operation_type` is the TLS-encoded
@@ -334,7 +352,7 @@ next_operation_ratchet_secret =
 
 operation_secret =
   ExpandWithLabel(operation_generation_secret, "vc operation",
-                  OperationContext, Kdf.Nh)
+                  OperationContext, KDF.Nh)
 ~~~
 
 `operation_ratchet_secret` is the ratchet secret for `generation` in the
@@ -378,6 +396,28 @@ RetainedKeyPackageMaterial, identified either by DerivationInfo or by an
 Depending on the operation, the acting emulator client will have to derive one
 or more secrets from the `operation_secret`.
 
+Before a secret derived with the emulation group's ciphersuite is used to
+derive material for a target ciphersuite, it MUST be imported into the target
+ciphersuite as follows:
+
+~~~
+target_prk =
+  KDF.Extract("", source_secret)
+
+target_secret =
+  ExpandWithLabel(target_prk, label, context, KDF.Nh)
+~~~
+
+This two-step computation is denoted
+`ImportSecret(source_secret, label, context)`. `KDF.Extract`,
+`ExpandWithLabel`, and `KDF.Nh` in this computation are from the target
+ciphersuite. The import MUST be performed even when the emulation group and
+target use the same ciphersuite. The context passed to `ImportSecret` MUST
+include the target ciphersuite. Importing a secret produces an input of the
+size and form expected by the target ciphersuite's KDF, but does not increase
+the entropy of `source_secret`. `target_prk` MUST be deleted immediately after
+`target_secret` has been derived.
+
 This document defines four types of MLS-related secrets derived from virtual
 client operations.
 
@@ -389,22 +429,42 @@ client operations.
 - `path_generation_secret`: Used to generate `path_secret`s for the UpdatePath
   of a virtual client
 
-For operations that do not use a per-KeyPackage seed secret, the MLS-related
-secrets are derived directly from the `operation_secret`:
+For `leaf_node` operations, the target ciphersuite and higher-level group are
+bound into the import of the `operation_secret`:
+
+~~~ tls
+struct {
+  CipherSuite cipher_suite;
+  opaque group_id<V>;
+} TargetOperationContext;
+~~~
+
+~~~
+target_operation_secret =
+  ImportSecret(operation_secret, "vc target operation",
+               TargetOperationContext)
+~~~
+
+The `cipher_suite` field MUST be the target ciphersuite, and `group_id` MUST be
+the `group_id` of the higher-level group in which the operation is performed.
+The MLS-related secrets are then derived with the target ciphersuite:
 
 ~~~
 signature_key_secret =
-  DeriveSecret(operation_secret, "Signature Key")
+  DeriveSecret(target_operation_secret, "Signature Key")
 
 encryption_key_secret =
-  DeriveSecret(operation_secret, "Encryption Key")
+  DeriveSecret(target_operation_secret, "Encryption Key")
 
 init_key_secret =
-  DeriveSecret(operation_secret, "Init Key")
+  DeriveSecret(target_operation_secret, "Init Key")
 
 path_generation_secret =
-  DeriveSecret(operation_secret, "Path Generation")
+  DeriveSecret(target_operation_secret, "Path Generation")
 ~~~
+
+The `target_operation_secret` MUST be deleted immediately after these secrets
+have been derived.
 
 For `key_package` operations, the KeyPackageUpload derives one batch
 `operation_secret`. For each KeyPackageInfo in the upload, the creating
@@ -413,15 +473,22 @@ emulator client derives a per-KeyPackage seed secret from that batch
 
 ~~~ tls
 struct {
+  CipherSuite cipher_suite;
   uint32 key_package_index;
 } KeyPackageSeedContext;
 ~~~
 
 ~~~
 key_package_seed_secret =
-  ExpandWithLabel(operation_secret, "key package seed",
-                  KeyPackageSeedContext, Kdf.Nh)
+  ImportSecret(operation_secret, "vc key package seed",
+               KeyPackageSeedContext)
 ~~~
+
+The target ciphersuite used by `ImportSecret` and the `cipher_suite` field in
+`KeyPackageSeedContext` MUST both be the ciphersuite of the KeyPackage. For the
+creator LeafNode of a new higher-level group, they MUST both be the
+ciphersuite selected for the new group. The `key_package_index` field is the
+index assigned to this KeyPackage or creator LeafNode.
 
 The KeyPackage's `init_key_secret`, `signature_key_secret`, and
 `encryption_key_secret` are derived from `key_package_seed_secret`, not
@@ -438,11 +505,20 @@ init_key_secret =
   DeriveSecret(key_package_seed_secret, "Init Key")
 ~~~
 
+These `DeriveSecret` invocations use the target ciphersuite. The
+`init_key_secret` and `encryption_key_secret` are used with the target
+ciphersuite's KEM to derive the corresponding HPKE key pairs. The
+`path_generation_secret` is used as the first `path_secret` under the target
+ciphersuite. All subsequent MLS processing prescribed by {{!RFC9420}} for the
+KeyPackage, LeafNode, UpdatePath, or higher-level group, including signatures
+and hash references, uses the target ciphersuite.
+
 The source of the virtual client's signature key is application-defined. An
-application MAY use `signature_key_secret` to derive a fresh signing key per
-operation, or MAY provide signing-key material through other means, for
-example a per-group or global signing key issued by the Authentication
-Service, or a signing key derived from an emulation-group epoch secret.
+application MAY use `signature_key_secret` with the target ciphersuite's
+signature algorithm to derive a fresh signing key per operation, or MAY provide
+signing-key material through other means, for example a per-group or global
+signing key issued by the Authentication Service, or a signing key derived from
+an emulation-group epoch secret.
 Whatever the choice, the `signing_key_material` field of
 NewEmulatorClientState (see {{adding-an-emulator-client}}) carries the
 state a new emulator client needs; its contents are application-defined.
@@ -506,7 +582,8 @@ scheme of the emulation group's ciphersuite, with the `epoch_id` as AAD. The
 carrying the DerivationInfo. The AEAD key and nonce are derived from the
 epoch's `epoch_encryption_key`, using
 the serialized `encryption_key` field of the LeafNode carrying the component
-as context:
+as context. The `ExpandWithLabel` invocations and the `AEAD.Nk` and `AEAD.Nn`
+values in this derivation are from the emulation group's ciphersuite:
 
 ~~~
 derivation_info_key = ExpandWithLabel(epoch_encryption_key, "key",
@@ -551,8 +628,11 @@ type determined from the LeafNode's `leaf_node_source`, together with the
 `leaf_index` and `generation` fields, as inputs to the operation secret
 derivation described in {{generating-virtual-client-secrets}}. For a KeyPackage
 LeafNode, they then use `key_package_index` to derive the per-KeyPackage seed
-secret from the batch `key_package` operation secret and use that seed to
-re-create the LeafNode key material.
+secret from the batch `key_package` operation secret, using the KeyPackage's
+ciphersuite as the target ciphersuite, and use that seed to re-create the
+LeafNode key material. For an `update` or `commit` LeafNode, they import the
+`operation_secret` into the higher-level group's ciphersuite before re-creating
+the LeafNode and UpdatePath key material.
 
 When processing an external Commit sent by the virtual client, an emulator
 client uses the `external_init_secret` from the DerivationInfoTBE as the
@@ -679,8 +759,9 @@ in {{generating-virtual-client-secrets}}. The `generation` is the single
 each KeyPackage, the creating emulator client chooses a `key_package_index` and
 derives the `init_key_secret`, `signature_key_secret`, and
 `encryption_key_secret` from the per-KeyPackage seed secret derived using that
-index. The `key_package_index` values in a KeyPackageUpload MUST be unique.
-Senders SHOULD use consecutive values starting at zero.
+index and the KeyPackage's ciphersuite. The `key_package_index` values in a
+KeyPackageUpload MUST be unique. Senders SHOULD use consecutive values starting
+at zero.
 
 The KeyPackage's LeafNode MUST contain a DerivationInfo as described in
 {{creating-leafnodes-and-updatepaths}} whose encrypted DerivationInfoTBE
@@ -704,6 +785,7 @@ KeyPackages available to other parties.
 ~~~ tls
 struct {
   KeyPackageRef key_package_ref;
+  CipherSuite cipher_suite;
   uint32 key_package_index;
 } KeyPackageInfo;
 
@@ -717,6 +799,9 @@ struct {
 
 - `key_package_ref`: The hash reference of the generated KeyPackage computed as
   described in {{Section 5.2 of !RFC9420}}.
+- `cipher_suite`: The ciphersuite of the generated KeyPackage. It determines
+  the target ciphersuite used to derive the per-KeyPackage seed secret and key
+  material.
 - `key_package_index`: A sender-chosen counter used as KDF context to
   domain-separate this KeyPackage from the other KeyPackages in the same
   KeyPackageUpload. It MUST be unique within the KeyPackageUpload.
@@ -734,10 +819,13 @@ the `key_package_index` values are unique within the upload and MUST reject the
 upload otherwise. The recipient uses `epoch_id`, `leaf_index`, `generation`,
 `operation_type` `key_package`, and the zero-length `operation_context` to
 derive the batch `operation_secret`. For each KeyPackageInfo, the recipient
-uses `key_package_index` to derive the per-KeyPackage seed secret, then derives
-the KeyPackage's `init_key` and LeafNode key material from that seed. If the
-recipient receives a Welcome, it can then check which `init_key` to use based
-on the KeyPackageRef.
+uses `cipher_suite` as the target ciphersuite and uses `cipher_suite` and
+`key_package_index` in `KeyPackageSeedContext` to derive the per-KeyPackage
+seed secret, then derives the KeyPackage's `init_key` and LeafNode key material
+from that seed. The sender MUST set `cipher_suite` to the ciphersuite in the
+corresponding KeyPackage. If a recipient obtains the KeyPackage, it MUST verify
+that the two values match. If the recipient receives a Welcome, it can then
+check which `init_key` to use based on the KeyPackageRef.
 
 To preserve outstanding KeyPackage semantics, recipients MUST process the
 KeyPackageUpload at receipt time and retain per-KeyPackage material sufficient
@@ -900,7 +988,7 @@ struct {
 } PrivateMessageContext;
 
 generation_id = ExpandWithLabel(generation_id_secret, "generation id",
-                      PrivateMessageContext, Kdf.Nh)
+                      PrivateMessageContext, KDF.Nh)
 ~~~
 
 - `group_id` is the `group_id` of the higher-level group in which the
@@ -913,7 +1001,7 @@ generation_id = ExpandWithLabel(generation_id_secret, "generation id",
 - `generation_id_secret` is derived as specified in
   {{generating-virtual-client-secrets}} for the emulation-group epoch identified
   by the active virtual-client LeafNode in the higher-level group
-- `Kdf.Nh` is from the emulation group's ciphersuite
+- `KDF.Nh` is from the emulation group's ciphersuite
 
 Attaching the generation ID to the PrivateMessage allows the DS to detect
 collisions between generations per higher-level group, per higher-level group
@@ -1073,6 +1161,7 @@ struct {
 
 struct {
   KeyPackageRef key_package_ref;
+  CipherSuite cipher_suite;
   opaque epoch_id<V>;
   uint32 leaf_index;
   uint32 generation;
@@ -1080,6 +1169,7 @@ struct {
 } KeyPackageDerivationInfo;
 
 struct {
+  CipherSuite cipher_suite;
   opaque epoch_id<V>;
   uint32 leaf_index;
   uint32 generation;
@@ -1148,7 +1238,9 @@ struct {
   generation, operation_context)`.
 - `RetainedKeyPackageMaterial` carries a `key_package_seed_secret` derived from
   a batch `key_package` operation secret whose operation-ratchet generation has
-  been deleted. Entries are identified by `(epoch_id, leaf_index, generation,
+  been deleted. `cipher_suite` identifies the target ciphersuite with which the
+  seed secret was imported and from which its key material is derived. Entries
+  are identified by `(cipher_suite, epoch_id, leaf_index, generation,
   key_package_index)`.
 - `SecretTreeState` serializes the retained state of an RFC 9420 Secret Tree.
   Each `SecretTreeNodeState` contains an unexpanded tree node secret and its
@@ -1166,12 +1258,12 @@ struct {
   where signing keys are derived from emulation-group secrets, it MAY be
   zero-length. See {{generating-virtual-client-secrets}}.
 - `active_key_packages` lists every KeyPackage the virtual client has
-  outstanding. Each entry carries the KeyPackageRef together with the
-  identifiers needed to find the corresponding per-KeyPackage material. When a
-  Welcome arrives encrypted to one of these KeyPackages, the joining emulator
-  client identifies the entry by KeyPackageRef, then finds the
-  `RetainedKeyPackageMaterial` matching `(epoch_id, leaf_index, generation,
-  key_package_index)`.
+  outstanding. Each entry carries the KeyPackageRef and its `cipher_suite`
+  together with the identifiers needed to find the corresponding
+  per-KeyPackage material. When a Welcome arrives encrypted to one of these
+  KeyPackages, the joining emulator client identifies the entry by
+  KeyPackageRef, then finds the `RetainedKeyPackageMaterial` matching
+  `(cipher_suite, epoch_id, leaf_index, generation, key_package_index)`.
 - `retained_key_package_material` contains per-KeyPackage seed secrets whose
   derived key material is still live, for example because the corresponding
   KeyPackage is outstanding or because the current LeafNode of a higher-level
@@ -1327,6 +1419,17 @@ emulation group and of every higher-level group the virtual client is a member
 of, and can impersonate the virtual client in all of them. Emulator clients
 have to trust each other fully; the emulation group does not provide any
 isolation between them.
+
+## Ciphersuite strength
+
+All target-specific key material derived by this document ultimately depends
+on a secret produced by the emulation group's ciphersuite. Importing that
+secret into a target ciphersuite adapts it to the target KDF and provides
+domain separation, but does not increase its entropy. The effective security
+strength of the resulting key material is therefore bounded by the weaker of
+the emulation-group and target ciphersuites. Applications SHOULD choose an
+emulation-group ciphersuite whose security strength is at least that of every
+target ciphersuite used by the virtual client.
 
 ## Forward secrecy
 
