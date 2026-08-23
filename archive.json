@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-20T01:01:05.783080+00:00",
+  "timestamp": "2026-08-23T01:05:49.457272+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -128,7 +128,7 @@
       "labels": [],
       "body": "I'm confused about the purpose of this feature. It requires passing the group ID, epoch, generation, and ratchet type into a PRF with a secret key. But everything going into the PRF (except the secret key) is all public information. So what purpose does the PRF serve?\n\n/cc @kkohbrok ",
       "createdAt": "2026-08-18T02:20:19Z",
-      "updatedAt": "2026-08-19T07:15:14Z",
+      "updatedAt": "2026-08-22T03:45:54Z",
       "closedAt": null,
       "comments": [
         {
@@ -137,6 +137,13 @@
           "body": "TL;DR: It's to allow the DS to avoid storing the actual generation because that leaks activity metadata in the state-snapshot adversary model.\n\nThe DS has to persist some sort of information to detect duplicate use of individual ratchet generations of any virtual client. The emulator client sending a private message through a virtual client could just send the actual ratchet generation, but that would leak the number of messages sent by the virtual client in that particular epoch. Using pseudorandom generation IDs prevents that.\n\nOf course the DS can always observe and count the number of messages. What this is trying to prevent is leakage in the threat model where an adversary only has access to state snapshots, but doesn't otherwise have visibility into network traffic.",
           "createdAt": "2026-08-19T07:15:14Z",
           "updatedAt": "2026-08-19T07:15:14Z"
+        },
+        {
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks! I will take a stab at writing up more context for this feature.",
+          "createdAt": "2026-08-22T03:45:54Z",
+          "updatedAt": "2026-08-22T03:45:54Z"
         }
       ]
     }
@@ -1142,31 +1149,47 @@
       "id": "PR_kwDOKsv6Xc7xmwYD",
       "title": "Explicit treatement of ciphersuites",
       "url": "https://github.com/mlswg/mls-virtual-clients/pull/29",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "kkohbrok",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-07-14T14:54:51Z",
-      "updatedAt": "2026-07-14T14:54:51Z",
+      "updatedAt": "2026-08-22T09:36:26Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "7100af3b7a8f942b5f571159ad2ad309545828ce",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/ciphersuite_specifics",
       "headRefOid": "46ba0b46be4b4912de133f83c350dac07de2e597",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-08-22T09:36:26Z",
+      "mergedAt": "2026-08-22T09:36:26Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "d25aa42290c2605fa749a5fddb9c1263698f264f"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABKfTfEA",
+          "commit": {
+            "abbreviatedOid": "46ba0b4"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-08-22T03:58:51Z",
+          "updatedAt": "2026-08-22T03:58:51Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 30,
       "id": "PR_kwDOKsv6Xc77IktL",
-      "title": "Add optional secret retention strategy and adapt SafeAAD wire format",
+      "title": "Introduce explicit derivation epochs",
       "url": "https://github.com/mlswg/mls-virtual-clients/pull/30",
       "state": "OPEN",
       "author": "kkohbrok",
@@ -1175,13 +1198,13 @@
       "labels": [],
       "body": "Stacked on top of #29 ",
       "createdAt": "2026-08-05T14:58:04Z",
-      "updatedAt": "2026-08-14T12:56:46Z",
+      "updatedAt": "2026-08-22T09:36:27Z",
       "baseRepository": "mlswg/mls-virtual-clients",
-      "baseRefName": "konrad/ciphersuite_specifics",
-      "baseRefOid": "46ba0b46be4b4912de133f83c350dac07de2e597",
+      "baseRefName": "main",
+      "baseRefOid": "d25aa42290c2605fa749a5fddb9c1263698f264f",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/secret_management",
-      "headRefOid": "8176296e7153735941ede5fe415cfa45b2a3013e",
+      "headRefOid": "923ee3aac8fc0359da1a66fcbb060a2b5c7747f7",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -1194,24 +1217,26 @@
       "id": "PR_kwDOKsv6Xc8AAAABAFl8bQ",
       "title": "Editorial",
       "url": "https://github.com/mlswg/mls-virtual-clients/pull/32",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "Bren2010",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-08-18T02:17:54Z",
-      "updatedAt": "2026-08-19T07:04:40Z",
+      "updatedAt": "2026-08-22T03:34:59Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "7100af3b7a8f942b5f571159ad2ad309545828ce",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "brendan/aug17",
-      "headRefOid": "585f0690449193e857ff01bcd557ebafd2acc616",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "f495fee2e6b77a8ce6a51e4f477f4126c70d73d1",
+      "closedAt": "2026-08-22T03:34:59Z",
+      "mergedAt": "2026-08-22T03:34:59Z",
+      "mergedBy": "Bren2010",
+      "mergeCommit": {
+        "oid": "26453fadb450fd5f87541d24613a0c99a9de8bb6"
+      },
       "comments": [],
       "reviews": [
         {
@@ -1231,6 +1256,26 @@
               "body": "Why is \"by\" emphasised here?",
               "createdAt": "2026-08-19T07:04:13Z",
               "updatedAt": "2026-08-19T07:04:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABKfPLgw",
+          "commit": {
+            "abbreviatedOid": "585f069"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-08-22T03:33:22Z",
+          "updatedAt": "2026-08-22T03:33:23Z",
+          "comments": [
+            {
+              "originalPosition": 82,
+              "body": "```suggestion\nemulator clients equally. Similarly, any PrivateMessage sent by a virtual\n```",
+              "createdAt": "2026-08-22T03:33:23Z",
+              "updatedAt": "2026-08-22T03:33:23Z"
             }
           ]
         }
