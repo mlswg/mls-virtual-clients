@@ -1332,9 +1332,9 @@ emulating a virtual client.<a href="#section-2-1.2.1" class="pilcrow">¶</a></p>
 virtual client.<a href="#section-2-1.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-1.4">
-          <p id="section-2-1.4.1">Virtual-client derivation epoch: An emulation-group epoch selected as a source
-of virtual-client key material. The short form "derivation epoch" is used
-where the virtual-client context is clear. Derivation epochs are ordered by
+          <p id="section-2-1.4.1">Virtual client derivation epoch: An emulation-group epoch selected as a source
+of virtual client key material. The short form "derivation epoch" is used
+where the virtual client context is clear. Derivation epochs are ordered by
 their emulation-group epoch numbers, not by their opaque <code>epoch_id</code> values.<a href="#section-2-1.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-2-1.5">
@@ -1383,13 +1383,13 @@ comes to emulation group management (see <a href="#emulation-group-management" c
         </h3>
 <p id="section-4.1-1">If a group of emulator clients emulate a virtual client in more than one group,
 the overhead caused by the emulation process can be outweighed by two
-performance benefits.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.1-2">On the one hand, the use of virtual clients makes the higher-level groups (in
+performance benefits:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">First, the use of virtual clients makes the higher-level groups (in
 which the virtual client is a member) smaller. Instead of one leaf for each
-emulator client, it only has a single leaf for the virtual client. As the
+emulator client, there would be only a single leaf for the virtual client. As the
 complexity of most MLS operations depends on the number of group members, this
 increases performance for all members of that group.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
-<p id="section-4.1-3">At the same time, the virtual client emulation process (see
+<p id="section-4.1-3">Second, the virtual client emulation process (see
 <a href="#client-emulation" class="auto internal xref">Section 5</a>) allows emulator clients to carry the benefit of a single
 operation in the emulation group to all higher-level groups in which the
 virtual client is a member.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
@@ -1415,8 +1415,8 @@ the application requires high update frequencies.<a href="#section-4.1.1-1" clas
 clients, the removal of an emulator client will not cause the leaf of the
 virtual client (or indeed any node in the virtual client's direct path) to be
 blanked, except if it is the last remaining emulator client. As a result,
-fluctuation in emulator clients does not necessarily lead to blanks in the group
-of the corresponding virtual clients, resulting in fewer overall blanks and
+fluctuations in the number of emulator clients do not necessarily lead to
+blanks the higher-level groups, resulting in fewer overall blanks and
 better performance for all group members.<a href="#section-4.1.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1438,28 +1438,25 @@ place.<a href="#section-4.1.3-1" class="pilcrow">¶</a></p>
         <h3 id="name-metadata-hiding">
 <a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-metadata-hiding" class="section-name selfRef">Metadata hiding</a>
         </h3>
-<p id="section-4.2-1">Virtual clients can be used to hide the emulator clients from other members of
+<p id="section-4.2-1">Virtual clients can hide which emulator clients exist from the other members of
 higher-level groups. For example, removing group members of the emulation group
 will only be visible in the higher-level group as a regular group update.
 Similarly, when an emulator client wants to send a message in a higher-level
 group, recipients will see the virtual client as the sender and won't be able to
-discern which emulator client sent the message, or indeed the fact that the
-sender is a virtual client at all.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+discern which emulator client sent the message.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 <p id="section-4.2-2">Hiding emulator clients behind their virtual client(s) can, for example, hide
 the number of devices a human user has, or which device the user is sending
 messages from.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
-<p id="section-4.2-3">As hiding of emulator clients by design obfuscates the membership in
-higher-level groups, it also means that other higher-level group members can't
-identify the actual senders and recipients of messages. From the point of view
-of other group members, the "end" of the end-to-end encryption and
+<p id="section-4.2-3">From the point of view
+of other higher-level group members, the "end" of the end-to-end encryption and
 authentication provided by MLS ends with the virtual client. The relevance of
 this fact largely depends on the security goals of the application and the
 design of the authentication service.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
-<p id="section-4.2-4">If the virtual client is used to hide the emulator clients, the delivery service and
-other higher-level group members also lose the ability to enforce policies to
-evict stale clients. For example, an emulator client could become stale (i.e.
-inactive), while another keeps sending updates. From the point of view of the
-higher-level group, the virtual client would remain active.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">One way this could be an issue is if the use of virtual clients prevents the
+delivery service or other higher-level group members from detecting or evicting
+stale clients. If one emulator client becomes stale (i.e. inactive) while
+another keeps sending updates, the virtual client would appear active overall,
+and the stale client may not be evicted in a timely manner.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1480,10 +1477,15 @@ higher-level group.<a href="#section-5-2" class="pilcrow">¶</a></p>
         <h3 id="name-delivery-service">
 <a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-delivery-service" class="section-name selfRef">Delivery Service</a>
         </h3>
-<p id="section-5.1-1">Client emulation requires that any message sent by an emulator client on behalf
-of a virtual client be delivered not just to the rest of the higher-level group
-to which the message is sent, but also to all other clients in the emulation
-group.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-1">Any PrivateMessage received by a virtual client (because that message was sent
+in a group where the virtual client is a member) can be decrypted by all of the
+emulator clients equally. Similarly, any PrivateMessage sent by a virtual
+client to a group can be decrypted by all emulator clients except the one that
+sent it.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">For this to work, if a higher-level group contains a virtual client, the
+Delivery Service has to deliver messages sent by other group members to all
+emulator clients, and messages sent by one emulator client to all other emulator
+clients.<a href="#section-5.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="generating-virtual-client-secrets">
@@ -1499,7 +1501,7 @@ epoch if the Commit contains a <code>new_derivation_epoch</code> action
 Applications <span class="bcp14">MAY</span> choose how often other emulation-group Commits carry the
 derivation-epoch action. A Commit that does not meet either condition does not
 create a derivation epoch, and processing it leaves the newest derivation epoch
-unchanged. More frequent derivation epochs refresh virtual-client secrets more
+unchanged. More frequent derivation epochs refresh virtual client secrets more
 often. Less frequent derivation epochs continue using the same
 derivation-epoch secret state across ordinary emulation-group Commits.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 <p id="section-5.2-2">For every derivation epoch, emulator clients derive an
@@ -1609,13 +1611,13 @@ reuse guards need to be computed for that epoch. For each retained epoch in
 which an emulator client was a member, it <span class="bcp14">MUST</span> also retain its own leaf index at
 that epoch.<a href="#section-5.2-17" class="pilcrow">¶</a></p>
 <p id="section-5.2-18">Emulator clients <span class="bcp14">MAY</span> keep the state of past derivation epochs beyond this point
-for some reasonable amount of time in order to process delayed. Applications
-<span class="bcp14">SHOULD</span> define a policy on how many past derivation epochs emulator clients keep
-and how long they keep them. An emulator client <span class="bcp14">MUST</span> delete the state of a
-derivation epoch as soon as it is neither required by the retention rule above
-nor covered by this policy. Any retained material remains recoverable from a
-compromised emulator client until deleted (see <a href="#forward-secrecy" class="auto internal xref">Section 7.3</a>).<a href="#section-5.2-18" class="pilcrow">¶</a></p>
-<p id="section-5.2-19">New virtual-client operations <span class="bcp14">MUST</span> use the newest derivation epoch in the acting
+for some reasonable amount of time in order to process delayed messages.
+Applications <span class="bcp14">SHOULD</span> define a policy on how many past derivation epochs emulator
+clients keep and how long they keep them. An emulator client <span class="bcp14">MUST</span> delete the
+state of a derivation epoch as soon as it is neither required by the retention
+rule above nor covered by this policy. Any retained material remains recoverable
+from a compromised emulator client until deleted (see <a href="#forward-secrecy" class="auto internal xref">Section 7.3</a>).<a href="#section-5.2-18" class="pilcrow">¶</a></p>
+<p id="section-5.2-19">New virtual client operations <span class="bcp14">MUST</span> use the newest derivation epoch in the acting
 client's current emulation-group state.<a href="#section-5.2-19" class="pilcrow">¶</a></p>
 <p id="section-5.2-20">When deriving a secret for a virtual client, e.g. for use in a KeyPackage
 upload or LeafNode update, the deriving client chooses a
@@ -1634,11 +1636,11 @@ when creating a LeafNode for an Update proposal, a Commit with an update path,
 or an external commit. Applications <span class="bcp14">MAY</span> use the operation type <code>application</code>
 to derive application-specific key material.<a href="#section-5.2-20" class="pilcrow">¶</a></p>
 <p id="section-5.2-21">Deriving an <code>operation_secret</code> consumes the corresponding operation-ratchet
-generation, even if the virtual-client operation does not result in a
+generation, even if the virtual client operation does not result in a
 higher-level MLS message that is accepted into the higher-level group's
 transcript. Once a generation has been consumed, an emulator client <span class="bcp14">MUST NOT</span> use
-the same generation of the same operation-type ratchet for another virtual-client
-operation. A retry of a failed operation is another virtual-client operation:
+the same generation of the same operation-type ratchet for another virtual client
+operation. A retry of a failed operation is another virtual client operation:
 if, for example, a group creation or an external commit is rejected and
 attempted again, the retry <span class="bcp14">MUST</span> consume a fresh generation. If the operation
 fails, the emulator client <span class="bcp14">MUST</span> delete any retained secret material derived
@@ -1912,7 +1914,7 @@ derivation_info_nonce = ExpandWithLabel(epoch_encryption_key, "nonce",
                                         encryption_key, AEAD.Nn)
 </pre><a href="#section-5.3-7" class="pilcrow">¶</a>
 </div>
-<p id="section-5.3-8">Since every virtual-client operation produces a LeafNode with a fresh
+<p id="section-5.3-8">Since every virtual client operation produces a LeafNode with a fresh
 <code>encryption_key</code>, each distinct DerivationInfoTBE is encrypted under a
 distinct key-nonce pair. Re-encrypting the same DerivationInfoTBE for the same
 LeafNode yields an identical ciphertext, which is benign. This only holds
@@ -1964,19 +1966,19 @@ the ExternalInit proposal (<span><a href="https://rfc-editor.org/rfc/rfc9420#sec
 externally joins a group it was not previously a member of, however, they hold
 no prior epoch state for that group and cannot. Carrying the init secret in
 the DerivationInfo covers both cases uniformly.<a href="#section-5.3-12" class="pilcrow">¶</a></p>
-<p id="section-5.3-13">The <code>DerivationInfo</code> on the active virtual-client LeafNode binds that
+<p id="section-5.3-13">The <code>DerivationInfo</code> on the active virtual client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
 epoch identified by <code>epoch_id</code>. Protocol steps that require per-epoch
 emulation-group state for a higher-level group, such as computing the
 <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>) or a generation ID
 (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>), <span class="bcp14">MUST</span> use the
-emulation-group epoch identified by the active virtual-client LeafNode.<a href="#section-5.3-13" class="pilcrow">¶</a></p>
+emulation-group epoch identified by the active virtual client LeafNode.<a href="#section-5.3-13" class="pilcrow">¶</a></p>
 <p id="section-5.3-14">When an emulator client processes a higher-level-group Commit that installs a
 LeafNode for the virtual client, whether through the update path of a regular or
 external Commit or through a committed Update proposal, it <span class="bcp14">MUST</span> consider the
 commit invalid if the derivation epoch identified by the new LeafNode's
 <code>epoch_id</code> is smaller than the derivation epoch identified by the currently
-active virtual-client LeafNode in that group.<a href="#section-5.3-14" class="pilcrow">¶</a></p>
+active virtual client LeafNode in that group.<a href="#section-5.3-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-groups-with-the-virtual-client">
@@ -2205,7 +2207,7 @@ whether that external commit is accepted. When creating the Commit to join the
 group externally, it <span class="bcp14">MUST</span> generate the LeafNode and path as described in
 <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 5.3</a>.<a href="#section-5.5.2-1" class="pilcrow">¶</a></p>
 <p id="section-5.5.2-2">An external Commit sent on behalf of the virtual client reaches the other
-emulator clients like any other virtual-client message (see
+emulator clients like any other virtual client message (see
 <a href="#delivery-service" class="auto internal xref">Section 5.1</a>). If the virtual client was already a member of the
 group, the other emulator clients hold the group's state and process the
 external Commit like any other handshake message. If the virtual client
@@ -2277,7 +2279,7 @@ sending a message with a virtual client, however, emulator clients choose a
 random value <code>x</code> such that <code>x</code> modulo <code>N_e</code> is equal to <code>leaf_index_e</code>, where:<a href="#section-5.6.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.6.2-2.1">
-              <p id="section-5.6.2-2.1.1"><code>e</code> is the emulation-group epoch that produced the active virtual-client
+              <p id="section-5.6.2-2.1.1"><code>e</code> is the emulation-group epoch that produced the active virtual client
 LeafNode in the higher-level group, identified by the <code>epoch_id</code> field of
 that LeafNode's <code>DerivationInfo</code> (see
 <a href="#creating-leafnodes-and-updatepaths" class="auto internal xref">Section 5.3</a>).<a href="#section-5.6.2-2.1.1" class="pilcrow">¶</a></p>
@@ -2384,7 +2386,7 @@ PrivateMessage is sent<a href="#section-5.6.3-4.2.1" class="pilcrow">¶</a></p>
             <li class="normal" id="section-5.6.3-4.6">
               <p id="section-5.6.3-4.6.1"><code>generation_id_secret</code> is derived as specified in
 <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a> for the emulation-group epoch identified
-by the active virtual-client LeafNode in the higher-level group<a href="#section-5.6.3-4.6.1" class="pilcrow">¶</a></p>
+by the active virtual client LeafNode in the higher-level group<a href="#section-5.6.3-4.6.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.6.3-4.7">
               <p id="section-5.6.3-4.7.1"><code>KDF.Nh</code> is from the emulation group's ciphersuite<a href="#section-5.6.3-4.7.1" class="pilcrow">¶</a></p>
@@ -2422,10 +2424,10 @@ Welcome carries the <code>virtual_clients</code> component (<a href="#iana-consi
 whose component data is a NewEmulatorClientState struct that provides the
 state the joining emulator client needs to act as the virtual client going
 forward.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
-<p id="section-6.1-2">The new client <span class="bcp14">MUST NOT</span> perform virtual-client operations until it has processed
+<p id="section-6.1-2">The new client <span class="bcp14">MUST NOT</span> perform virtual client operations until it has processed
 the Welcome and the emulation-group state in <code>NewEmulatorClientState</code>. The
 provisioning client <span class="bcp14">MUST</span> transfer every older derivation epoch referenced by the
-virtual-client artifacts or application state being transferred.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+virtual client artifacts or application state being transferred.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
 <p id="section-6.1-3">The <code>NewEmulatorClientState</code> struct carries emulation-group state and, when
 provisioning state transfer is selected for a higher-level group, the selected
 higher-level group state. Emulator clients <span class="bcp14">MUST</span> include it only in GroupInfo
@@ -2452,7 +2454,7 @@ other application-defined source) and performs an external commit into the
 group, evicting the virtual client's prior membership with a "resync" Remove
 proposal as described in <span><a href="https://rfc-editor.org/rfc/rfc9420#section-12.4.3.2" class="relref">Section 12.4.3.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>. This variant does
 not require higher-level-group state-transfer material. If it replaces every
-still-live virtual-client artifact derived from an earlier emulation-group
+still-live virtual client artifact derived from an earlier emulation-group
 epoch, it also does not require entries in <code>retained_operation_secrets</code>,
 <code>retained_key_package_material</code>, or <code>retained_vc_epochs</code> for those artifacts.<a href="#section-6.1-5.2.1" class="pilcrow">¶</a></p>
 </li>
@@ -2461,11 +2463,11 @@ epoch, it also does not require entries in <code>retained_operation_secrets</cod
 Variant A for groups where metadata hiding matters and Variant B elsewhere.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
 <p id="section-6.1-7">Regardless of the variant chosen, a new emulator client <span class="bcp14">MUST NOT</span> send
 PrivateMessages in a higher-level group while the DerivationInfo of
-the active virtual-client LeafNode identifies an emulation-group epoch in which
+the active virtual client LeafNode identifies an emulation-group epoch in which
 the new emulator client was not a member. The new emulator client has no leaf
 index at that epoch and therefore cannot compute the <code>reuse_guard</code> as described
 in <a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>. Before the new emulator client can send messages in such a
-higher-level group, the virtual-client LeafNode <span class="bcp14">MUST</span> be rotated (e.g., by a
+higher-level group, the virtual client LeafNode <span class="bcp14">MUST</span> be rotated (e.g., by a
 Commit with an update path or an Update proposal followed by a Commit) to a
 more recent emulation-group epoch in which the new emulator client is a member.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
 <p id="section-6.1-8">Note that in higher-level groups where handshake messages are sent as
@@ -2683,7 +2685,7 @@ that will be used to derive the secret for <code>generation</code>. The serializ
 deletion schedule from the sender's current state and <span class="bcp14">MUST NOT</span> contain
 secrets that have already been deleted. The <code>application</code> and <code>handshake</code>
 ratchet types are used for higher-level MLS Secret Trees. The <code>operation</code>
-ratchet type is used for virtual-client operation secrets and includes an
+ratchet type is used for virtual client operation secrets and includes an
 <code>operation_type</code> field that identifies the per-leaf operation-type ratchet.<a href="#section-6.1.2-3.5.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.1.2-3.6">
@@ -2724,16 +2726,16 @@ KeyPackageUpload batch; KeyPackage-derived material is represented by
 <code>retained_key_package_material</code>.
 <code>retained_operation_secrets</code> is needed for the <code>state_transfer</code> onboarding
 variant because the joining emulator client needs to reconstruct still-live
-virtual-client artifacts whose operation-type ratchet generations have already
+virtual client artifacts whose operation-type ratchet generations have already
 been deleted. The <code>external_commit</code> onboarding variant does not require these
 retained operation secrets, retained KeyPackage material, or retained
-derivation-epoch state if it replaces every still-live virtual-client artifact
+derivation-epoch state if it replaces every still-live virtual client artifact
 derived from an earlier emulation-group epoch, including outstanding
 KeyPackages and active LeafNodes in higher-level groups.<a href="#section-6.1.2-3.10.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.1.2-3.11">
               <p id="section-6.1.2-3.11.1"><code>retained_vc_epochs</code> carries every derivation epoch other than the Welcome's
-output epoch that is referenced by virtual-client artifacts or application
+output epoch that is referenced by virtual client artifacts or application
 state being transferred. This includes epochs referenced by active LeafNodes,
 outstanding KeyPackages, retained operation secrets, or retained KeyPackage
 material. For each epoch,
@@ -2864,7 +2866,7 @@ first).<a href="#section-6.2-3.3.2.2.1" class="pilcrow">¶</a></p>
         </h3>
 <p id="section-6.3-1">Since all emulator clients hold all key material of the virtual client, removing
 the emulator client entails its removal from the emulation group, as well as
-rotating or revoking any other virtual-client specific key material.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+rotating or revoking any other virtual client specific key material.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
 <p id="section-6.3-2">To effectively remove an emulator client, the emulator client committing the
 proposal that removes the target client <span class="bcp14">MUST</span> take the following steps in order:<a href="#section-6.3-2" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-6.3-3">
@@ -2993,10 +2995,10 @@ update once in the emulation group and "re-use" the new randomness for updates
 in multiple higher-level groups. At that point, clients only really recover when
 they update the emulation group, i.e. re-using somewhat old randomness of the
 emulation group won't provide real PCS in higher-level groups.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
-<p id="section-7.4-2">An emulation-group update refreshes virtual-client secret material only if its
+<p id="section-7.4-2">An emulation-group update refreshes virtual client secret material only if its
 output is a derivation epoch. An application that
 relies on an emulation-group Commit to provide post-compromise security for
-subsequent virtual-client operations <span class="bcp14">MUST</span> include the
+subsequent virtual client operations <span class="bcp14">MUST</span> include the
 <code>new_derivation_epoch</code> action in that Commit. The outputs of
 membership-changing Commits are derivation epochs automatically.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
 </section>
@@ -3012,7 +3014,7 @@ completion of the key rotations in all higher-level groups, the removed client
 still holds valid key material for those groups and can read traffic in them
 and impersonate the virtual client. Applications <span class="bcp14">SHOULD</span> minimize this window
 and <span class="bcp14">SHOULD</span> revoke any long-lived credentials the removed client had access to,
-since a removed client that retains a valid virtual-client signing key and
+since a removed client that retains a valid virtual client signing key and
 credential can otherwise re-join a higher-level group via an external commit.
 The procedure also depends on the DS actually deleting outstanding KeyPackages;
 a KeyPackage that escapes deletion allows the removed client to process
@@ -3085,12 +3087,12 @@ epochs.<a href="#section-8-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-8-3.3">
           <p id="section-8-3.3.1">VirtualClientCommitData is carried in authenticated data and is visible to
-the DS. Derivation-epoch actions reveal which Commits refresh virtual-client
+the DS. Derivation-epoch actions reveal which Commits refresh virtual client
 secrets.<a href="#section-8-3.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-8-3.4">
           <p id="section-8-3.4.1">Generation IDs (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>) are only
-attached by virtual-client senders and therefore identify virtual-client
+attached by virtual client senders and therefore identify virtual client
 traffic to the DS, in addition to revealing how many distinct ratchet
 generations are in use.<a href="#section-8-3.4.1" class="pilcrow">¶</a></p>
 </li>
@@ -3140,7 +3142,7 @@ material (<a href="#creating-leafnodes-and-updatepaths" class="auto internal xre
 </li>
           <li class="normal" id="section-9.1-2.3">
             <p id="section-9.1-2.3.1">In SafeAAD objects of Commits in the emulation group, the component data is
-a VirtualClientCommitData struct carrying zero or more virtual-client actions
+a VirtualClientCommitData struct carrying zero or more virtual client actions
 associated with the Commit
 (<a href="#virtual-client-actions" class="auto internal xref">Section 5.5</a>).<a href="#section-9.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
@@ -3153,7 +3155,7 @@ the per-epoch <code>emulator_epoch_secret</code> from the emulation group
 <p id="section-9.1-3">The requested registration is:<a href="#section-9.1-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-9.1-4.1">
-            <p id="section-9.1-4.1.1">Value: 0x0006 (suggested)<a href="#section-9.1-4.1.1" class="pilcrow">¶</a></p>
+            <p id="section-9.1-4.1.1">Value: 0x667A (temporary)<a href="#section-9.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-9.1-4.2">
             <p id="section-9.1-4.2.1">Name: virtual_clients<a href="#section-9.1-4.2.1" class="pilcrow">¶</a></p>
