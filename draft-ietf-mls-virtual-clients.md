@@ -678,6 +678,13 @@ emulation-group state for a higher-level group, such as computing the
 ({{coordinating-ratchet-generations-with-the-ds}}), MUST use the
 emulation-group epoch identified by the active virtual-client LeafNode.
 
+When an emulator client processes a higher-level-group Commit that installs a
+LeafNode for the virtual client, whether through the update path of a regular or
+external Commit or through a committed Update proposal, it MUST consider the
+commit invalid if the derivation epoch identified by the new LeafNode's
+`epoch_id` is smaller than the derivation epoch identified by the currently
+active virtual-client LeafNode in that group.
+
 ## Creating groups with the virtual client
 
 When an emulator client creates a higher-level group with the virtual client as
