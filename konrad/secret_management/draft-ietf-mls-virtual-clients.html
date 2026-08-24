@@ -1052,7 +1052,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Alwen, et al.</td>
-<td class="center">Expires 21 February 2027</td>
+<td class="center">Expires 25 February 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1065,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-ietf-mls-virtual-clients-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-08-20" class="published">20 August 2026</time>
+<time datetime="2026-08-24" class="published">24 August 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-02-21">21 February 2027</time></dd>
+<dd class="expires"><time datetime="2027-02-25">25 February 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1122,7 +1122,7 @@ application, virtual clients can help hide metadata and improve performance.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 21 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 25 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1601,14 +1601,20 @@ expanded leaves; they are only usable from derivation epochs onward in which
 all emulator clients derive them at expansion time.<a href="#section-5.2-16" class="pilcrow">¶</a></p>
 <p id="section-5.2-17">Emulator clients <span class="bcp14">MUST</span> retain the <code>operation_secret_tree</code>, the <code>epoch_id</code>, the
 <code>epoch_encryption_key</code>, the <code>generation_id_secret</code>, the <code>reuse_guard_secret</code>,
-and the number of leaf nodes the emulation group's ratchet tree had at the
-corresponding derivation epoch (including blank leaves, see <a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>)
-until no key material associated with that epoch is actively used anymore and no
-generation IDs or reuse guards need to be computed for that epoch. For each
-retained epoch in which an emulator client was a member, it <span class="bcp14">MUST</span> also retain its
-own leaf index at that epoch.<a href="#section-5.2-17" class="pilcrow">¶</a></p>
-<p id="section-5.2-18">Applications <span class="bcp14">MAY</span> additionally retain that key material to the most recent
-derivation epochs to account for delays in message delivery.<a href="#section-5.2-18" class="pilcrow">¶</a></p>
+the emulation-group epoch number of the derivation epoch, and the number of leaf
+nodes the emulation group's ratchet tree had at the corresponding derivation
+epoch (including blank leaves, see <a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>) until no key material
+associated with that epoch is actively used anymore and no generation IDs or
+reuse guards need to be computed for that epoch. For each retained epoch in
+which an emulator client was a member, it <span class="bcp14">MUST</span> also retain its own leaf index at
+that epoch.<a href="#section-5.2-17" class="pilcrow">¶</a></p>
+<p id="section-5.2-18">Emulator clients <span class="bcp14">MAY</span> keep the state of past derivation epochs beyond this point
+for some reasonable amount of time in order to process delayed. Applications
+<span class="bcp14">SHOULD</span> define a policy on how many past derivation epochs emulator clients keep
+and how long they keep them. An emulator client <span class="bcp14">MUST</span> delete the state of a
+derivation epoch as soon as it is neither required by the retention rule above
+nor covered by this policy. Any retained material remains recoverable from a
+compromised emulator client until deleted (see <a href="#forward-secrecy" class="auto internal xref">Section 7.3</a>).<a href="#section-5.2-18" class="pilcrow">¶</a></p>
 <p id="section-5.2-19">New virtual-client operations <span class="bcp14">MUST</span> use the newest derivation epoch in the acting
 client's current emulation-group state.<a href="#section-5.2-19" class="pilcrow">¶</a></p>
 <p id="section-5.2-20">When deriving a secret for a virtual client, e.g. for use in a KeyPackage
@@ -1965,6 +1971,12 @@ emulation-group state for a higher-level group, such as computing the
 <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>) or a generation ID
 (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>), <span class="bcp14">MUST</span> use the
 emulation-group epoch identified by the active virtual-client LeafNode.<a href="#section-5.3-13" class="pilcrow">¶</a></p>
+<p id="section-5.3-14">When an emulator client processes a higher-level-group Commit that installs a
+LeafNode for the virtual client, whether through the update path of a regular or
+external Commit or through a committed Update proposal, it <span class="bcp14">MUST</span> consider the
+commit invalid if the derivation epoch identified by the new LeafNode's
+<code>epoch_id</code> is smaller than the derivation epoch identified by the currently
+active virtual-client LeafNode in that group.<a href="#section-5.3-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-groups-with-the-virtual-client">
@@ -2945,15 +2957,19 @@ client deleting consumed key material according to the deletion schedule of
 message sent to a higher-level group, the effective forward secrecy of such a
 group is bounded by the emulator client that is slowest to advance its ratchets
 and delete its keys. The same applies to the retained state defined in this
-document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
-emulation-epoch state (<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>) extend the window during
-which a compromise reveals previously transmitted data, and emulator clients
-<span class="bcp14">SHOULD</span> delete them as soon as they are no longer needed. Applications that do
-not onboard emulator clients through state transfer need not retain
-RetainedOperationSecrets or RetainedKeyPackageMaterial at all (see
-<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>) and can instead retain only the derived
-key material still in use, reducing this window.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
-<p id="section-7.3-2">Some of this state is reachable through the virtual client's LeafNodes. The
+document: retained operation secrets, retained KeyPackage material, and
+retained derivation-epoch state (<a href="#adding-an-emulator-client" class="auto internal xref">Section 6.1</a>) extend the
+window during which a compromise reveals previously transmitted data, and
+emulator clients <span class="bcp14">SHOULD</span> delete them as soon as they are no longer needed.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">Derivation-epoch state kept to process delayed messages
+(<a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>) also extends this window. Applications
+therefore <span class="bcp14">SHOULD</span> bound both the number of past derivation epochs kept and the
+time for which they are kept. Applications that do not onboard emulator clients
+through state transfer need not retain RetainedOperationSecrets or
+RetainedKeyPackageMaterial at all (see <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>)
+and can instead retain only the derived key material still in use, reducing this
+window.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.3-3">Some of this state is reachable through the virtual client's LeafNodes. The
 DerivationInfo of an external Commit LeafNode embeds the <code>init_secret</code> of the
 epoch created by that Commit, encrypted under the emulation-group epoch's
 <code>epoch_encryption_key</code>. The LeafNode persists in the higher-level group's
@@ -2964,7 +2980,7 @@ the virtual client remains derivable from the retained per-KeyPackage seed
 secret of the creator LeafNode
 (<a href="#creating-groups-with-the-virtual-client" class="auto internal xref">Section 5.4</a>). Updating the virtual client's
 LeafNode soon after an external commit or a group creation allows emulator
-clients to delete this state and limits the exposure.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+clients to delete this state and limits the exposure.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-compromise-security">
