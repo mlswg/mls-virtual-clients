@@ -300,15 +300,21 @@ all emulator clients derive them at expansion time.
 
 Emulator clients MUST retain the `operation_secret_tree`, the `epoch_id`, the
 `epoch_encryption_key`, the `generation_id_secret`, the `reuse_guard_secret`,
-and the number of leaf nodes the emulation group's ratchet tree had at the
-corresponding derivation epoch (including blank leaves, see {{reuse-guard}})
-until no key material associated with that epoch is actively used anymore and no
-generation IDs or reuse guards need to be computed for that epoch. For each
-retained epoch in which an emulator client was a member, it MUST also retain its
-own leaf index at that epoch.
+the emulation-group epoch number of the derivation epoch, and the number of leaf
+nodes the emulation group's ratchet tree had at the corresponding derivation
+epoch (including blank leaves, see {{reuse-guard}}) until no key material
+associated with that epoch is actively used anymore and no generation IDs or
+reuse guards need to be computed for that epoch. For each retained epoch in
+which an emulator client was a member, it MUST also retain its own leaf index at
+that epoch.
 
-Applications MAY additionally retain that key material to the most recent
-derivation epochs to account for delays in message delivery.
+Emulator clients MAY keep the state of past derivation epochs beyond this point
+for some reasonable amount of time in order to process delayed. Applications
+SHOULD define a policy on how many past derivation epochs emulator clients keep
+and how long they keep them. An emulator client MUST delete the state of a
+derivation epoch as soon as it is neither required by the retention rule above
+nor covered by this policy. Any retained material remains recoverable from a
+compromised emulator client until deleted (see {{forward-secrecy}}).
 
 New virtual-client operations MUST use the newest derivation epoch in the acting
 client's current emulation-group state.
@@ -1489,14 +1495,19 @@ client deleting consumed key material according to the deletion schedule of
 message sent to a higher-level group, the effective forward secrecy of such a
 group is bounded by the emulator client that is slowest to advance its ratchets
 and delete its keys. The same applies to the retained state defined in this
-document: RetainedOperationSecrets, RetainedKeyPackageMaterial, and past
-emulation-epoch state ({{adding-an-emulator-client}}) extend the window during
-which a compromise reveals previously transmitted data, and emulator clients
-SHOULD delete them as soon as they are no longer needed. Applications that do
-not onboard emulator clients through state transfer need not retain
-RetainedOperationSecrets or RetainedKeyPackageMaterial at all (see
-{{generating-virtual-client-secrets}}) and can instead retain only the derived
-key material still in use, reducing this window.
+document: retained operation secrets, retained KeyPackage material, and
+retained derivation-epoch state ({{adding-an-emulator-client}}) extend the
+window during which a compromise reveals previously transmitted data, and
+emulator clients SHOULD delete them as soon as they are no longer needed.
+
+Derivation-epoch state kept to process delayed messages
+({{generating-virtual-client-secrets}}) also extends this window. Applications
+therefore SHOULD bound both the number of past derivation epochs kept and the
+time for which they are kept. Applications that do not onboard emulator clients
+through state transfer need not retain RetainedOperationSecrets or
+RetainedKeyPackageMaterial at all (see {{generating-virtual-client-secrets}})
+and can instead retain only the derived key material still in use, reducing this
+window.
 
 Some of this state is reachable through the virtual client's LeafNodes. The
 DerivationInfo of an external Commit LeafNode embeds the `init_secret` of the
