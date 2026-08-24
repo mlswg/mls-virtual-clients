@@ -162,7 +162,7 @@ From the point of view
 of other higher-level group members, the "end" of the end-to-end encryption and
 authentication provided by MLS ends with the virtual client. The relevance of
 this fact largely depends on the security goals of the application and the
-design of the authentication service.
+design of the Authentication Service.
 
 One way this could be an issue is if the use of virtual clients prevents the
 delivery service or other higher-level group members from detecting or evicting
@@ -293,7 +293,7 @@ IDs or reuse guards need to be computed for that epoch. For each retained
 epoch in which an emulator client was a member, it MUST also retain its own
 leaf index at that epoch. The `operation_secret_tree`, `epoch_id`, and
 `epoch_encryption_key` are used for deriving and processing virtual client key
-material, including DerivationInfos and state transferred to new clients
+material, including DerivationInfo structures and state transferred to new clients
 ({{adding-an-emulator-client}}); the `generation_id_secret` is used for
 computing generation IDs ({{coordinating-ratchet-generations-with-the-ds}});
 and the `reuse_guard_secret`, leaf count, and leaf index are used for
@@ -961,16 +961,21 @@ from ever reusing the same key-nonce pair, as this would compromise the message.
 However, it does not prevent different emulator clients from attempting to
 encrypt messages with the same key but different nonces. While this doesn't
 create any security issues, it is a functionality issue due to the MLS deletion
-schedule. Other higher level group members (or indeed emulator clients) will
+schedule. Other higher-level group members (or indeed emulator clients) will
 delete the encryption key after using it to decrypt the first message they
 receive and will be unable to decrypt subsequent messages.
 
 The best solution depends on whether the Delivery Service is strongly or
 eventually consistent {{!RFC9750}}. Emulator clients communicating with a
-strongly-consistent DS SHOULD prevent this issue by coordinating the use of
-individual ratchet generations for encryption through the DS. Emulator clients
-MAY send a generation ID to the DS whenever they fan out a private message. The
-generation ID is derived as follows.
+strongly-consistent DS can prevent this issue by having the DS proactively
+reject any messages that would use the same generation counter as a message that
+was already accepted. Alternatively, clients (including non-emulator clients)
+communicating with an eventually-consistent DS may need to retain encryption
+keys for a short period of time after use, to support decrypting messages with
+duplicate generation counters.
+
+Emulator clients MAY send a generation ID to the DS when they fan out a
+PrivateMessage. The generation ID is derived as follows:
 
 ~~~ tls
 enum {
@@ -1003,14 +1008,18 @@ generation_id = ExpandWithLabel(generation_id_secret, "generation id",
   by the active virtual-client LeafNode in the higher-level group
 - `KDF.Nh` is from the emulation group's ciphersuite
 
-Attaching the generation ID to the PrivateMessage allows the DS to detect
-collisions between generations per higher-level group, per higher-level group
-epoch and per ratchet type.
-
-Alternatively, devices communicating with an eventually-consistent DS may need
-to simply retain messages and encryption keys for a short period of time after
-sending, in case it becomes necessary to decrypt another device's message and
-re-encrypt and re-send their original message with another encryption key.
+The generation ID of two messages matches only when the messages are sent by the
+same virtual client, to the same group, using the same encryption key. As such,
+a Delivery Service that rejects messages with duplicate generation IDs also
+rejects virtual client messages with duplicate generation counters. To provide
+this same functionality without the generation ID, a Delivery Service would need
+to (at minimum) store the number of messages each user has sent to a group, or
+require users to process all messages sent to a group before allowing them to
+send new ones. The former approach, storing the number of messages sent by each
+user, may not be possible in anonymous or low-metadata applications. The latter
+approach, requiring users to process all messages before sending any new ones,
+may not be possible with an eventually-consistent DS or for other architectural
+or performance reasons.
 
 # Emulation group management
 
