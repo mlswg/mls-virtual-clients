@@ -110,15 +110,15 @@ comes to emulation group management (see {{emulation-group-management}}).
 
 If a group of emulator clients emulate a virtual client in more than one group,
 the overhead caused by the emulation process can be outweighed by two
-performance benefits.
+performance benefits:
 
-On the one hand, the use of virtual clients makes the higher-level groups (in
+First, the use of virtual clients makes the higher-level groups (in
 which the virtual client is a member) smaller. Instead of one leaf for each
-emulator client, it only has a single leaf for the virtual client. As the
+emulator client, there would be only a single leaf for the virtual client. As the
 complexity of most MLS operations depends on the number of group members, this
 increases performance for all members of that group.
 
-At the same time, the virtual client emulation process (see
+Second, the virtual client emulation process (see
 {{client-emulation}}) allows emulator clients to carry the benefit of a single
 operation in the emulation group to all higher-level groups in which the
 virtual client is a member.
@@ -138,8 +138,8 @@ Blanks are typically created in the process of client removals. With virtual
 clients, the removal of an emulator client will not cause the leaf of the
 virtual client (or indeed any node in the virtual client's direct path) to be
 blanked, except if it is the last remaining emulator client. As a result,
-fluctuation in emulator clients does not necessarily lead to blanks in the group
-of the corresponding virtual clients, resulting in fewer overall blanks and
+fluctuations in the number of emulator clients do not necessarily lead to
+blanks the higher-level groups, resulting in fewer overall blanks and
 better performance for all group members.
 
 ### Emulation costs
@@ -151,31 +151,28 @@ place.
 
 ## Metadata hiding
 
-Virtual clients can be used to hide the emulator clients from other members of
+Virtual clients can hide which emulator clients exist from the other members of
 higher-level groups. For example, removing group members of the emulation group
 will only be visible in the higher-level group as a regular group update.
 Similarly, when an emulator client wants to send a message in a higher-level
 group, recipients will see the virtual client as the sender and won't be able to
-discern which emulator client sent the message, or indeed the fact that the
-sender is a virtual client at all.
+discern which emulator client sent the message.
 
 Hiding emulator clients behind their virtual client(s) can, for example, hide
 the number of devices a human user has, or which device the user is sending
 messages from.
 
-As hiding of emulator clients by design obfuscates the membership in
-higher-level groups, it also means that other higher-level group members can't
-identify the actual senders and recipients of messages. From the point of view
-of other group members, the "end" of the end-to-end encryption and
+From the point of view
+of other higher-level group members, the "end" of the end-to-end encryption and
 authentication provided by MLS ends with the virtual client. The relevance of
 this fact largely depends on the security goals of the application and the
 design of the authentication service.
 
-If the virtual client is used to hide the emulator clients, the delivery service and
-other higher-level group members also lose the ability to enforce policies to
-evict stale clients. For example, an emulator client could become stale (i.e.
-inactive), while another keeps sending updates. From the point of view of the
-higher-level group, the virtual client would remain active.
+One way this could be an issue is if the use of virtual clients prevents the
+delivery service or other higher-level group members from detecting or evicting
+stale clients. If one emulator client becomes stale (i.e. inactive) while
+another keeps sending updates, the virtual client would appear active overall,
+and the stale client may not be evicted in a timely manner.
 
 # Client emulation
 
@@ -189,10 +186,16 @@ higher-level group.
 
 ## Delivery Service
 
-Client emulation requires that any message sent by an emulator client on behalf
-of a virtual client be delivered not just to the rest of the higher-level group
-to which the message is sent, but also to all other clients in the emulation
-group.
+Any PrivateMessage received by a virtual client (because that message was sent
+in a group where the virtual client is a member) can be decrypted by all of the
+emulator clients equally. Similarly, any PrivateMessage sent by a virtual
+client to a group can be decrypted by all emulator clients except the one that
+sent it.
+
+For this to work, if a higher-level group contains a virtual client, the
+Delivery Service has to deliver messages sent by other group members to all
+emulator clients, and messages sent by one emulator client to all other emulator
+clients.
 
 ## Generating Virtual Client Secrets
 
@@ -337,11 +340,11 @@ or an external commit. Applications MAY use the operation type `application`
 to derive application-specific key material.
 
 Deriving an `operation_secret` consumes the corresponding operation-ratchet
-generation, even if the virtual-client operation does not result in a
+generation, even if the virtual client operation does not result in a
 higher-level MLS message that is accepted into the higher-level group's
 transcript. Once a generation has been consumed, an emulator client MUST NOT use
-the same generation of the same operation-type ratchet for another virtual-client
-operation. A retry of a failed operation is another virtual-client operation:
+the same generation of the same operation-type ratchet for another virtual client
+operation. A retry of a failed operation is another virtual client operation:
 if, for example, a group creation or an external commit is rejected and
 attempted again, the retry MUST consume a fresh generation. If the operation
 fails, the emulator client MUST delete any retained secret material derived
@@ -613,7 +616,7 @@ derivation_info_nonce = ExpandWithLabel(epoch_encryption_key, "nonce",
                                         encryption_key, AEAD.Nn)
 ~~~
 
-Since every virtual-client operation produces a LeafNode with a fresh
+Since every virtual client operation produces a LeafNode with a fresh
 `encryption_key`, each distinct DerivationInfoTBE is encrypted under a
 distinct key-nonce pair. Re-encrypting the same DerivationInfoTBE for the same
 LeafNode yields an identical ciphertext, which is benign. This only holds
@@ -1653,7 +1656,7 @@ object in which the component appears:
 
 The requested registration is:
 
-- Value: 0x0006 (suggested)
+- Value: 0x667A (temporary)
 - Name: virtual_clients
 - Where: GI, LN, AD, ES
 - Recommended: Y
