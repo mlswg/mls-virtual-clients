@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 25 February 2027                                    Phoenix R&D
+Expires: 26 February 2027                                    Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                          24 August 2026
+                                                          25 August 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 25 February 2027.
+   This Internet-Draft will expire on 26 February 2027.
 
 Copyright Notice
 
@@ -1058,10 +1058,10 @@ Table of Contents
    with a strongly-consistent DS can prevent this issue by having the DS
    proactively reject any messages that would use the same generation
    counter as a message that was already accepted.  Alternatively,
-   clients (including non-emulator clients) communicating with an
-   eventually-consistent DS may need to retain encryption keys for a
-   short period of time after use, to support decrypting messages with
-   duplicate generation counters.
+   clients communicating with an eventually-consistent DS may need to
+   retain messages for a short period of time after they're sent, to
+   support re-transmitting messages that conflicted with another
+   emulator client's messages.
 
    Emulator clients MAY send a generation ID to the DS when they fan out
    a PrivateMessage.  The generation ID is derived as follows:
