@@ -969,10 +969,10 @@ The best solution depends on whether the Delivery Service is strongly or
 eventually consistent {{!RFC9750}}. Emulator clients communicating with a
 strongly-consistent DS can prevent this issue by having the DS proactively
 reject any messages that would use the same generation counter as a message that
-was already accepted. Alternatively, clients (including non-emulator clients)
-communicating with an eventually-consistent DS may need to retain encryption
-keys for a short period of time after use, to support decrypting messages with
-duplicate generation counters.
+was already accepted. Alternatively, clients communicating with an
+eventually-consistent DS may need to retain messages for a short period of time
+after they're sent, to support re-transmitting messages that conflicted with
+another emulator client's messages.
 
 Emulator clients MAY send a generation ID to the DS when they fan out a
 PrivateMessage. The generation ID is derived as follows:
