@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-23T01:05:49.457272+00:00",
+  "timestamp": "2026-08-25T01:02:55.137091+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -1123,26 +1123,42 @@
       "id": "PR_kwDOKsv6Xc7vynV8",
       "title": "use random value for temporary component ID",
       "url": "https://github.com/mlswg/mls-virtual-clients/pull/28",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "kkohbrok",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "To avoid collisions during implementation testing we should choose a random ID. The current value collides with the component ID of the [APQMLS combiner](https://datatracker.ietf.org/doc/draft-ietf-mls-combiner/).",
       "createdAt": "2026-07-09T15:16:09Z",
-      "updatedAt": "2026-07-09T15:16:09Z",
+      "updatedAt": "2026-08-24T06:55:51Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "7100af3b7a8f942b5f571159ad2ad309545828ce",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/change_component_id",
       "headRefOid": "2f7e68ab6e4d06be3d3741b1428144bec74cca5c",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-08-24T06:55:51Z",
+      "mergedAt": "2026-08-24T06:55:50Z",
+      "mergedBy": "kkohbrok",
+      "mergeCommit": {
+        "oid": "b66b768c0cc8708472f8fa88d64a6729b16bba4c"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABKjQ9AA",
+          "commit": {
+            "abbreviatedOid": "2f7e68a"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-08-23T18:10:46Z",
+          "updatedAt": "2026-08-23T18:10:46Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 29,
@@ -1198,13 +1214,13 @@
       "labels": [],
       "body": "Stacked on top of #29 ",
       "createdAt": "2026-08-05T14:58:04Z",
-      "updatedAt": "2026-08-22T09:36:27Z",
+      "updatedAt": "2026-08-24T15:26:21Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
-      "baseRefOid": "d25aa42290c2605fa749a5fddb9c1263698f264f",
+      "baseRefOid": "b66b768c0cc8708472f8fa88d64a6729b16bba4c",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "konrad/secret_management",
-      "headRefOid": "923ee3aac8fc0359da1a66fcbb060a2b5c7747f7",
+      "headRefOid": "ac762ac17965d8ed95cb0aeb2ae042601ab08831",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -1276,6 +1292,53 @@
               "body": "```suggestion\nemulator clients equally. Similarly, any PrivateMessage sent by a virtual\n```",
               "createdAt": "2026-08-22T03:33:23Z",
               "updatedAt": "2026-08-22T03:33:23Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "id": "PR_kwDOKsv6Xc8AAAABAv4cMg",
+      "title": "Provide more explanation of generation ids",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/34",
+      "state": "OPEN",
+      "author": "Bren2010",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #33 ",
+      "createdAt": "2026-08-24T03:40:48Z",
+      "updatedAt": "2026-08-24T06:55:29Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "d25aa42290c2605fa749a5fddb9c1263698f264f",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "brendan/aug23",
+      "headRefOid": "2a5d7f93e26739b6434e8ffbc26b3e3a1c1be119",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABKlVseA",
+          "commit": {
+            "abbreviatedOid": "2a5d7f9"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "Thanks! Just one comment.",
+          "createdAt": "2026-08-24T06:54:15Z",
+          "updatedAt": "2026-08-24T06:55:29Z",
+          "comments": [
+            {
+              "originalPosition": 37,
+              "body": "I believe this would violate the MUST of [9420's deletion schedule](https://www.rfc-editor.org/rfc/rfc9420.html#name-deletion-schedule).\n\n> It is important to delete all security-sensitive values as soon as they are consumed. A sensitive value S is said to be consumed if:\n>\n>   - S was used to encrypt or (successfully) decrypt a message, or a key, nonce, or secret derived from S has been consumed. (This goes for values derived via DeriveSecret as well as ExpandWithLabel.)\n>\n>Here S may be the init_secret, commit_secret, epoch_secret, or encryption_secret as well as any secret in a secret tree or one of the ratchets.\n>\n>As soon as a group member consumes a value, they MUST immediately delete (all representations of) that value.\n\nThat may be okay, but we should at least make that clear here.",
+              "createdAt": "2026-08-24T06:54:15Z",
+              "updatedAt": "2026-08-24T06:55:29Z"
             }
           ]
         }
