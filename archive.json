@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-25T01:02:55.137091+00:00",
+  "timestamp": "2026-08-27T07:06:12.130390+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -79,7 +79,7 @@
       "id": "I_kwDOKsv6Xc7iPt-7",
       "title": "Adopt reuse guard approach",
       "url": "https://github.com/mlswg/mls-virtual-clients/issues/5",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "kkohbrok",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -88,8 +88,8 @@
       "labels": [],
       "body": "Prior to adoption, we agreed that we wanted to switch to an approach where the reuse of nonces is prevented by the reuse guard. Adopting that approach also means that the number of emulating clients is limited.\n\nThe draft needs to be adapted to reflect that.",
       "createdAt": "2026-01-09T07:14:39Z",
-      "updatedAt": "2026-01-09T07:14:39Z",
-      "closedAt": null,
+      "updatedAt": "2026-08-25T12:30:07Z",
+      "closedAt": "2026-08-25T12:30:07Z",
       "comments": []
     },
     {
@@ -121,15 +121,15 @@
       "id": "I_kwDOKsv6Xc8AAAABNJfYWw",
       "title": "What are generation IDs?",
       "url": "https://github.com/mlswg/mls-virtual-clients/issues/33",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "Bren2010",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "I'm confused about the purpose of this feature. It requires passing the group ID, epoch, generation, and ratchet type into a PRF with a secret key. But everything going into the PRF (except the secret key) is all public information. So what purpose does the PRF serve?\n\n/cc @kkohbrok ",
       "createdAt": "2026-08-18T02:20:19Z",
-      "updatedAt": "2026-08-22T03:45:54Z",
-      "closedAt": null,
+      "updatedAt": "2026-08-27T04:25:49Z",
+      "closedAt": "2026-08-27T04:25:49Z",
       "comments": [
         {
           "author": "kkohbrok",
@@ -1302,24 +1302,26 @@
       "id": "PR_kwDOKsv6Xc8AAAABAv4cMg",
       "title": "Provide more explanation of generation ids",
       "url": "https://github.com/mlswg/mls-virtual-clients/pull/34",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "Bren2010",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Closes #33 ",
       "createdAt": "2026-08-24T03:40:48Z",
-      "updatedAt": "2026-08-24T06:55:29Z",
+      "updatedAt": "2026-08-27T04:25:49Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "d25aa42290c2605fa749a5fddb9c1263698f264f",
       "headRepository": "mlswg/mls-virtual-clients",
       "headRefName": "brendan/aug23",
-      "headRefOid": "2a5d7f93e26739b6434e8ffbc26b3e3a1c1be119",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "6fb53ecac2bf176b1b915ef5ce71e2bbf02c7e4b",
+      "closedAt": "2026-08-27T04:25:49Z",
+      "mergedAt": "2026-08-27T04:25:48Z",
+      "mergedBy": "Bren2010",
+      "mergeCommit": {
+        "oid": "65e960dfe67583e5d1a165b1191148f84e2ae14a"
+      },
       "comments": [],
       "reviews": [
         {
@@ -1341,6 +1343,19 @@
               "updatedAt": "2026-08-24T06:55:29Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABKvEdrg",
+          "commit": {
+            "abbreviatedOid": "6fb53ec"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks!",
+          "createdAt": "2026-08-25T05:57:51Z",
+          "updatedAt": "2026-08-25T05:57:51Z",
+          "comments": []
         }
       ]
     }
