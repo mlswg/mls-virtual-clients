@@ -5,14 +5,14 @@
 Network Working Group                                           J. Alwen
 Internet-Draft                                                       AWS
 Intended status: Informational                                K. Kohbrok
-Expires: 26 February 2027                                    Phoenix R&D
+Expires: 5 April 2027                                        Phoenix R&D
                                                             B. McMillion
                                                                         
                                                             M. Mularczyk
                                                                      AWS
                                                                R. Robert
                                                              Phoenix R&D
-                                                          25 August 2026
+                                                          2 October 2026
 
 
                           MLS Virtual Clients
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 26 February 2027.
+   This Internet-Draft will expire on 5 April 2027.
 
 Copyright Notice
 
@@ -861,6 +861,7 @@ Table of Contents
      KeyPackageRef key_package_ref;
      CipherSuite cipher_suite;
      uint32 key_package_index;
+     Extension extensions<V>;
    } KeyPackageInfo;
 
    struct {
@@ -882,6 +883,11 @@ Table of Contents
       same KeyPackageUpload.  It MUST be unique within the
       KeyPackageUpload.
 
+   *  extensions: The complete extensions vector from the generated
+      KeyPackage.  The sender MUST copy this vector without changing
+      extension order or data, including unknown extensions and
+      components.
+
    *  epoch_id: The epoch ID of the emulation group epoch used to derive
       the batch key_package operation secret
 
@@ -893,7 +899,8 @@ Table of Contents
       KeyPackageUpload
 
    *  key_package_info: The information required to re-derive the
-      init_key_secret for each individual KeyPackage
+      init_key_secret for each individual KeyPackage, together with its
+      extensions
 
    Any emulator client that receives a KeyPackageUpload message MUST
    verify that the key_package_index values are unique within the upload
@@ -913,8 +920,12 @@ Table of Contents
    To preserve outstanding KeyPackage semantics, recipients MUST process
    the KeyPackageUpload at receipt time and retain per-KeyPackage
    material sufficient to process any Welcome for each listed
-   KeyPackageRef.  After deriving the per-KeyPackage material needed for
-   the upload, recipients MUST delete the batch operation_secret.
+   KeyPackageRef.  Recipients MUST retain the extensions vector with the
+   corresponding KeyPackageRef and apply the semantics of recognized
+   extensions and components when processing Welcome messages and
+   managing the associated key material.  After deriving the per-
+   KeyPackage material needed for the upload, recipients MUST delete the
+   batch operation_secret.
 
    How the creating client sends the message to the other emulator
    clients is up to the application, as long as every current emulator
@@ -1284,6 +1295,7 @@ Table of Contents
      uint32 leaf_index;
      uint32 generation;
      uint32 key_package_index;
+     Extension extensions<V>;
    } KeyPackageDerivationInfo;
 
    struct {
@@ -1385,13 +1397,14 @@ Table of Contents
       secrets, it MAY be zero-length.  See Section 5.2.
 
    *  active_key_packages lists every KeyPackage the virtual client has
-      outstanding.  Each entry carries the KeyPackageRef and its
-      cipher_suite together with the identifiers needed to find the
-      corresponding per-KeyPackage material.  When a Welcome arrives
-      encrypted to one of these KeyPackages, the joining emulator client
-      identifies the entry by KeyPackageRef, then finds the
-      RetainedKeyPackageMaterial matching (cipher_suite, epoch_id,
-      leaf_index, generation, key_package_index).
+      outstanding.  Each entry carries the KeyPackageRef, its
+      cipher_suite, and its complete extensions vector, together with
+      the identifiers needed to find the corresponding per-KeyPackage
+      material.  When a Welcome arrives encrypted to one of these
+      KeyPackages, the joining emulator client identifies the entry by
+      KeyPackageRef, then finds the RetainedKeyPackageMaterial matching
+      (cipher_suite, epoch_id, leaf_index, generation,
+      key_package_index).
 
    *  retained_key_package_material contains per-KeyPackage seed secrets
       whose derived key material is still live, for example because the
@@ -1753,7 +1766,7 @@ Table of Contents
 
    The requested registration is:
 
-   *  Value: 0x0006 (suggested)
+   *  Value: 0x667A (temporary)
 
    *  Name: virtual_clients
 
