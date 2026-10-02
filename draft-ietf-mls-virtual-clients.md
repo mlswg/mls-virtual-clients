@@ -787,6 +787,7 @@ struct {
   KeyPackageRef key_package_ref;
   CipherSuite cipher_suite;
   uint32 key_package_index;
+  Extension extensions<V>;
 } KeyPackageInfo;
 
 struct {
@@ -805,6 +806,9 @@ struct {
 - `key_package_index`: A sender-chosen counter used as KDF context to
   domain-separate this KeyPackage from the other KeyPackages in the same
   KeyPackageUpload. It MUST be unique within the KeyPackageUpload.
+- `extensions`: The complete `extensions` vector from the generated
+  KeyPackage. The sender MUST copy this vector without changing extension
+  order or data, including unknown extensions and components.
 - `epoch_id`: The epoch ID of the emulation group epoch used to derive the
   batch `key_package` operation secret
 - `leaf_index`: The leaf index of the emulator client in the emulation group
@@ -812,7 +816,8 @@ struct {
 - `generation`: The single `key_package` operation-ratchet generation used to
   derive the batch operation secret for this KeyPackageUpload
 - `key_package_info`: The information required to re-derive the
-  `init_key_secret` for each individual KeyPackage
+  `init_key_secret` for each individual KeyPackage, together with its
+  extensions
 
 Any emulator client that receives a KeyPackageUpload message MUST verify that
 the `key_package_index` values are unique within the upload and MUST reject the
@@ -829,9 +834,11 @@ check which `init_key` to use based on the KeyPackageRef.
 
 To preserve outstanding KeyPackage semantics, recipients MUST process the
 KeyPackageUpload at receipt time and retain per-KeyPackage material sufficient
-to process any Welcome for each listed KeyPackageRef. After deriving the
-per-KeyPackage material needed for the upload, recipients MUST delete the batch
-`operation_secret`.
+to process any Welcome for each listed KeyPackageRef. Recipients MUST retain the
+`extensions` vector with the corresponding KeyPackageRef and apply the semantics
+of recognized extensions and components when processing Welcome messages and
+managing the associated key material. After deriving the per-KeyPackage material
+needed for the upload, recipients MUST delete the batch `operation_secret`.
 
 How the creating client sends the message to the other emulator clients is up
 to the application, as long as every current emulator client receives it before
@@ -1175,6 +1182,7 @@ struct {
   uint32 leaf_index;
   uint32 generation;
   uint32 key_package_index;
+  Extension extensions<V>;
 } KeyPackageDerivationInfo;
 
 struct {
@@ -1267,10 +1275,10 @@ struct {
   where signing keys are derived from emulation-group secrets, it MAY be
   zero-length. See {{generating-virtual-client-secrets}}.
 - `active_key_packages` lists every KeyPackage the virtual client has
-  outstanding. Each entry carries the KeyPackageRef and its `cipher_suite`
-  together with the identifiers needed to find the corresponding
-  per-KeyPackage material. When a Welcome arrives encrypted to one of these
-  KeyPackages, the joining emulator client identifies the entry by
+  outstanding. Each entry carries the KeyPackageRef, its `cipher_suite`, and its
+  complete `extensions` vector, together with the identifiers needed to find the
+  corresponding per-KeyPackage material. When a Welcome arrives encrypted to one
+  of these KeyPackages, the joining emulator client identifies the entry by
   KeyPackageRef, then finds the `RetainedKeyPackageMaterial` matching
   `(cipher_suite, epoch_id, leaf_index, generation, key_package_index)`.
 - `retained_key_package_material` contains per-KeyPackage seed secrets whose
