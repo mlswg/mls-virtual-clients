@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-27T07:06:12.130390+00:00",
+  "timestamp": "2026-10-04T04:09:31.184284+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -1358,6 +1358,32 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 35,
+      "id": "PR_kwDOKsv6Xc8AAAABGP7AWg",
+      "title": "add missing extensions to KeyPackage info",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/35",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Other emulator clients need to know the extensions of generated KeyPackages, for example, to know which ones are last-resort KPs. This PR adds the extensions vector to the relevant structs and adds processing rules.",
+      "createdAt": "2026-10-02T08:25:55Z",
+      "updatedAt": "2026-10-02T08:25:55Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/amend_key_package_info",
+      "headRefOid": "1c920b68b707df650287a90ff20149a08176a5e8",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
