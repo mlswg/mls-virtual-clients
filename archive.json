@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-04T04:09:31.184284+00:00",
+  "timestamp": "2026-10-08T04:20:41.085533+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -1371,7 +1371,7 @@
       "labels": [],
       "body": "Other emulator clients need to know the extensions of generated KeyPackages, for example, to know which ones are last-resort KPs. This PR adds the extensions vector to the relevant structs and adds processing rules.",
       "createdAt": "2026-10-02T08:25:55Z",
-      "updatedAt": "2026-10-02T08:25:55Z",
+      "updatedAt": "2026-10-07T23:30:41Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1383,7 +1383,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABRNMKlw",
+          "commit": {
+            "abbreviatedOid": "1c920b6"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-07T23:30:41Z",
+          "updatedAt": "2026-10-07T23:30:41Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
