@@ -193,6 +193,15 @@ Delivery Service has to deliver messages sent by other group members to all
 emulator clients, and messages sent by one emulator client to all other emulator
 clients.
 
+Emulator clients MUST accept PrivateMessages whose sender is the virtual
+client's own leaf and process them like messages from any other member, even
+though some implementations of {{!RFC9420}} reject such messages as their
+own. Decrypting such a message at generation `g` of a sender ratchet advances
+the emulator client's copy of that ratchet, so that the next message it sends
+with that ratchet uses generation `g + 1` or later. This reduces, but does not
+eliminate, the generation collisions described in
+{{coordinating-ratchet-generations-with-the-ds}}.
+
 ## Generating Virtual Client Secrets
 
 Generally, secrets for virtual client operations are derived from the emulation
