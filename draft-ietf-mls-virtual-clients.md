@@ -1214,6 +1214,7 @@ struct {
       opaque membership_key<V>;
       opaque resumption_psk<V>;
       opaque epoch_authenticator<V>;
+      opaque interim_transcript_hash<V>;
       SecretTreeState secret_tree;
       PPRFState safe_exporter_tree;
       HPKEPrivateKey direct_path_private_keys<V>;
@@ -1326,6 +1327,10 @@ current epoch's key-schedule outputs and the retained per-epoch state:
 - `resumption_psk` lets the joining emulator client participate as an
   origin for resumption PSKs in this epoch, if the application uses them.
 - `epoch_authenticator` authenticates the current group state.
+- `interim_transcript_hash` is the group's current interim transcript hash
+  ({{Section 8.2 of !RFC9420}}). The joining emulator client cannot compute it
+  from the GroupContext alone and needs it to compute the
+  `confirmed_transcript_hash` of the next epoch.
 - `secret_tree` is the current state of the group's Secret Tree, from
   which the joining emulator client derives per-member handshake- and
   application-ratchet keys needed to decrypt in-flight PrivateMessages.
