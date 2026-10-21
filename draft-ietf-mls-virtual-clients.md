@@ -1553,6 +1553,16 @@ The following residual metadata remains observable:
   therefore tell that the virtual client's current leaf was created by an
   external commit rather than a regular Commit, for as long as that leaf
   remains in the tree.
+- A `key_package_upload` action ({{virtual-client-actions}}) is carried in the
+  SafeAAD of an emulation-group Commit, which is not encrypted even when the
+  Commit is sent as a PrivateMessage. It reveals each `key_package_ref` and
+  `cipher_suite`, the `epoch_id`, and the uploading emulator client's
+  `leaf_index` to the emulation group's DS, linking the virtual client's
+  published KeyPackages to the emulation group and to that emulator client.
+  Applications that want to hide this link can convey the KeyPackageUpload by
+  other means, for example in an AppEphemeral proposal
+  ({{Section 4.8 of !I-D.ietf-mls-extensions}}) included in a Commit sent as a
+  PrivateMessage.
 
 # IANA Considerations
 
