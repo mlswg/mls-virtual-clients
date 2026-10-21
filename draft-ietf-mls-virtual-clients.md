@@ -857,6 +857,20 @@ externally joins a group it was not previously a member of, however, the
 other emulator clients hold no state for that group and cannot process the
 Commit by itself.
 
+An external Commit that resynchronizes the virtual client's membership, as in
+Variant B of {{adding-an-emulator-client}} or in {{joining-externally}},
+includes a Remove proposal for the virtual client's prior leaf. The other
+emulator clients hold the state of that leaf and would therefore conclude that
+they have been removed from the group ({{Section 12.4.2 of !RFC9420}}). An
+emulator client MUST NOT treat itself as removed when it processes an external
+Commit whose Remove proposal targets the virtual client's leaf and whose new
+LeafNode carries a DerivationInfo from which the emulator client re-creates
+the LeafNode's key material as described in
+{{creating-leafnodes-and-updatepaths}}. Instead, it continues to act as the
+virtual client at the leaf index that the external Commit assigns to the new
+LeafNode, using the leaf and path private keys re-derived from the
+DerivationInfo.
+
 For such groups, the application MUST make the external join material
 available to all current emulator clients before delivering any other content
 from that higher-level group to them. The external join material consists of
