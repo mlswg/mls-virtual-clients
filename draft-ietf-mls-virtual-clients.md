@@ -36,6 +36,10 @@ normative:
   NIST:
     target: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-38G.pdf
     title: "Recommendation for Block Cipher Modes of Operation: Methods for Format-Preserving Encryption"
+    date: 2016-03
+    seriesinfo:
+      NIST Special Publication: 800-38G
+      DOI: 10.6028/NIST.SP.800-38G
     author:
       - name: Morris Dworkin
 
@@ -135,7 +139,7 @@ clients, the removal of an emulator client will not cause the leaf of the
 virtual client (or indeed any node in the virtual client's direct path) to be
 blanked, except if it is the last remaining emulator client. As a result,
 fluctuations in the number of emulator clients do not necessarily lead to
-blanks the higher-level groups, resulting in fewer overall blanks and
+blanks in the higher-level groups, resulting in fewer overall blanks and
 better performance for all group members.
 
 ### Emulation costs
@@ -240,14 +244,14 @@ reuse_guard_secret =
   DeriveSecret(emulator_epoch_secret, "Reuse Guard")
 ~~~
 
-The `epoch_base_secret` keys a Virtual Client Operation Secret Tree, a tree of
-secrets with the same structure as the Secret Tree defined in Section 9 of
-{{!RFC9420}}, with the following differences:
+The `epoch_base_secret` keys a Virtual Client Operation Secret Tree
+(`operation_secret_tree`), a tree of secrets with the same structure as the
+Secret Tree defined in Section 9 of {{!RFC9420}}. Like the Secret Tree, the
+Virtual Client Operation Secret Tree has the same set of nodes and edges as the
+emulation group's ratchet tree at the corresponding epoch. The `node_index`
+fields of the serialized `SecretTreeState` are interpreted relative to this
+tree. It has the following differences:
 
-- Like the Secret Tree, the Virtual Client Operation Secret Tree has the same
-  set of nodes and edges as the emulation group's ratchet tree at the
-  corresponding epoch. The `node_index` fields of the serialized
-  `SecretTreeState` are interpreted relative to this tree.
 - The root of the tree is the `epoch_base_secret` rather than a secret derived
   from the `encryption_secret` of an MLS group epoch.
 - Each leaf has one `operation` ratchet for each
@@ -880,13 +884,13 @@ virtual client simultaneously, this can create a situation where encryption keys
 and nonces are reused inappropriately. Critically, if two emulator clients
 encrypt a message with both the same key and nonce simultaneously, this could
 compromise the message's confidentiality and integrity. Emulator clients MUST
-prevent this by computing the `reuse_guard`, as described below instead of
+prevent this by computing the `reuse_guard` as described below, instead of
 sampling it randomly.
 
 ### Small-Space PRP
 
 A small-space pseudorandom permutation (PRP) is a cryptographic algorithm that
-works similar to a block cipher, while also being able to adhere to format
+works similarly to a block cipher, while also being able to adhere to format
 constraints. In particular, it is able to perform a pseudorandom permutation
 over an arbitrary input and output space.
 
@@ -1054,8 +1058,8 @@ variants that the provisioning emulator client MAY use on a per-group basis:
 - **Variant A (provisioning state transfer).** The provisioning emulator client
   includes, for each higher-level group, the key-schedule outputs of the current
   epoch together with the HPKE private keys on the virtual client's direct path.
-  The joining emulator obtains the RatchetTree and the GroupContext from an
-  application-defined source.
+  The joining emulator client obtains the ratchet tree and the GroupContext
+  from an application-defined source.
 - **Variant B (external commit).** The provisioning emulator client need only
   convey (or otherwise let the joining emulator client learn) which higher-level
   groups the virtual client is in. The joining
@@ -1091,9 +1095,9 @@ client can rotate the LeafNode itself.
   appears as the virtual client leaving and re-joining, which is visible to
   every member and may undermine metadata-hiding goals.
 - **Forward secrecy.** Variant A chains the new epoch from the previous epoch's
-  `init_secret`. Variant B breaks the commit chain resulting in weaker forward
+  `init_secret`. Variant B breaks the commit chain, resulting in weaker forward
   secrecy at the point of onboarding.
-- **Policy.** Some applications may restrict external commits by policy leaving
+- **Policy.** Some applications may restrict external commits by policy, leaving
   Variant A as the only option.
 - **State transfer cost.** Variant A requires O(log N) HPKE private keys and the
   current epoch's key-schedule state per higher-level group. Depending on group
@@ -1349,18 +1353,18 @@ Remove proposal for the virtual client's prior leaf to evict the old membership.
 
 ## Joining externally
 
-Without another online emulator client to bootstrap from, a new emulator can
-join the emulation group externally. A prerequisite for this external join is
-that the new client has the ability to learn which groups the virtual client is
-in and to externally join those groups.
+Without another online emulator client to bootstrap from, a new emulator
+client can join the emulation group externally. A prerequisite for this external
+join is that the new client has the ability to learn which groups the virtual
+client is in and to externally join those groups.
 
 If those prerequisites are met, the new client needs to follow these steps:
 
-1. Obtain a fresh credential that other emulation clients will accept.
+1. Obtain a fresh credential that other emulator clients will accept.
 2. Perform an external join to the emulation group.
 3. Replace the virtual client's active key material by performing the following
    steps. Before each step, generate, derive or otherwise obtain the necessary
-   credential and private signature key material. Ensure that other emulation
+   credential and private signature key material. Ensure that other emulator
    clients can obtain the private key material. Details on credential and
    signature key generation and distribution are left to the application. The
    application MAY derive signature key material based on the new emulation
@@ -1370,10 +1374,10 @@ If those prerequisites are met, the new client needs to follow these steps:
       new emulation group epoch.
    2. Perform an external join to all of the groups that the virtual client is a
       member of, using LeafNodes generated from the new emulation group epoch
-      (see {{generating-virtual-client-secrets}}). Welcome messages which were
-      unprocessed by the offline devices are discarded, and these groups are
-      joined externally instead (potentially being queued for user approval
-      first).
+      (see {{generating-virtual-client-secrets}}). Welcome messages that were
+      not processed by the offline emulator clients are discarded, and these
+      groups are joined externally instead (potentially being queued for user
+      approval first).
 
 ## Removing emulator clients
 
@@ -1388,7 +1392,7 @@ proposal that removes the target client MUST take the following steps in order:
    DS. The set of outstanding KeyPackages can be determined from the
    `KeyPackageUpload` messages previously sent to the emulation group (see
    {{creating-and-uploading-keypackages}}).
-2. Commit a Remove proposal for the emulation client to be removed in the
+2. Commit a Remove proposal for the emulator client to be removed in the
    emulation group, advancing it to a new epoch from which new virtual client
    secrets will be derived (see {{generating-virtual-client-secrets}}).
 
@@ -1397,7 +1401,7 @@ material for the virtual client that can be used to replace existing credentials
 and authentication key material in the next steps. The application MAY use the
 `signature_key_secret` derived from any of the `operation_secret`s during the
 next steps to derive group-specific key material. The application SHOULD take
-steps to revoke any valid long lived credentials associated with the virtual
+steps to revoke any valid long-lived credentials associated with the virtual
 client that the removed emulator client had access to.
 
 Using the new emulation-group epoch, any combination of remaining emulator
