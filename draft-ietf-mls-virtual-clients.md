@@ -580,16 +580,17 @@ The `ciphertext` is the serialized DerivationInfoTBE encrypted with the AEAD
 scheme of the emulation group's ciphersuite, with the `epoch_id` as AAD. The
 `LeafNode.leaf_node_source` selector is the `leaf_node_source` of the LeafNode
 carrying the DerivationInfo. The AEAD key and nonce are derived from the
-epoch's `epoch_encryption_key`, using
-the serialized `encryption_key` field of the LeafNode carrying the component
-as context. The `ExpandWithLabel` invocations and the `AEAD.Nk` and `AEAD.Nn`
-values in this derivation are from the emulation group's ciphersuite:
+epoch's `epoch_encryption_key` with `serialized_encryption_key` as context,
+which is the TLS-serialized HPKEPublicKey from the `encryption_key` field of
+the LeafNode carrying the component, including its length prefix. The
+`ExpandWithLabel` invocations and the `AEAD.Nk` and `AEAD.Nn` values in this
+derivation are from the emulation group's ciphersuite:
 
 ~~~
 derivation_info_key = ExpandWithLabel(epoch_encryption_key, "key",
-                                      encryption_key, AEAD.Nk)
+                                      serialized_encryption_key, AEAD.Nk)
 derivation_info_nonce = ExpandWithLabel(epoch_encryption_key, "nonce",
-                                        encryption_key, AEAD.Nn)
+                                        serialized_encryption_key, AEAD.Nn)
 ~~~
 
 Since every virtual client operation produces a LeafNode with a fresh
