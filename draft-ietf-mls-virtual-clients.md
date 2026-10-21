@@ -1149,6 +1149,18 @@ enum {
 } SecretTreeRatchetType;
 
 struct {
+  uint32 generation;
+  select (SecretTreeRatchetState.ratchet_type) {
+    case application:
+    case handshake:
+      opaque key<V>;
+      opaque nonce<V>;
+    case operation:
+      opaque operation_generation_secret<V>;
+  };
+} SecretTreeGenerationState;
+
+struct {
   uint32 leaf_index;
   SecretTreeRatchetType ratchet_type;
   select (SecretTreeRatchetState.ratchet_type) {
@@ -1161,6 +1173,7 @@ struct {
   };
   uint32 generation;
   opaque next_secret<V>;
+  SecretTreeGenerationState retained_generations<V>;
 } SecretTreeRatchetState;
 
 struct {
@@ -1255,7 +1268,13 @@ struct {
   Each `SecretTreeNodeState` contains an unexpanded tree node secret and its
   RFC 9420 tree node index. Each `SecretTreeRatchetState` contains the current
   state of a derived per-leaf hash ratchet; `next_secret` is the ratchet secret
-  that will be used to derive the secret for `generation`. The serialized state
+  that will be used to derive the secret for `generation`.
+  `retained_generations` holds one entry for each earlier generation whose
+  values are retained to handle out-of-order messages or operations (see
+  {{Section 9.2 of !RFC9420}} and {{generating-virtual-client-secrets}}): the
+  AEAD `key` and `nonce` of that generation for an `application` or
+  `handshake` ratchet, or its `operation_generation_secret` for an
+  `operation` ratchet. The serialized state
   MUST contain exactly the retained secrets needed to continue the Secret Tree
   deletion schedule from the sender's current state and MUST NOT contain
   secrets that have already been deleted. The `application` and `handshake`
