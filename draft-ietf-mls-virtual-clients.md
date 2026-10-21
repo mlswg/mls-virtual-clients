@@ -505,10 +505,16 @@ init_key_secret =
   DeriveSecret(key_package_seed_secret, "Init Key")
 ~~~
 
-These `DeriveSecret` invocations use the target ciphersuite. The
-`init_key_secret` and `encryption_key_secret` are used with the target
-ciphersuite's KEM to derive the corresponding HPKE key pairs. The
-`path_generation_secret` is used as the first `path_secret` under the target
+These `DeriveSecret` invocations use the target ciphersuite. The HPKE key
+pairs are derived with the target ciphersuite's KEM:
+
+~~~
+init_priv, init_pub = KEM.DeriveKeyPair(init_key_secret)
+
+encryption_priv, encryption_pub = KEM.DeriveKeyPair(encryption_key_secret)
+~~~
+
+The `path_generation_secret` is used as the first `path_secret` under the target
 ciphersuite. All subsequent MLS processing prescribed by {{!RFC9420}} for the
 KeyPackage, LeafNode, UpdatePath, or higher-level group, including signatures
 and hash references, uses the target ciphersuite.
@@ -518,7 +524,10 @@ application MAY use `signature_key_secret` with the target ciphersuite's
 signature algorithm to derive a fresh signing key per operation, or MAY provide
 signing-key material through other means, for example a per-group or global
 signing key issued by the Authentication Service, or a signing key derived from
-an emulation-group epoch secret.
+an emulation-group epoch secret. An application that uses
+`signature_key_secret` MUST specify how that secret is mapped to a key pair for
+the target ciphersuite's signature algorithm, so that all emulator clients
+derive the same signing key.
 Whatever the choice, the `signing_key_material` field of
 NewEmulatorClientState (see {{adding-an-emulator-client}}) carries the
 state a new emulator client needs; its contents are application-defined.
@@ -824,8 +833,10 @@ uses `cipher_suite` as the target ciphersuite and uses `cipher_suite` and
 seed secret, then derives the KeyPackage's `init_key` and LeafNode key material
 from that seed. The sender MUST set `cipher_suite` to the ciphersuite in the
 corresponding KeyPackage. If a recipient obtains the KeyPackage, it MUST verify
-that the two values match. If the recipient receives a Welcome, it can then
-check which `init_key` to use based on the KeyPackageRef.
+that the two values match. If they do not match, the recipient MUST discard the
+material for that KeyPackageRef and MUST NOT process Welcome messages addressed
+to it. If the recipient receives a Welcome, it can then check which `init_key`
+to use based on the KeyPackageRef.
 
 To preserve outstanding KeyPackage semantics, recipients MUST process the
 KeyPackageUpload at receipt time and retain per-KeyPackage material sufficient
@@ -1317,8 +1328,9 @@ current epoch's key-schedule outputs and the retained per-epoch state:
   data on incoming PrivateMessages.
 - `exporter_secret` lets the joining emulator client produce
   application-level exports from this epoch.
-- `external_secret` lets other parties perform further external
-  commits from this epoch.
+- `external_secret` lets the joining emulator client derive `external_priv`
+  and `external_pub` ({{Section 8.3 of !RFC9420}}), so that it can process
+  external Commits sent in this epoch and publish GroupInfo for this epoch.
 - `confirmation_key` lets the joining emulator client verify the
   `confirmation_tag` on any incoming Commit.
 - `membership_key` lets the joining emulator client produce a valid
@@ -1529,6 +1541,10 @@ the virtual client.
 
 The following residual metadata remains observable:
 
+- To fan out messages as described in {{delivery-service}}, the DS learns
+  which emulator clients stand behind each virtual client leaf, and usually
+  which of them submitted each message, unless the application routes messages
+  through some other indirection.
 - The presence of a DerivationInfo in a LeafNode reveals to anyone
   with access to the ratchet tree (including a DS that distributes GroupInfo
   or ratchet trees) that the leaf belongs to a virtual client. Applications
@@ -1584,4 +1600,5 @@ The requested registration is:
 - Value: 0x667A (temporary)
 - Name: virtual_clients
 - Where: GI, LN, AD, ES
-- Recommended: Y
+- Recommended: N
+- Reference: RFC XXXX
