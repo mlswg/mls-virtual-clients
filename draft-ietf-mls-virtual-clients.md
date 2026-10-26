@@ -2,7 +2,7 @@
 title: MLS Virtual Clients
 abbrev: MVC
 docname: draft-ietf-mls-virtual-clients-latest
-category: info
+category: std
 
 ipr: trust200902
 area: Security
@@ -54,7 +54,7 @@ application, virtual clients can help hide metadata and improve performance.
 
 The MLS protocol facilitates communication between clients, where in an MLS
 group, each client is represented by the leaf to which it holds the private key
-material. In this document, we propose the notion of a virtual client that is
+material. This document defines the notion of a virtual client that is
 jointly emulated by a group of emulator clients, where each emulator client
 holds the key material necessary to act as the virtual client.
 
@@ -64,9 +64,9 @@ provides a new way for applications to structure groups, can improve performance
 and help hide group metadata. The effect of the use of virtual clients depends
 largely on how it is applied (see {{applications}}).
 
-We discuss technical challenges and propose a concrete scheme that allows a
-group of clients to emulate a virtual client that can participate in one or more
-MLS groups.
+This document discusses the technical challenges and specifies a concrete scheme
+that allows a group of clients to emulate a virtual client that can participate
+in one or more MLS groups.
 
 # Terminology
 
@@ -966,7 +966,7 @@ delete the encryption key after using it to decrypt the first message they
 receive and will be unable to decrypt subsequent messages.
 
 The best solution depends on whether the Delivery Service is strongly or
-eventually consistent {{!RFC9750}}. Emulator clients communicating with a
+eventually consistent {{?RFC9750}}. Emulator clients communicating with a
 strongly-consistent DS can prevent this issue by having the DS proactively
 reject any messages that would use the same generation counter as a message that
 was already accepted. Alternatively, clients communicating with an
