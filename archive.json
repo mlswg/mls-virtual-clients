@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-22T03:08:54.682805+00:00",
+  "timestamp": "2026-10-27T03:34:19.884674+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -271,9 +271,17 @@
       "labels": [],
       "body": "L187-189 says a virtual client's PrivateMessage \"can be decrypted by all emulator clients except the one that sent it\", but those messages carry the virtual client's own leaf index as sender, which typical RFC 9420 implementations reject as their own message. Nothing says emulator clients MUST accept them, or that decrypting one at generation g advances the shared ratchet so later sends start at g+1 (which also reduces the collisions handled in L956-975).\n\nSuggest one or two sentences to that effect in the Delivery Service section.\n\nFound reviewing -01 for mimid. Lines are draft-ietf-mls-virtual-clients.md at 65e960d.\n",
       "createdAt": "2026-10-21T17:39:27Z",
-      "updatedAt": "2026-10-21T17:39:27Z",
+      "updatedAt": "2026-10-26T10:29:06Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "body": "What is the reason for the MUST exactly? I think the ratchet mechanics are quite clear already.",
+          "createdAt": "2026-10-26T10:29:06Z",
+          "updatedAt": "2026-10-26T10:29:06Z"
+        }
+      ]
     }
   ],
   "pulls": [
@@ -1599,7 +1607,7 @@
       "labels": [],
       "body": "Fixes #37.\n\nAdds `interim_transcript_hash` to the `state_transfer` case, with a bullet on why the joiner needs it: the GroupContext gives only the confirmed transcript hash, and RFC 9420 \u00a78.2 needs the last `confirmation_tag` for the interim one. Requiring the application-defined source to be a GroupInfo would also work.\n",
       "createdAt": "2026-10-21T18:14:34Z",
-      "updatedAt": "2026-10-21T18:14:34Z",
+      "updatedAt": "2026-10-26T10:36:00Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1611,7 +1619,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABUM7j_w",
+          "commit": {
+            "abbreviatedOid": "da65c4a"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-26T10:36:00Z",
+          "updatedAt": "2026-10-26T10:36:00Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 47,
@@ -1651,7 +1673,7 @@
       "labels": [],
       "body": "Fixes #39.\n\nEmulator clients MUST compare the re-derived public keys with the received LeafNode and UpdatePathNode keys, and reject the carrying message on a mismatch, unknown `epoch_id`, DerivationInfo that won't decrypt, or a deleted generation with nothing retained. Rejecting can leave that client out of step with a group that accepted the Commit; marking the virtual client's state for resync is the alternative.\n",
       "createdAt": "2026-10-21T18:14:40Z",
-      "updatedAt": "2026-10-21T18:14:40Z",
+      "updatedAt": "2026-10-26T10:35:10Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1663,7 +1685,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABUM7ANQ",
+          "commit": {
+            "abbreviatedOid": "0faa963"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-26T10:35:10Z",
+          "updatedAt": "2026-10-26T10:35:10Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 49,
@@ -1677,7 +1713,7 @@
       "labels": [],
       "body": "Fixes #40.\n\nThe DerivationInfo key/nonce context is now `serialized_encryption_key`, defined as the TLS-serialized HPKEPublicKey including its length prefix, and the formula uses that name. Raw key bytes would also work if you prefer.\n",
       "createdAt": "2026-10-21T18:14:43Z",
-      "updatedAt": "2026-10-21T18:14:43Z",
+      "updatedAt": "2026-10-26T10:34:04Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1689,7 +1725,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABUM6HfA",
+          "commit": {
+            "abbreviatedOid": "1d2c9c9"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-26T10:34:04Z",
+          "updatedAt": "2026-10-26T10:34:04Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 50,
@@ -1703,7 +1753,7 @@
       "labels": [],
       "body": "Fixes #41.\n\nAdds `retained_generations` to SecretTreeRatchetState so the \"exactly the retained secrets\" MUST can be met. Application/handshake entries hold the AEAD key and nonce (what RFC 9420 \u00a79.2 keeps for skipped generations, so the deletion schedule is unchanged); operation entries hold the generation secret, since `operation_context` isn't known until the operation arrives. The alternative is to say skipped state isn't transferred and relax the MUST.\n",
       "createdAt": "2026-10-21T18:14:45Z",
-      "updatedAt": "2026-10-21T18:14:45Z",
+      "updatedAt": "2026-10-26T10:31:11Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1715,7 +1765,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABUM30FQ",
+          "commit": {
+            "abbreviatedOid": "da96fa2"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-26T10:31:11Z",
+          "updatedAt": "2026-10-26T10:31:11Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 51,
@@ -1729,7 +1793,7 @@
       "labels": [],
       "body": "Fixes #42.\n\nEach `direct_path_private_keys` entry is now a DirectPathPrivateKey with an explicit `node_index`, and nodes where the virtual client's leaf is unmerged get no entry, so a missing key can't shift later keys onto the wrong nodes.\n",
       "createdAt": "2026-10-21T18:14:47Z",
-      "updatedAt": "2026-10-21T18:14:47Z",
+      "updatedAt": "2026-10-26T10:30:02Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1741,7 +1805,21 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABUM20jg",
+          "commit": {
+            "abbreviatedOid": "15a19f6"
+          },
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-26T10:30:02Z",
+          "updatedAt": "2026-10-26T10:30:02Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 52,
@@ -1781,7 +1859,7 @@
       "labels": [],
       "body": "Low-severity fixes from reviewing -01 for mimid; each is independent, so drop any you don't want.\n\n- HPKE key pairs from `init_key_secret` and `encryption_key_secret` were described only in prose, which lets emulator clients diverge (for example by adding RFC 9420's \"node\" step); the text now gives `KEM.DeriveKeyPair(...)` explicitly.\n- Nothing said how `signature_key_secret` becomes a signing key, so emulator clients could derive different keys; an application that uses it now MUST specify that mapping for the target signature algorithm.\n- No action was defined when `KeyPackageInfo.cipher_suite` and the KeyPackage's ciphersuite differ; the recipient now MUST discard that KeyPackageRef's material and MUST NOT process Welcomes addressed to it.\n- The `external_secret` bullet said only that it lets others do external commits; it now says the joining emulator client needs it to derive `external_priv`/`external_pub`, process external Commits and publish GroupInfo for the epoch.\n- Privacy Considerations did not mention that the fan-out DS learns which emulator clients stand behind a virtual client leaf and which one sent each message; added a residual-metadata bullet.\n- The IANA registration asked for Recommended: Y, which RFC 9420 Section 17.1 reserves for Standards Action, and lacked the template's Reference field; it is now Recommended: N with Reference: RFC XXXX.\n\nNot changed here: three more points touch text that #30 rewrites, so they're in a comment on #30 instead.",
       "createdAt": "2026-10-21T18:45:46Z",
-      "updatedAt": "2026-10-21T18:45:46Z",
+      "updatedAt": "2026-10-26T13:10:45Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
@@ -1792,8 +1870,56 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "kkohbrok",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks for the fixes. I hadn't realized that this I-D was set to `informational`. I've filed #54 to change that. That then also makes the change to `RECOMMENDED: N` unnecessary.",
+          "createdAt": "2026-10-26T13:10:44Z",
+          "updatedAt": "2026-10-26T13:10:44Z"
+        }
+      ],
       "reviews": []
+    },
+    {
+      "number": 54,
+      "id": "PR_kwDOKsv6Xc8AAAABKxgJ9Q",
+      "title": "Change intended status to Standards Track",
+      "url": "https://github.com/mlswg/mls-virtual-clients/pull/54",
+      "state": "OPEN",
+      "author": "kkohbrok",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-10-26T13:09:15Z",
+      "updatedAt": "2026-10-26T16:01:54Z",
+      "baseRepository": "mlswg/mls-virtual-clients",
+      "baseRefName": "main",
+      "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
+      "headRepository": "mlswg/mls-virtual-clients",
+      "headRefName": "konrad/change_tracks",
+      "headRefOid": "b3842d263c33519d4d9d9fbb904d7031d1f2527b",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABURGFyQ",
+          "commit": {
+            "abbreviatedOid": "b3842d2"
+          },
+          "author": "Bren2010",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-10-26T16:01:54Z",
+          "updatedAt": "2026-10-26T16:01:54Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
