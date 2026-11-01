@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-27T03:34:19.884674+00:00",
+  "timestamp": "2026-11-01T04:09:49.166828+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -271,7 +271,7 @@
       "labels": [],
       "body": "L187-189 says a virtual client's PrivateMessage \"can be decrypted by all emulator clients except the one that sent it\", but those messages carry the virtual client's own leaf index as sender, which typical RFC 9420 implementations reject as their own message. Nothing says emulator clients MUST accept them, or that decrypting one at generation g advances the shared ratchet so later sends start at g+1 (which also reduces the collisions handled in L956-975).\n\nSuggest one or two sentences to that effect in the Delivery Service section.\n\nFound reviewing -01 for mimid. Lines are draft-ietf-mls-virtual-clients.md at 65e960d.\n",
       "createdAt": "2026-10-21T17:39:27Z",
-      "updatedAt": "2026-10-26T10:29:06Z",
+      "updatedAt": "2026-10-31T21:18:48Z",
       "closedAt": null,
       "comments": [
         {
@@ -280,6 +280,13 @@
           "body": "What is the reason for the MUST exactly? I think the ratchet mechanics are quite clear already.",
           "createdAt": "2026-10-26T10:29:06Z",
           "updatedAt": "2026-10-26T10:29:06Z"
+        },
+        {
+          "author": "MarkAtwood",
+          "authorAssociation": "NONE",
+          "body": "The ratchet part is clear, agreed. The problem is the step before it. Stock 9420 libraries reject a PrivateMessage whose sender is their own leaf index (OpenMLS has a specific CannotDecryptOwnMessage error), so an emulator client built on one silently drops its siblings' messages and its copy of the ratchet falls behind. Nothing in the draft tells implementers they have to turn that check off.\n\nDoesn't have to be a MUST if you'd rather not. Plain \"emulator clients accept PrivateMessages from the virtual client's own leaf\" would do it, as long as it's said.\n",
+          "createdAt": "2026-10-31T21:18:48Z",
+          "updatedAt": "2026-10-31T21:18:48Z"
         }
       ]
     }
@@ -1859,13 +1866,13 @@
       "labels": [],
       "body": "Low-severity fixes from reviewing -01 for mimid; each is independent, so drop any you don't want.\n\n- HPKE key pairs from `init_key_secret` and `encryption_key_secret` were described only in prose, which lets emulator clients diverge (for example by adding RFC 9420's \"node\" step); the text now gives `KEM.DeriveKeyPair(...)` explicitly.\n- Nothing said how `signature_key_secret` becomes a signing key, so emulator clients could derive different keys; an application that uses it now MUST specify that mapping for the target signature algorithm.\n- No action was defined when `KeyPackageInfo.cipher_suite` and the KeyPackage's ciphersuite differ; the recipient now MUST discard that KeyPackageRef's material and MUST NOT process Welcomes addressed to it.\n- The `external_secret` bullet said only that it lets others do external commits; it now says the joining emulator client needs it to derive `external_priv`/`external_pub`, process external Commits and publish GroupInfo for the epoch.\n- Privacy Considerations did not mention that the fan-out DS learns which emulator clients stand behind a virtual client leaf and which one sent each message; added a residual-metadata bullet.\n- The IANA registration asked for Recommended: Y, which RFC 9420 Section 17.1 reserves for Standards Action, and lacked the template's Reference field; it is now Recommended: N with Reference: RFC XXXX.\n\nNot changed here: three more points touch text that #30 rewrites, so they're in a comment on #30 instead.",
       "createdAt": "2026-10-21T18:45:46Z",
-      "updatedAt": "2026-10-26T13:10:45Z",
+      "updatedAt": "2026-10-31T21:18:49Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "65e960dfe67583e5d1a165b1191148f84e2ae14a",
       "headRepository": "MarkAtwood/mls-virtual-clients",
       "headRefName": "lows",
-      "headRefOid": "a4339c5cab9dc5e18f389438a9f9b3937d206aae",
+      "headRefOid": "1f299fb00413c567c40ab8b9bcc5f787d6a01e7d",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -1877,6 +1884,13 @@
           "body": "Thanks for the fixes. I hadn't realized that this I-D was set to `informational`. I've filed #54 to change that. That then also makes the change to `RECOMMENDED: N` unnecessary.",
           "createdAt": "2026-10-26T13:10:44Z",
           "updatedAt": "2026-10-26T13:10:44Z"
+        },
+        {
+          "author": "MarkAtwood",
+          "authorAssociation": "NONE",
+          "body": "Makes sense, Standards Track is the right fix. Put Recommended back to Y and kept the Reference field; the rest is unchanged.\n",
+          "createdAt": "2026-10-31T21:18:49Z",
+          "updatedAt": "2026-10-31T21:18:49Z"
         }
       ],
       "reviews": []
