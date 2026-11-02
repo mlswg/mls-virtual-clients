@@ -1109,6 +1109,11 @@ added emulator client.
 opaque HPKEPrivateKey<V>;
 
 struct {
+  uint32 node_index;
+  HPKEPrivateKey private_key;
+} DirectPathPrivateKey;
+
+struct {
   uint8 prefix_length;
   opaque prefix<V>;
   opaque node_secret<V>;
@@ -1216,7 +1221,7 @@ struct {
       opaque epoch_authenticator<V>;
       SecretTreeState secret_tree;
       PPRFState safe_exporter_tree;
-      HPKEPrivateKey direct_path_private_keys<V>;
+      DirectPathPrivateKey direct_path_private_keys<V>;
     case external_commit:
       struct{};
   };
@@ -1333,11 +1338,12 @@ current epoch's key-schedule outputs and the retained per-epoch state:
   Exporter Tree if the higher-level group uses that API. If the group does not
   use the Safe Exporter API, `nodes` is zero-length. When used for a Safe
   Exporter Tree, `PPRFState` paths are 16-bit paths indexed by `ComponentID`.
-- `direct_path_private_keys` is the list of HPKE private keys for each non-blank
-  node in the virtual client's filtered direct path. The first entry is the
-  private key for the parent of the virtual client's leaf, if that node is
-  non-blank. Subsequent entries correspond to the next non-blank nodes on the
-  direct path toward the root, in order. The virtual client's leaf private key
+- `direct_path_private_keys` contains one entry for each non-blank node in the
+  virtual client's filtered direct path whose private key the virtual client
+  holds. Each entry carries the node's RFC 9420 tree node index in `node_index`
+  and its HPKE private key in `private_key`. Nodes at which the virtual
+  client's leaf is unmerged ({{Section 4.2 of !RFC9420}}) have no entry. The
+  virtual client's leaf private key
   itself is derivable from the retained operation secret or retained
   per-KeyPackage material identified by the DerivationInfo on the current
   LeafNode and is therefore not transferred explicitly.
