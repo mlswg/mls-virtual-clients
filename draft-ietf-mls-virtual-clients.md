@@ -634,6 +634,17 @@ LeafNode key material. For an `update` or `commit` LeafNode, they import the
 `operation_secret` into the higher-level group's ciphersuite before re-creating
 the LeafNode and UpdatePath key material.
 
+After re-creating the key material, the emulator client MUST verify that the
+derived public keys are equal to the received ones: the LeafNode's
+`encryption_key` and, if the LeafNode is sent with an UpdatePath, the
+`encryption_key` of each UpdatePathNode. The emulator client MUST reject the
+message carrying the LeafNode (for example, a Commit, an Update proposal, or a
+Welcome) if any of these keys differ, if the `epoch_id` does not identify an
+emulation-group epoch for which it holds the required state, if the
+DerivationInfo cannot be decrypted, or if the required operation-ratchet
+generation has been deleted and no corresponding RetainedOperationSecret or
+RetainedKeyPackageMaterial is available.
+
 When processing an external Commit sent by the virtual client, an emulator
 client uses the `external_init_secret` from the DerivationInfoTBE as the
 external init secret for the new epoch. If `external_init_secret` is absent,
