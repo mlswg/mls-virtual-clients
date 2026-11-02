@@ -1367,6 +1367,7 @@ Table of Contents
          opaque membership_key<V>;
          opaque resumption_psk<V>;
          opaque epoch_authenticator<V>;
+         opaque interim_transcript_hash<V>;
          SecretTreeState secret_tree;
          PPRFState safe_exporter_tree;
          DirectPathPrivateKey direct_path_private_keys<V>;
@@ -1511,6 +1512,11 @@ Table of Contents
       them.
 
    *  epoch_authenticator authenticates the current group state.
+
+   *  interim_transcript_hash is the group's current interim transcript
+      hash (Section 8.2 of [RFC9420]).  The joining emulator client
+      cannot compute it from the GroupContext alone and needs it to
+      compute the confirmed_transcript_hash of the next epoch.
 
    *  secret_tree is the current state of the group's Secret Tree, from
       which the joining emulator client derives per-member handshake-

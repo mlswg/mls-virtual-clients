@@ -2628,6 +2628,7 @@ struct {
       opaque membership_key&lt;V&gt;;
       opaque resumption_psk&lt;V&gt;;
       opaque epoch_authenticator&lt;V&gt;;
+      opaque interim_transcript_hash&lt;V&gt;;
       SecretTreeState secret_tree;
       PPRFState safe_exporter_tree;
       DirectPathPrivateKey direct_path_private_keys&lt;V&gt;;
@@ -2786,18 +2787,24 @@ origin for resumption PSKs in this epoch, if the application uses them.<a href="
               <p id="section-6.1.2-5.8.1"><code>epoch_authenticator</code> authenticates the current group state.<a href="#section-6.1.2-5.8.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.1.2-5.9">
-              <p id="section-6.1.2-5.9.1"><code>secret_tree</code> is the current state of the group's Secret Tree, from
-which the joining emulator client derives per-member handshake- and
-application-ratchet keys needed to decrypt in-flight PrivateMessages.<a href="#section-6.1.2-5.9.1" class="pilcrow">¶</a></p>
+              <p id="section-6.1.2-5.9.1"><code>interim_transcript_hash</code> is the group's current interim transcript hash
+(<span><a href="https://rfc-editor.org/rfc/rfc9420#section-8.2" class="relref">Section 8.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>). The joining emulator client cannot compute it
+from the GroupContext alone and needs it to compute the
+<code>confirmed_transcript_hash</code> of the next epoch.<a href="#section-6.1.2-5.9.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.1.2-5.10">
-              <p id="section-6.1.2-5.10.1"><code>safe_exporter_tree</code> is the current punctured state of the Safe Exporter API's
-Exporter Tree if the higher-level group uses that API. If the group does not
-use the Safe Exporter API, <code>nodes</code> is zero-length. When used for a Safe
-Exporter Tree, <code>PPRFState</code> paths are 16-bit paths indexed by <code>ComponentID</code>.<a href="#section-6.1.2-5.10.1" class="pilcrow">¶</a></p>
+              <p id="section-6.1.2-5.10.1"><code>secret_tree</code> is the current state of the group's Secret Tree, from
+which the joining emulator client derives per-member handshake- and
+application-ratchet keys needed to decrypt in-flight PrivateMessages.<a href="#section-6.1.2-5.10.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.1.2-5.11">
-              <p id="section-6.1.2-5.11.1"><code>direct_path_private_keys</code> contains one entry for each non-blank node in the
+              <p id="section-6.1.2-5.11.1"><code>safe_exporter_tree</code> is the current punctured state of the Safe Exporter API's
+Exporter Tree if the higher-level group uses that API. If the group does not
+use the Safe Exporter API, <code>nodes</code> is zero-length. When used for a Safe
+Exporter Tree, <code>PPRFState</code> paths are 16-bit paths indexed by <code>ComponentID</code>.<a href="#section-6.1.2-5.11.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-6.1.2-5.12">
+              <p id="section-6.1.2-5.12.1"><code>direct_path_private_keys</code> contains one entry for each non-blank node in the
 virtual client's filtered direct path whose private key the virtual client
 holds. Each entry carries the node's RFC 9420 tree node index in <code>node_index</code>
 and its HPKE private key in <code>private_key</code>. Nodes at which the virtual
@@ -2805,7 +2812,7 @@ client's leaf is unmerged (<span><a href="https://rfc-editor.org/rfc/rfc9420#sec
 virtual client's leaf private key
 itself is derivable from the retained operation secret or retained
 per-KeyPackage material identified by the DerivationInfo on the current
-LeafNode and is therefore not transferred explicitly.<a href="#section-6.1.2-5.11.1" class="pilcrow">¶</a></p>
+LeafNode and is therefore not transferred explicitly.<a href="#section-6.1.2-5.12.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 <p id="section-6.1.2-6">For <code>external_commit</code> entries, no additional per-group fields are included. The
