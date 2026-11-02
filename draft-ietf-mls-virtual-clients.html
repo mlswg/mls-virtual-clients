@@ -1939,11 +1939,21 @@ ciphersuite as the target ciphersuite, and use that seed to re-create the
 LeafNode key material. For an <code>update</code> or <code>commit</code> LeafNode, they import the
 <code>operation_secret</code> into the higher-level group's ciphersuite before re-creating
 the LeafNode and UpdatePath key material.<a href="#section-5.3-10" class="pilcrow">¶</a></p>
-<p id="section-5.3-11">When processing an external Commit sent by the virtual client, an emulator
+<p id="section-5.3-11">After re-creating the key material, the emulator client <span class="bcp14">MUST</span> verify that the
+derived public keys are equal to the received ones: the LeafNode's
+<code>encryption_key</code> and, if the LeafNode is sent with an UpdatePath, the
+<code>encryption_key</code> of each UpdatePathNode. The emulator client <span class="bcp14">MUST</span> reject the
+message carrying the LeafNode (for example, a Commit, an Update proposal, or a
+Welcome) if any of these keys differ, if the <code>epoch_id</code> does not identify an
+emulation-group epoch for which it holds the required state, if the
+DerivationInfo cannot be decrypted, or if the required operation-ratchet
+generation has been deleted and no corresponding RetainedOperationSecret or
+RetainedKeyPackageMaterial is available.<a href="#section-5.3-11" class="pilcrow">¶</a></p>
+<p id="section-5.3-12">When processing an external Commit sent by the virtual client, an emulator
 client uses the <code>external_init_secret</code> from the DerivationInfoTBE as the
 external init secret for the new epoch. If <code>external_init_secret</code> is absent,
-the emulator client <span class="bcp14">MUST</span> reject the Commit.<a href="#section-5.3-11" class="pilcrow">¶</a></p>
-<p id="section-5.3-12">The <code>external_init_secret</code> is carried in the DerivationInfo because the other
+the emulator client <span class="bcp14">MUST</span> reject the Commit.<a href="#section-5.3-12" class="pilcrow">¶</a></p>
+<p id="section-5.3-13">The <code>external_init_secret</code> is carried in the DerivationInfo because the other
 emulator clients cannot always derive it themselves. If the external Commit
 resynchronizes the virtual client's membership in a group it is already a
 member of, the other emulator clients hold the previous epoch's
@@ -1951,14 +1961,14 @@ member of, the other emulator clients hold the previous epoch's
 the ExternalInit proposal (<span><a href="https://rfc-editor.org/rfc/rfc9420#section-8.3" class="relref">Section 8.3</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>). If the virtual client
 externally joins a group it was not previously a member of, however, they hold
 no prior epoch state for that group and cannot. Carrying the init secret in
-the DerivationInfo covers both cases uniformly.<a href="#section-5.3-12" class="pilcrow">¶</a></p>
-<p id="section-5.3-13">The <code>DerivationInfo</code> on the active virtual-client LeafNode binds that
+the DerivationInfo covers both cases uniformly.<a href="#section-5.3-13" class="pilcrow">¶</a></p>
+<p id="section-5.3-14">The <code>DerivationInfo</code> on the active virtual-client LeafNode binds that
 virtual client's membership in the higher-level group to the emulation-group
 epoch identified by <code>epoch_id</code>. Protocol steps that require per-epoch
 emulation-group state for a higher-level group, such as computing the
 <code>reuse_guard</code> (<a href="#reuse-guard" class="auto internal xref">Section 5.6.2</a>) or a generation ID
 (<a href="#coordinating-ratchet-generations-with-the-ds" class="auto internal xref">Section 5.6.3</a>), <span class="bcp14">MUST</span> use the
-emulation-group epoch identified by the active virtual-client LeafNode.<a href="#section-5.3-13" class="pilcrow">¶</a></p>
+emulation-group epoch identified by the active virtual-client LeafNode.<a href="#section-5.3-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="creating-groups-with-the-virtual-client">
