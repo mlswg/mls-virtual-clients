@@ -2485,6 +2485,11 @@ added emulator client.<a href="#section-6.1.2-1" class="pilcrow">¶</a></p>
 opaque HPKEPrivateKey&lt;V&gt;;
 
 struct {
+  uint32 node_index;
+  HPKEPrivateKey private_key;
+} DirectPathPrivateKey;
+
+struct {
   uint8 prefix_length;
   opaque prefix&lt;V&gt;;
   opaque node_secret&lt;V&gt;;
@@ -2592,7 +2597,7 @@ struct {
       opaque epoch_authenticator&lt;V&gt;;
       SecretTreeState secret_tree;
       PPRFState safe_exporter_tree;
-      HPKEPrivateKey direct_path_private_keys&lt;V&gt;;
+      DirectPathPrivateKey direct_path_private_keys&lt;V&gt;;
     case external_commit:
       struct{};
   };
@@ -2753,11 +2758,12 @@ use the Safe Exporter API, <code>nodes</code> is zero-length. When used for a Sa
 Exporter Tree, <code>PPRFState</code> paths are 16-bit paths indexed by <code>ComponentID</code>.<a href="#section-6.1.2-5.10.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-6.1.2-5.11">
-              <p id="section-6.1.2-5.11.1"><code>direct_path_private_keys</code> is the list of HPKE private keys for each non-blank
-node in the virtual client's filtered direct path. The first entry is the
-private key for the parent of the virtual client's leaf, if that node is
-non-blank. Subsequent entries correspond to the next non-blank nodes on the
-direct path toward the root, in order. The virtual client's leaf private key
+              <p id="section-6.1.2-5.11.1"><code>direct_path_private_keys</code> contains one entry for each non-blank node in the
+virtual client's filtered direct path whose private key the virtual client
+holds. Each entry carries the node's RFC 9420 tree node index in <code>node_index</code>
+and its HPKE private key in <code>private_key</code>. Nodes at which the virtual
+client's leaf is unmerged (<span><a href="https://rfc-editor.org/rfc/rfc9420#section-4.2" class="relref">Section 4.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span>) have no entry. The
+virtual client's leaf private key
 itself is derivable from the retained operation secret or retained
 per-KeyPackage material identified by the DerivationInfo on the current
 LeafNode and is therefore not transferred explicitly.<a href="#section-6.1.2-5.11.1" class="pilcrow">¶</a></p>
