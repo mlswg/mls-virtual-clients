@@ -2092,6 +2092,7 @@ struct {
   KeyPackageRef key_package_ref;
   CipherSuite cipher_suite;
   uint32 key_package_index;
+  Extension extensions&lt;V&gt;;
 } KeyPackageInfo;
 
 struct {
@@ -2118,20 +2119,26 @@ domain-separate this KeyPackage from the other KeyPackages in the same
 KeyPackageUpload. It <span class="bcp14">MUST</span> be unique within the KeyPackageUpload.<a href="#section-5.5.1-6.3.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.4">
-              <p id="section-5.5.1-6.4.1"><code>epoch_id</code>: The epoch ID of the emulation group epoch used to derive the
-batch <code>key_package</code> operation secret<a href="#section-5.5.1-6.4.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.4.1"><code>extensions</code>: The complete <code>extensions</code> vector from the generated
+KeyPackage. The sender <span class="bcp14">MUST</span> copy this vector without changing extension
+order or data, including unknown extensions and components.<a href="#section-5.5.1-6.4.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.5">
-              <p id="section-5.5.1-6.5.1"><code>leaf_index</code>: The leaf index of the emulator client in the emulation group
-that created the KeyPackages<a href="#section-5.5.1-6.5.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.5.1"><code>epoch_id</code>: The epoch ID of the emulation group epoch used to derive the
+batch <code>key_package</code> operation secret<a href="#section-5.5.1-6.5.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.6">
-              <p id="section-5.5.1-6.6.1"><code>generation</code>: The single <code>key_package</code> operation-ratchet generation used to
-derive the batch operation secret for this KeyPackageUpload<a href="#section-5.5.1-6.6.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.6.1"><code>leaf_index</code>: The leaf index of the emulator client in the emulation group
+that created the KeyPackages<a href="#section-5.5.1-6.6.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-5.5.1-6.7">
-              <p id="section-5.5.1-6.7.1"><code>key_package_info</code>: The information required to re-derive the
-<code>init_key_secret</code> for each individual KeyPackage<a href="#section-5.5.1-6.7.1" class="pilcrow">¶</a></p>
+              <p id="section-5.5.1-6.7.1"><code>generation</code>: The single <code>key_package</code> operation-ratchet generation used to
+derive the batch operation secret for this KeyPackageUpload<a href="#section-5.5.1-6.7.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.5.1-6.8">
+              <p id="section-5.5.1-6.8.1"><code>key_package_info</code>: The information required to re-derive the
+<code>init_key_secret</code> for each individual KeyPackage, together with its
+extensions<a href="#section-5.5.1-6.8.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 <p id="section-5.5.1-7">Any emulator client that receives a KeyPackageUpload message <span class="bcp14">MUST</span> verify that
@@ -2148,9 +2155,11 @@ that the two values match. If the recipient receives a Welcome, it can then
 check which <code>init_key</code> to use based on the KeyPackageRef.<a href="#section-5.5.1-7" class="pilcrow">¶</a></p>
 <p id="section-5.5.1-8">To preserve outstanding KeyPackage semantics, recipients <span class="bcp14">MUST</span> process the
 KeyPackageUpload at receipt time and retain per-KeyPackage material sufficient
-to process any Welcome for each listed KeyPackageRef. After deriving the
-per-KeyPackage material needed for the upload, recipients <span class="bcp14">MUST</span> delete the batch
-<code>operation_secret</code>.<a href="#section-5.5.1-8" class="pilcrow">¶</a></p>
+to process any Welcome for each listed KeyPackageRef. Recipients <span class="bcp14">MUST</span> retain the
+<code>extensions</code> vector with the corresponding KeyPackageRef and apply the semantics
+of recognized extensions and components when processing Welcome messages and
+managing the associated key material. After deriving the per-KeyPackage material
+needed for the upload, recipients <span class="bcp14">MUST</span> delete the batch <code>operation_secret</code>.<a href="#section-5.5.1-8" class="pilcrow">¶</a></p>
 <p id="section-5.5.1-9">How the creating client sends the message to the other emulator clients is up
 to the application, as long as every current emulator client receives it before
 the KeyPackages are made available and emulator clients added later receive
@@ -2556,6 +2565,7 @@ struct {
   uint32 leaf_index;
   uint32 generation;
   uint32 key_package_index;
+  Extension extensions&lt;V&gt;;
 } KeyPackageDerivationInfo;
 
 struct {
@@ -2662,10 +2672,10 @@ zero-length. See <a href="#generating-virtual-client-secrets" class="auto intern
 </li>
             <li class="normal" id="section-6.1.2-3.7">
               <p id="section-6.1.2-3.7.1"><code>active_key_packages</code> lists every KeyPackage the virtual client has
-outstanding. Each entry carries the KeyPackageRef and its <code>cipher_suite</code>
-together with the identifiers needed to find the corresponding
-per-KeyPackage material. When a Welcome arrives encrypted to one of these
-KeyPackages, the joining emulator client identifies the entry by
+outstanding. Each entry carries the KeyPackageRef, its <code>cipher_suite</code>, and its
+complete <code>extensions</code> vector, together with the identifiers needed to find the
+corresponding per-KeyPackage material. When a Welcome arrives encrypted to one
+of these KeyPackages, the joining emulator client identifies the entry by
 KeyPackageRef, then finds the <code>RetainedKeyPackageMaterial</code> matching
 <code>(cipher_suite, epoch_id, leaf_index, generation, key_package_index)</code>.<a href="#section-6.1.2-3.7.1" class="pilcrow">¶</a></p>
 </li>
