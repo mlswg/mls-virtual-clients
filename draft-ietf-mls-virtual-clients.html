@@ -2539,6 +2539,18 @@ enum {
 } SecretTreeRatchetType;
 
 struct {
+  uint32 generation;
+  select (SecretTreeRatchetState.ratchet_type) {
+    case application:
+    case handshake:
+      opaque key&lt;V&gt;;
+      opaque nonce&lt;V&gt;;
+    case operation:
+      opaque operation_generation_secret&lt;V&gt;;
+  };
+} SecretTreeGenerationState;
+
+struct {
   uint32 leaf_index;
   SecretTreeRatchetType ratchet_type;
   select (SecretTreeRatchetState.ratchet_type) {
@@ -2551,6 +2563,7 @@ struct {
   };
   uint32 generation;
   opaque next_secret&lt;V&gt;;
+  SecretTreeGenerationState retained_generations&lt;V&gt;;
 } SecretTreeRatchetState;
 
 struct {
@@ -2656,7 +2669,13 @@ key_package_index)</code>.<a href="#section-6.1.2-3.4.1" class="pilcrow">¶</a><
 Each <code>SecretTreeNodeState</code> contains an unexpanded tree node secret and its
 RFC 9420 tree node index. Each <code>SecretTreeRatchetState</code> contains the current
 state of a derived per-leaf hash ratchet; <code>next_secret</code> is the ratchet secret
-that will be used to derive the secret for <code>generation</code>. The serialized state
+that will be used to derive the secret for <code>generation</code>.
+<code>retained_generations</code> holds one entry for each earlier generation whose
+values are retained to handle out-of-order messages or operations (see
+<span><a href="https://rfc-editor.org/rfc/rfc9420#section-9.2" class="relref">Section 9.2</a> of [<a href="#RFC9420" class="cite xref">RFC9420</a>]</span> and <a href="#generating-virtual-client-secrets" class="auto internal xref">Section 5.2</a>): the
+AEAD <code>key</code> and <code>nonce</code> of that generation for an <code>application</code> or
+<code>handshake</code> ratchet, or its <code>operation_generation_secret</code> for an
+<code>operation</code> ratchet. The serialized state
 <span class="bcp14">MUST</span> contain exactly the retained secrets needed to continue the Secret Tree
 deletion schedule from the sender's current state and <span class="bcp14">MUST NOT</span> contain
 secrets that have already been deleted. The <code>application</code> and <code>handshake</code>
