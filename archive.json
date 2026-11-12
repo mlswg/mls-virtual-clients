@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-10T05:50:26.739958+00:00",
+  "timestamp": "2026-11-12T05:38:20.230037+00:00",
   "repo": "mlswg/mls-virtual-clients",
   "labels": [
     {
@@ -271,7 +271,7 @@
       "labels": [],
       "body": "L187-189 says a virtual client's PrivateMessage \"can be decrypted by all emulator clients except the one that sent it\", but those messages carry the virtual client's own leaf index as sender, which typical RFC 9420 implementations reject as their own message. Nothing says emulator clients MUST accept them, or that decrypting one at generation g advances the shared ratchet so later sends start at g+1 (which also reduces the collisions handled in L956-975).\n\nSuggest one or two sentences to that effect in the Delivery Service section.\n\nFound reviewing -01 for mimid. Lines are draft-ietf-mls-virtual-clients.md at 65e960d.\n",
       "createdAt": "2026-10-21T17:39:27Z",
-      "updatedAt": "2026-11-09T19:39:37Z",
+      "updatedAt": "2026-11-11T21:18:06Z",
       "closedAt": null,
       "comments": [
         {
@@ -294,6 +294,13 @@
           "body": "I agree that this should be a MUST because of the \"ratchet falling behind\" phenomenon happening if it's not done.",
           "createdAt": "2026-11-09T19:39:37Z",
           "updatedAt": "2026-11-09T19:39:37Z"
+        },
+        {
+          "author": "MarkAtwood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "#52 makes this a MUST, as @Bren2010 suggests, and he has approved it. @kkohbrok, OK to merge?",
+          "createdAt": "2026-11-11T21:18:06Z",
+          "updatedAt": "2026-11-11T21:18:06Z"
         }
       ]
     }
@@ -1364,7 +1371,7 @@
       "labels": [],
       "body": "Stacked on top of #29 ",
       "createdAt": "2026-08-05T14:58:04Z",
-      "updatedAt": "2026-10-21T18:46:03Z",
+      "updatedAt": "2026-11-11T22:28:52Z",
       "baseRepository": "mlswg/mls-virtual-clients",
       "baseRefName": "main",
       "baseRefOid": "b66b768c0cc8708472f8fa88d64a6729b16bba4c",
@@ -1378,13 +1385,27 @@
       "comments": [
         {
           "author": "MarkAtwood",
-          "authorAssociation": "NONE",
+          "authorAssociation": "CONTRIBUTOR",
           "body": "Three small points from reviewing -01 for mimid, left out of #53 because this PR rewrites the text they touch:\n\n- Virtual client actions ride in SafeAAD, but under extensions-10 \u00a74.9 SafeAAD framing applies only if the emulation group's GroupContext has a `safe_aad` component. Suggest: an emulation group that uses virtual client actions MUST list `virtual_clients` in `safe_aad`.\n- Adding an emulator client: an Update proposal from the virtual client can't be committed by any emulator client, since RFC 9420 \u00a712.2 forbids committing your own Update. Worth a sentence that another member must commit it, or that self-rotation uses a Commit with an UpdatePath.\n- Future VirtualClientOperationTypes are usable once all emulator clients derive them, but nothing signals when that holds. Suggest stating the set is fixed for this version, or tying new types to an emulation-group capability.\n",
           "createdAt": "2026-10-21T18:46:03Z",
           "updatedAt": "2026-10-21T18:46:03Z"
         }
       ],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOKsv6Xc8AAAABXaYrTw",
+          "commit": {
+            "abbreviatedOid": "ac762ac"
+          },
+          "author": "MarkAtwood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "The approach makes sense: refreshing virtual client secrets on explicit derivation epochs, not on every emulation-group Commit, is a clean way to decouple the two. Points, most important first:\n\n**1. Rebase.** There's one conflict, in the retention paragraph of \"Generating Virtual Client Secrets\". Since this branched, `main` has added a sentence saying what each retained item is used for. The two combine: keep this PR's list (with the derivation-epoch number and leaf count) and its retention-policy paragraphs, and put `main`'s \"used for\" sentence after the list.\n\n**2. Unknown `epoch_id`.** The new rule rejects a higher-level Commit whose LeafNode names an older derivation epoch than the active one. An emulator client can compare only the `epoch_id`s it still retains, since it maps them to emulation-group epoch numbers. If the `epoch_id` is one it never had, or deleted under the retention policy, the text doesn't say what happens. Suggest: an `epoch_id` the client can't map to a retained derivation epoch makes the Commit invalid, since it can't derive that LeafNode's secrets anyway.\n\n**3. \"Changes the membership\".** Say exactly which Commits count: any Commit with an Add or Remove proposal, and external Commits, which replace a leaf in the resync case. An emulator client's own Update doesn't change membership, so it doesn't refresh virtual client secrets unless marked. That's consistent with the new PCS paragraph, but worth stating where derivation epochs are defined.\n\n**4. Still open from my 21 Oct comment**, all three still applying to the new text:\n- SafeAAD framing applies only if the emulation group's GroupContext lists the component in `safe_aad` (mls-extensions-11 \u00a75). This matters more now that the `new_derivation_epoch` marker travels there: a member that treats `authenticated_data` as opaque misses the marker, derives from a different epoch, and the emulator clients diverge. Suggest requiring `virtual_clients` in the emulation group's `safe_aad`.\n- An emulator client can't commit the virtual client's own Update (RFC 9420 \u00a712.2), so another member must commit it, or self-rotation uses a Commit with an UpdatePath.\n- Nothing signals when a future `VirtualClientOperationType` is usable. Either fix the set for this version, or tie new types to an emulation-group capability.\n",
+          "createdAt": "2026-11-11T22:28:52Z",
+          "updatedAt": "2026-11-11T22:28:52Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 32,
